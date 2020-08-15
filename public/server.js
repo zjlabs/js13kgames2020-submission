@@ -1,27 +1,66 @@
 'use strict';
 
+/**
+ * Emit stats on tick
+ */
 const STATS = true;
-const DEBUG = true;
+
+/**
+ * The current log level
+ *
+ * 4 = fatal = exit()
+ * 3 = error = error()
+ * 2 = info  = info()
+ * 1 = debug = debug()
+ * 0 = all   = all()
+ */
+const LOG_LEVEL = 3;
+
+const exit = (...message) => LOG_LEVEL >= 4 && console.log('fatal', ...message);
+const error = (...message) => LOG_LEVEL >= 3 && console.log('error', ...message);
+const info = (...message) => LOG_LEVEL >= 2 && console.log('info', ...message);
+const debug = (...message) => LOG_LEVEL >= 1 && console.log('debug', ...message);
+const all = (...message) => LOG_LEVEL >= 0 && console.log('all', ...message);
+
+/**
+ * The server tick rate info
+ */
 const TICK_RATE = 10;
 const TICK_TIME = 1000 / TICK_RATE;
 
-const log = (...message) => {
-  if (DEBUG) console.log(...message);
-};
-
-// Game data
+/**
+ * The game state model
+ */
 const state = (() => {
   const rooms = {};
   const players = {};
   const items = {};
   const colliders = {};
+  let delta = getDelta();
 
   return {
-    addPlayer: (socket, player) => {
+    addPlayer(socket, player) {
       players[socket.id] = player;
+      debug('addPlayer', socket.id);
     },
-    remPlayer: (socket) => {
+    updatePlayer(socket, obj) {
+      if (!players[socket.id]) return;
+
+      // update the player delta for every different key:value pair
+      Object.keys(obj).forEach((key) => {
+        let oldVal = players[socket.id].get(key);
+        let newVal = obj[key];
+
+        if (oldVal != newVal) {
+          players[socket.id].set(key, newVal);
+          delta.players[socket.id] = Object.assign({}, delta.players[socket.id], { [key]: newVal });
+        }
+      });
+      debug('updatePlayer', socket.id, obj, delta.players[socket.id]);
+    },
+    removePlayer(socket) {
       delete players[socket.id];
+      debug('removePlayer', socket.id);
     },
     getPlayer(id = undefined) {
       if (id == undefined) {
@@ -33,12 +72,24 @@ const state = (() => {
 
       return undefined;
     },
+    sync(id) {
+      debug('sync', id);
+      io.to(id).emit('sync', { rooms, players, items, colliders });
+    },
+    getDelta() {
+      let out = delta;
+      delta = {
+        rooms: {},
+        players: {},
+        items: {},
+        colliders: {},
+      };
+
+      return out || delta;
+    },
   };
 })();
 
-/**
- * Player
- */
 class Player {
   /**
    * @param {Socket} socket
@@ -52,12 +103,16 @@ io.on('connection', (socket) => {
   const player = new Player(socket);
 
   socket.on('disconnect', () => {
-    state.remPlayer(socket);
+    state.removePlayer(socket);
     log('Disconnected', socket.id);
   });
 
   socket.on('play', () => {
     state.addPlayer(socket, player);
+  });
+
+  socket.on('data', (obj) => {
+    state.updatePlayer(socket, obj);
   });
 
   log('Connected', socket.id);
