@@ -4,6 +4,7 @@
   "description": "js13kgames game jam server",
   "license": "MIT",
   "main": "index.js",
+  "private": "true",
   "scripts": {
     "start": "node index.js",
     "start:dev": "nodemon",
