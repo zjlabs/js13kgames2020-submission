@@ -1,6 +1,9 @@
 'use strict';
 
 const DEBUG = true;
+const TICK_RATE = 10;
+const TICK_TIME = 1000 / TICK_RATE;
+
 const log = (...message) => {
   if (DEBUG) console.log(...message);
 };
@@ -44,11 +47,36 @@ class Player {
   }
 }
 
-/**
- * Socket.IO on connect event
- * @param {Socket} socket
- */
+let delta = 0;
+let elapsed = 0;
+let current = Date.now();
+let last;
+let sleep;
+const tick = () => {
+  last = current;
+  current = Date.now();
+  delta = current - last;
+
+  // GAME LOGIC
+
+  elapsed = Date.now() - current;
+  sleep = Math.max(TICK_TIME - elapsed, 0);
+  log('TICK', Date.now());
+  log('delta', delta);
+  log('current', current);
+  log('last', last);
+  log('elapsed', elapsed);
+  log('sleep', sleep);
+  setTimeout(tick, sleep);
+};
+
+// Start the main game loop
+setTimeout(tick, TICK_TIME);
+
 module.exports = {
+  /**
+   * Socket.io configuration
+   */
   io: (socket) => {
     const player = new Player(socket);
 
@@ -65,8 +93,10 @@ module.exports = {
   },
 
   /**
-   * Simple dbg endpoint
+   * API Endpoints.
    */
+
+  // Debug endpoint for server state
   state: (req, res, next) => {
     return res.json({ players, items, colliders });
   },
