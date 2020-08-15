@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "start:dev": "nodemon",
-    "test": "mocha test"
+    "test": "mocha test",
+    "format": "prettier"
   },
   "keywords": [
     "js13kgames",
@@ -34,6 +35,7 @@
   },
   "devDependencies": {
     "mocha": "^8.0.1",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "prettier": "^2.0.5"
   }
 }
