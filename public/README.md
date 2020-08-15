@@ -14,3 +14,16 @@
 
 - Upon death
   -- The "killer" gets 25% experience + 25% - 50% dropped on the ground
+
+## Server Events
+
+### Server Accepts
+
+- `play`
+
+  - the player is ready to join the server, they have submitted all their data
+
+- `data`
+  - the player is submitting identifying info, such as username, skin selection, etc.
+
+### Server Sends
