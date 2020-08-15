@@ -9,7 +9,7 @@
     "start": "node index.js",
     "start:dev": "nodemon",
     "test": "mocha test",
-    "format": "prettier"
+    "format": "prettier --write public/"
   },
   "keywords": [
     "js13kgames",

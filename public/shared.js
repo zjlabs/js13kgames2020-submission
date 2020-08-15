@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const GUESS_NO = 0;
 const GUESS_ROCK = 1;
