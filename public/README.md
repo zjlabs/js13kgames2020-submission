@@ -40,11 +40,12 @@
 - `sync`
 
   - the entire game state.
-  - sent on first `play` call.
+  - sent on first `play` call
 
 - `delta`
 
   - the game state delta
+  - any entity with `active=false` is expected to be forgotten on the client end
 
 ### Server Emits
 

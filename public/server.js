@@ -73,6 +73,13 @@ const state = (() => {
 
       return undefined;
     },
+    prunePlayers() {
+      Object.keys(players).forEach((id) => {
+        if (players[id].get('active') == false) {
+          delete players[id];
+        }
+      });
+    },
     sync(id) {
       debug('sync', id);
       io.to(id).emit('sync', { rooms, players, items, colliders });
@@ -88,25 +95,14 @@ const state = (() => {
 
       return out || delta;
     },
+    all() {
+      return { rooms, players, items, colliders };
+    },
   };
 })();
 
-class Player {
-  /**
-   * @param {Socket} socket
-   */
-  constructor(socket) {
-    this.socket = socket;
-    this.username = '';
-    this.x = 0;
-    this.y = 0;
-    this.xp = 0;
-    this.level = 1;
-    this.health = 10;
-    this.items = [];
-    this.bot = false;
-    this.skin = 0;
-    this.powerups = [];
+class Entity {
+  constructor() {
     this.active = true;
   }
 
@@ -123,6 +119,43 @@ class Player {
   }
 }
 
+class Player extends Entity {
+  /**
+   * @param {Socket} socket
+   */
+  constructor(socket) {
+    this.socket = socket;
+    this.username = '';
+    this.x = 0;
+    this.y = 0;
+    this.xp = 0;
+    this.level = 1;
+    this.health = 10;
+    this.items = [];
+    this.bot = false;
+    this.skin = 0;
+    this.powerups = [];
+  }
+}
+
+const Game = {
+  height: 50,
+  width: 50,
+
+  syncState() {
+    io.emit('delta', state.getDelta());
+  },
+
+  pruneInactiveEntities() {
+    state.prunePlayers();
+  },
+
+  update(deltaTime) {},
+};
+
+/**
+ * Handle incoming connections.
+ */
 io.on('connection', (socket) => {
   const player = new Player(socket);
 
@@ -152,7 +185,12 @@ const tick = () => {
   current = Date.now();
   delta = current - last;
 
-  // GAME LOGIC
+  /**
+   * GAME LOGIC
+   */
+  Game.syncState();
+  Game.pruneInactiveEntities();
+  Game.update(delta);
 
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
@@ -178,6 +216,6 @@ setTimeout(tick, TICK_TIME);
 module.exports = {
   // Debug endpoint for server state
   state: (req, res, next) => {
-    return res.json({ players, items, colliders });
+    return res.json(state.all());
   },
 };
