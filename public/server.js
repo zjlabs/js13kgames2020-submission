@@ -1,5 +1,7 @@
 'use strict';
 
+const { OPEN_SHAREDCACHE } = require('sqlite3');
+
 /**
  * Emit stats on tick
  */
@@ -183,6 +185,93 @@ class Grid extends Component {
   update(deltaTime) {
     this.tiles.forEach((tile) => tile.update(deltaTime));
   }
+
+  /**
+   * Get a path from start tile x/y to end tile x/y
+   *
+   * @param {*} startX
+   * @param {*} startY
+   * @param {*} endX
+   * @param {*} endY
+   */
+  findPath(startX, startY, endX, endY) {
+    let open = new Heap();
+    let close = new Heap();
+
+    let start = this.getNode(startX, startY);
+    let end = this.getNode(endX, endY);
+
+    // the start or end isnt valid, no path.
+    if (!start || !end) {
+      return [];
+    }
+
+    // add the start node to the open set
+    open.insert(this.getF(start), start);
+
+    let node;
+    let neighbors;
+    while ((node = open.remove(0))) {
+      close.insert(this.getF(node), node);
+
+      // path found
+      if (node.value == end) {
+        return;
+      }
+
+      neighbors = this.getNeighbors(node.value);
+    }
+
+    // no path available
+    return [];
+  }
+
+  getNode(x, y) {
+    if (!(x < this.width) || !(y < this.height)) {
+      return undefined;
+    }
+
+    return this.tiles[x][y];
+  }
+
+  getNeighbors(x, y) {
+    let out = [];
+    let temp;
+
+    // diag left top
+    temp = this.getNode(x - 1, y + 1);
+    if (temp) out.push(temp);
+
+    // top
+    temp = this.getNode(x, y + 1);
+    if (temp) out.push(temp);
+
+    // diag right top
+    temp = this.getNode(x + 1, y);
+    if (temp) out.push(temp);
+
+    // left
+    temp = this.getNode(x - 1, y);
+    if (temp) out.push(temp);
+
+    // right
+    temp = this.getNode(x + 1, y);
+    if (temp) out.push(temp);
+
+    // diag left bot
+    temp = this.getNode(x - 1, y - 1);
+    if (temp) out.push(temp);
+
+    // bot
+    temp = this.getNode(x, y - 1);
+    if (temp) out.push(temp);
+
+    // diag right bot
+    temp = this.getNode(x + 1, y - 1);
+    if (temp) out.push(temp);
+
+    return out;
+  }
 }
 
 class Game extends Component {
@@ -198,6 +287,117 @@ class Game extends Component {
 
   pruneInactiveEntities() {
     state.prunePlayers();
+  }
+}
+
+// based on https://codeburst.io/implementing-a-complete-binary-heap-in-javascript-the-priority-queue-7d85bd256ecf
+class Heap {
+  constructor(sort) {
+    this.sort = sort;
+    this.data = [];
+  }
+
+  insert(key, value) {
+    // edge case when empty
+    if (!this.data) {
+      this.data = [new HeapNode(key, value)];
+      return true;
+    }
+
+    // make and add the new node
+    let index = this.data.length;
+    let node = new HeapNode(key, value);
+    this.data.push(node);
+
+    //
+    let parentIndex = this.getParent(index);
+    let parentNode = this.getNode(parentIndex);
+    let temp;
+
+    while (parentNode) {
+      // swap the parent with this node
+      if (parent.key > node.key) {
+        temp = parent;
+        parent = node;
+        node = parent;
+
+        // get the index for new parent
+        parentIndex = this.getParent(parentIndex);
+        parentNode = this.getNode(parent);
+      } else {
+        return;
+      }
+    }
+  }
+
+  remove() {
+    let index = 0;
+    let out = this.getNode(index);
+
+    // set the head to the end node and rebalance
+    this.data[index] = this.data.pop();
+    let node = this.data[index];
+    let leftIndex;
+    let leftNode;
+    let rightIndex;
+    let rightNode;
+    let temp;
+    while (node) {
+      leftIndex = this.getLeft(index);
+      leftNode = this.getNode(leftIndex);
+      rightIndex = this.getRight(index);
+      rightNode = this.getNode(rightIndex);
+
+      // Left is smaller, swap
+      if (leftNode && node.key > leftNode.key) {
+        temp = leftNode;
+        leftNode = node;
+        node = leftNode;
+        index = leftIndex;
+      }
+      // right is smaller, swap
+      else if (rightNode && node.key > rightNode.key) {
+        temp = rightNode;
+        rightNode = node;
+        node = rightNode;
+        index = rightIndex;
+      }
+      // out of moves, escape
+      else {
+        return;
+      }
+    }
+
+    return out;
+  }
+
+  getNode(index) {
+    return index > 0 && index < this.data.length - 1 ? this.data[index] : undefined;
+  }
+
+  getParent(nodeIndex) {
+    nodeIndex = Math.floor(nodeIndex - 1 / 2);
+    // return this.getNode(nodeIndex);
+    return nodeIndex;
+  }
+
+  getLeft(nodeIndex) {
+    nodeIndex = 2 * nodeIndex + 1;
+    // return this.getNode(nodeIndex);
+    return nodeIndex;
+  }
+
+  getRight(nodeIndex) {
+    nodeIndex = 2 * nodeIndex + 2;
+    // return this.getNode(nodeIndex);
+    return nodeIndex;
+  }
+}
+
+class HeapNode {
+  constructor(key, value) {
+    this.key = key;
+    this.value = value;
   }
 }
 
