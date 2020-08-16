@@ -96,12 +96,25 @@ const state = (() => {
       return out || delta;
     },
     all() {
-      return { rooms, players, items, colliders };
+      return { rooms, players, items, colliders, delta };
     },
   };
 })();
 
-class Entity {
+class Component {
+  constructor() {
+    this.components = [];
+  }
+
+  addComponent(component) {
+    this.components.push(component);
+  }
+
+  start() {}
+  update(deltaTime) {}
+}
+
+class Entity extends Component {
   constructor() {
     this.active = true;
   }
@@ -142,7 +155,7 @@ class Player extends Entity {
   update(deltaTime) {}
 }
 
-class Tile {
+class Tile extends Component {
   constructor(x, y, height = TILE_HEIGHT, width = TILE_WIDTH) {
     this.x = x;
     this.y = y;
@@ -151,18 +164,12 @@ class Tile {
   }
 }
 
-const Game = {
-  tileHeight: 50,
-  tileWidth: 50,
-  tiles: [],
-
-  syncState() {
-    io.emit('delta', state.getDelta());
-  },
-
-  pruneInactiveEntities() {
-    state.prunePlayers();
-  },
+class Grid extends Component {
+  constructor(height = 50, width = 50) {
+    this.height = 50;
+    this.width = 50;
+    this.tiles = [];
+  }
 
   start() {
     this.tiles = [];
@@ -171,10 +178,28 @@ const Game = {
         this.tiles.push[x][y] = new Tile(x, y);
       }
     }
-  },
+  }
 
-  update(deltaTime) {},
-};
+  update(deltaTime) {
+    this.tiles.forEach((tile) => tile.update(deltaTime));
+  }
+}
+
+class Game extends Component {
+  constructor() {}
+
+  start() {}
+
+  update(deltaTime) {}
+
+  syncState() {
+    io.emit('delta', state.getDelta());
+  }
+
+  pruneInactiveEntities() {
+    state.prunePlayers();
+  }
+}
 
 /**
  * Handle incoming connections.
@@ -201,7 +226,8 @@ io.on('connection', (socket) => {
 /**
  * Init game
  */
-Game.start();
+const game = new Game();
+game.start();
 
 // Start the game loop
 let delta = 0;
@@ -217,9 +243,9 @@ const tick = () => {
   /**
    * GAME LOGIC
    */
-  Game.syncState();
-  Game.pruneInactiveEntities();
-  Game.update(delta);
+  game.syncState();
+  game.pruneInactiveEntities();
+  game.update(delta);
 
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
@@ -245,6 +271,6 @@ setTimeout(tick, TICK_TIME);
 module.exports = {
   // Debug endpoint for server state
   state: (req, res, next) => {
-    return res.json(state.all());
+    return res.send(`<pre>${JSON.stringify(state.all(), null, 2)}</pre>`);
   },
 };
