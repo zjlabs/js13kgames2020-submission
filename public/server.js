@@ -128,6 +128,8 @@ class Player extends Entity {
     this.username = '';
     this.x = 0;
     this.y = 0;
+    this.height = 0;
+    this.width = 0;
     this.xp = 0;
     this.level = 1;
     this.health = 10;
@@ -136,11 +138,23 @@ class Player extends Entity {
     this.skin = 0;
     this.powerups = [];
   }
+
+  update(deltaTime) {}
+}
+
+class Tile {
+  constructor(x, y, height = TILE_HEIGHT, width = TILE_WIDTH) {
+    this.x = x;
+    this.y = y;
+    this.height = height;
+    this.width = width;
+  }
 }
 
 const Game = {
-  height: 50,
-  width: 50,
+  tileHeight: 50,
+  tileWidth: 50,
+  tiles: [],
 
   syncState() {
     io.emit('delta', state.getDelta());
@@ -148,6 +162,15 @@ const Game = {
 
   pruneInactiveEntities() {
     state.prunePlayers();
+  },
+
+  start() {
+    this.tiles = [];
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
+        this.tiles.push[x][y] = new Tile(x, y);
+      }
+    }
   },
 
   update(deltaTime) {},
@@ -175,6 +198,12 @@ io.on('connection', (socket) => {
   debug('Connected', socket.id);
 });
 
+/**
+ * Init game
+ */
+Game.start();
+
+// Start the game loop
 let delta = 0;
 let elapsed = 0;
 let current = Date.now();
