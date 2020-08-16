@@ -36,7 +36,7 @@ const state = (() => {
   const players = {};
   const items = {};
   const colliders = {};
-  let delta = getDelta();
+  let delta;
 
   return {
     addPlayer(socket, player) {
@@ -104,7 +104,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     state.removePlayer(socket);
-    log('Disconnected', socket.id);
+    debug('Disconnected', socket.id);
   });
 
   socket.on('play', () => {
@@ -115,7 +115,7 @@ io.on('connection', (socket) => {
     state.updatePlayer(socket, obj);
   });
 
-  log('Connected', socket.id);
+  debug('Connected', socket.id);
 });
 
 let delta = 0;
@@ -133,12 +133,12 @@ const tick = () => {
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
   sleep = Math.max(TICK_TIME - elapsed, 0);
-  log('TICK');
-  log('delta', delta);
-  log('current', current);
-  log('last', last);
-  log('elapsed', elapsed);
-  log('sleep', sleep);
+  debug('TICK');
+  debug('delta', delta);
+  debug('current', current);
+  debug('last', last);
+  debug('elapsed', elapsed);
+  debug('sleep', sleep);
   STATS && io.emit('stats', { delta, current, last, elapsed, sleep });
   setTimeout(tick, sleep);
 };
