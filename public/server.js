@@ -53,13 +53,14 @@ const state = (() => {
 
         if (oldVal != newVal) {
           players[socket.id].set(key, newVal);
-          delta.players[socket.id] = Object.assign({}, delta.players[socket.id], { [key]: newVal });
+          delta.players[socket.id] = Object.assign(players[socket.id], { [key]: newVal });
         }
       });
       debug('updatePlayer', socket.id, obj, delta.players[socket.id]);
     },
     removePlayer(socket) {
       delete players[socket.id];
+      delta.players[socket.id].set('active', false);
       debug('removePlayer', socket.id);
     },
     getPlayer(id = undefined) {
@@ -96,6 +97,29 @@ class Player {
    */
   constructor(socket) {
     this.socket = socket;
+    this.username = '';
+    this.x = 0;
+    this.y = 0;
+    this.xp = 0;
+    this.level = 1;
+    this.health = 10;
+    this.items = [];
+    this.bot = false;
+    this.skin = 0;
+    this.powerups = [];
+    this.active = true;
+  }
+
+  set(key, val) {
+    if (this.hasOwnProperty(key)) {
+      this[key] = val;
+    }
+  }
+
+  get(key) {
+    if (this.hasOwnProperty(key)) return this[key];
+
+    return undefined;
   }
 }
 
