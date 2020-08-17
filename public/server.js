@@ -1,6 +1,9 @@
 'use strict';
 
-const { OPEN_SHAREDCACHE } = require('sqlite3');
+/**
+ * Whether or not to include test code
+ */
+const TEST = true;
 
 /**
  * Emit stats on tick
@@ -118,6 +121,7 @@ class Component {
 
 class Entity extends Component {
   constructor() {
+    super();
     this.active = true;
   }
 
@@ -139,6 +143,7 @@ class Player extends Entity {
    * @param {Socket} socket
    */
   constructor(socket) {
+    super();
     this.socket = socket;
     this.username = '';
     this.x = 0;
@@ -157,7 +162,7 @@ class Player extends Entity {
   update(deltaTime) {}
 }
 
-class Tile extends Component {
+class Tile {
   constructor(x, y, height = TILE_HEIGHT, width = TILE_WIDTH) {
     this.x = x;
     this.y = y;
@@ -173,8 +178,9 @@ class Tile extends Component {
 
 class Grid extends Component {
   constructor(height = 50, width = 50) {
-    this.height = 50;
-    this.width = 50;
+    super();
+    this.height = height;
+    this.width = width;
     this.tiles = [];
   }
 
@@ -182,7 +188,9 @@ class Grid extends Component {
     this.tiles = [];
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
-        this.tiles.push[x][y] = new Tile(x, y);
+        this.tiles[x] = this.tiles[x] || [];
+        this.tiles[x][y] = this.tiles[x][y] || [];
+        this.tiles[x][y].push(new Tile(x, y));
       }
     }
   }
@@ -370,7 +378,9 @@ class Grid extends Component {
 }
 
 class Game extends Component {
-  constructor() {}
+  constructor() {
+    super();
+  }
 
   start() {}
 
@@ -591,9 +601,19 @@ setTimeout(tick, TICK_TIME);
  *
  * NOTE: DO NOT make an endpoint named 'io', this is non-standard behavior.
  */
-module.exports = {
-  // Debug endpoint for server state
-  state: (req, res, next) => {
-    return res.send(`<pre>${JSON.stringify(state.all(), null, 2)}</pre>`);
+module.exports = Object.assign(
+  {
+    // Debug endpoint for server state
+    state: (req, res, next) => {
+      return res.send(`<pre>${JSON.stringify(state.all(), null, 2)}</pre>`);
+    },
   },
-};
+  TEST && {
+    path: (req, res, next) => {
+      let grid = new Grid();
+      grid.start();
+      let path = grid.findPath(0, 0, 20, 20);
+      return res.json(path);
+    },
+  }
+);
