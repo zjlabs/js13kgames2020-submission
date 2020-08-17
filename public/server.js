@@ -164,6 +164,11 @@ class Tile extends Component {
     this.height = height;
     this.width = width;
   }
+
+  // Getter for unique tile id
+  get id() {
+    return `${this.x},${this.y}`;
+  }
 }
 
 class Grid extends Component {
@@ -187,45 +192,124 @@ class Grid extends Component {
   }
 
   /**
-   * Get a path from start tile x/y to end tile x/y
+   * Octile distance formula, from:
+   * http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html#diagonal-distance
    *
-   * @param {*} startX
-   * @param {*} startY
-   * @param {*} endX
-   * @param {*} endY
+   * @param {Object} node
+   *   The starting node for the calculation
+   * @param {Object} goal
+   *   The end node for the calculation
+   *
+   * @returns {Number}
+   *   The distance between the two nodes.
+   */
+  heuristic(node, goal) {
+    const D = 1;
+    const D2 = Math.SQRT2;
+    let dx = Math.abs(node.x - goal.x);
+    let dy = Math.abs(node.y - goal.y);
+    return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
+  }
+
+  /**
+   * Util function to reconstruct the final path from findPath, on success.
+   *
+   * @param {Object} nodeList
+   *   The visited nodeList map from findPath
+   * @param {Object} node
+   *   The final node in the path.
+   *
+   * @returns {Array}
+   *   The shortest path from the node to the origin of nodeList.
+   */
+  buildPath(nodeList, node) {
+    let out = [node];
+    while (nodeList[node.id]) {
+      node = nodeList[node.id];
+      out.push(node);
+    }
+    return out.reverse();
+  }
+
+  /**
+   * Get a path from start tile x/y to end tile x/y, using a*, from:
+   * https://en.wikipedia.org/wiki/A*_search_algorithm
+   *
+   * @param {Number} startX
+   *   The start tile x coordinate.
+   * @param {Number} startY
+   *   The start tile y coordinate.
+   * @param {Number} endX
+   *   The end tile x coordinate.
+   * @param {Number} endY
+   *   The end tile y coordinate.
+   *
+   * @returns {Array}
+   *   The array of game tiles in the path
    */
   findPath(startX, startY, endX, endY) {
-    let open = new Heap();
-    let close = new Heap();
+    let open = new MinHeap();
 
+    // convert tile coords to actual tile nodes
     let start = this.getNode(startX, startY);
     let end = this.getNode(endX, endY);
-
-    // the start or end isnt valid, no path.
     if (!start || !end) {
       return [];
     }
 
-    // add the start node to the open set
-    open.insert(this.getF(start), start);
+    // For node n, path[n] is the node immediately preceding it on the cheapest path from start
+    // to n currently known.
+    let cameFrom = {};
+
+    // For node n, gScore[n] is the cost of the cheapest path from start to n currently known.
+    let gScore = { [start.id]: 0 };
+
+    // For node n, fScore[n] := gScore[n] + h(n). fScore[n] represents our current best guess as to
+    // how short a path from start to finish can be if it goes through n.
+    let fScore = { [start.id]: this.heuristic(start, end) };
+
+    // start the openset with the start node
+    open.insert(fScore[start.id], start);
 
     let node;
-    let neighbors;
-    while ((node = open.remove(0))) {
-      close.insert(this.getF(node), node);
+    let temp;
+    while ((node = open.remove() && node)) {
+      if (node == end) return buildPath(cameFrom, node);
 
-      // path found
-      if (node.value == end) {
-        return;
-      }
+      this.getNeighbors(node.x, node.y).forEach((neighbor) => {
+        // this path to neighbor is better than any previous one, record it
+        if (gScore[node.id] < (gScore[neighbor.id] || Number.MAX_SAFE_INTEGER)) {
+          cameFrom[neighbor.id] = current;
+          gScore[neighbor.id] = gScore[current.id];
+          fScore[neighbor.id] = gScore[neighbor.id] + this.heuristic(neighbor, end);
 
-      neighbors = this.getNeighbors(node.value);
+          // Only add the neighbor to the openset if it doesnt exist in there
+          // note: only each nodes id is unique
+          temp = getNodesByKey(fScore[neighbor.id])
+            .map((node) => node.id == neighbor.id)
+            .reduce((acc, cur) => cur || acc, false);
+          if (!temp) {
+            open.insert(fScore[neighbor.id], neighbor);
+          }
+        }
+      });
     }
 
     // no path available
     return [];
   }
 
+  /**
+   * Util helper to get the tilemap tile or undefined for the given coordinates.
+   *
+   * @param {Number} x
+   *   The grid x coordinate
+   * @param {Number} y
+   *   The grid y coordinate
+   *
+   * @returns {Object|undefined}
+   *   The grid node or undefined
+   */
   getNode(x, y) {
     if (!(x < this.width) || !(y < this.height)) {
       return undefined;
@@ -234,6 +318,17 @@ class Grid extends Component {
     return this.tiles[x][y];
   }
 
+  /**
+   * Get all the neighbor nodes for the input grid x/y tile location
+   *
+   * @param {Number} x
+   *   The grid x coordinate
+   * @param {Number} y
+   *   The grid y coordinate
+   *
+   * @returns {Array}
+   *   The nodes immediate neighbors list, for all 8 directions.
+   */
   getNeighbors(x, y) {
     let out = [];
     let temp;
@@ -290,13 +385,21 @@ class Game extends Component {
   }
 }
 
-// based on https://codeburst.io/implementing-a-complete-binary-heap-in-javascript-the-priority-queue-7d85bd256ecf
-class Heap {
+// logic from https://en.wikipedia.org/wiki/Binary_heap
+class MinHeap {
   constructor(sort) {
     this.sort = sort;
     this.data = [];
   }
 
+  /**
+   *
+   *
+   * @param {Number} key
+   *   The primary key to sort on
+   * @param {Object} value
+   *   The stored values in this node
+   */
   insert(key, value) {
     // edge case when empty
     if (!this.data) {
@@ -325,11 +428,17 @@ class Heap {
         parentIndex = this.getParent(parentIndex);
         parentNode = this.getNode(parent);
       } else {
+        debug('heap insert', this.data);
         return;
       }
     }
   }
 
+  /**
+   * Removes the node with the smallest key.
+   *
+   * @returns {Object|undefined}
+   */
   remove() {
     let index = 0;
     let out = this.getNode(index);
@@ -364,11 +473,25 @@ class Heap {
       }
       // out of moves, escape
       else {
+        debug('heap remove', this.data);
         return;
       }
     }
 
     return out;
+  }
+
+  /**
+   * Search the heap for all nodes with the same key.
+   *
+   * @param {Number} key
+   *   The key to search for
+   *
+   * @returns {Array}
+   *   Any matching nodes
+   */
+  getNodesByKey(key) {
+    return this.data.map((node) => node.key == key);
   }
 
   getNode(index) {
