@@ -418,25 +418,19 @@ class MinHeap {
     let node = new HeapNode(key, value);
     this.data.push(node);
 
-    // get the parent node
-    let parentIndex = this.getParent(index);
-    let parentNode = this.getNode(parentIndex);
+    // compare with parent
+    let parent;
     let temp;
-
-    while (parentNode) {
-      // swap the parent with this node
+    while ((parent = this.getNode(this.getParent(index))) && parent) {
       if (parent.key > node.key) {
-        temp = parent;
-        parent = node;
-        node = temp;
-
-        // get the index for new parent
-        parentIndex = this.getParent(parentIndex);
-        parentNode = this.getNode(parentIndex);
-      } else {
-        debug('heap insert', this.data);
-        break;
+        temp = node;
+        node = parent;
+        parent = temp;
+        index = this.getParent(index);
+        continue;
       }
+
+      break;
     }
   }
 
