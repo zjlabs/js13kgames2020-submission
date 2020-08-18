@@ -1,25 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Rock, Paper, Scissors</title>
+    <title>Knight Quest</title>
     <meta charset="UTF-8" />
+
+    <link href="index.css" rel="stylesheet" />
   </head>
   <body>
-    <div style="text-align: center;">
-      <h1 id="message"></h1>
-      <div>
-        <button>Rock</button>
-        <button>Paper</button>
-        <button>Scissors</button>
-      </div>
-      <div id="score"></div>
-      <p>
-        <a href="/stat">Statistics</a>
-      </p>
-    </div>
+    <span id="stats--mouseangle"></span>
+    <span> </span>
+    <span id="stats--fps"></span>
+    <div id="root"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/shared.js"></script>
-    <script src="/client.js"></script>
+    <script type="module" src="client/client.js"></script>
   </body>
 </html>
