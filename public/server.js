@@ -13,6 +13,7 @@ const STATS = true;
 /**
  * The current log level
  *
+ *
  * 4 = fatal = exit()
  * 3 = error = error()
  * 2 = info  = info()
@@ -190,7 +191,7 @@ class Grid extends Component {
       for (let y = 0; y < this.height; y++) {
         this.tiles[x] = this.tiles[x] || [];
         this.tiles[x][y] = this.tiles[x][y] || [];
-        this.tiles[x][y].push(new Tile(x, y));
+        this.tiles[x][y] = new Tile(x, y);
       }
     }
   }
@@ -281,7 +282,8 @@ class Grid extends Component {
 
     let node;
     let temp;
-    while ((node = open.remove() && node)) {
+    while ((node = open.remove()) && node) {
+      if (!node) break;
       if (node == end) return buildPath(cameFrom, node);
 
       this.getNeighbors(node.x, node.y).forEach((neighbor) => {
@@ -411,18 +413,12 @@ class MinHeap {
    *   The stored values in this node
    */
   insert(key, value) {
-    // edge case when empty
-    if (!this.data) {
-      this.data = [new HeapNode(key, value)];
-      return true;
-    }
-
-    // make and add the new node
+    // Add the new data
     let index = this.data.length;
     let node = new HeapNode(key, value);
     this.data.push(node);
 
-    //
+    // get the parent node
     let parentIndex = this.getParent(index);
     let parentNode = this.getNode(parentIndex);
     let temp;
@@ -432,15 +428,53 @@ class MinHeap {
       if (parent.key > node.key) {
         temp = parent;
         parent = node;
-        node = parent;
+        node = temp;
 
         // get the index for new parent
         parentIndex = this.getParent(parentIndex);
-        parentNode = this.getNode(parent);
+        parentNode = this.getNode(parentIndex);
       } else {
         debug('heap insert', this.data);
-        return;
+        break;
       }
+    }
+  }
+
+  minHeap(index) {
+    debug(`minHeap ${index}`, this.data);
+
+    // rebalance
+    let node;
+    let left;
+    let right;
+    let temp;
+    while (true) {
+      node = this.getNode(index);
+      left = this.getNode(this.getLeft(index));
+      right = this.getNode(this.getRight(index));
+
+      // escape if node doesnt exist anymore
+      if (!node) break;
+
+      // attempt left swap first
+      if (left && node.key > left.key) {
+        temp = left;
+        left = node;
+        node = temp;
+        index = this.getLeft(index);
+        this.minHeap(index);
+      }
+
+      // now right is smaller, swap
+      if (right && node.key > right.key) {
+        temp = right;
+        right = node;
+        node = temp;
+        index = this.getRight(index);
+        this.minHeap(index);
+      }
+
+      if (!left && !right) break;
     }
   }
 
@@ -450,44 +484,17 @@ class MinHeap {
    * @returns {Object|undefined}
    */
   remove() {
+    // get the first element, smallest, store for return.
     let index = 0;
     let out = this.getNode(index);
+    debug('remove', out);
+    if (!out) return;
 
     // set the head to the end node and rebalance
     this.data[index] = this.data.pop();
-    let node = this.data[index];
-    let leftIndex;
-    let leftNode;
-    let rightIndex;
-    let rightNode;
-    let temp;
-    while (node) {
-      leftIndex = this.getLeft(index);
-      leftNode = this.getNode(leftIndex);
-      rightIndex = this.getRight(index);
-      rightNode = this.getNode(rightIndex);
+    this.minHeap(index);
 
-      // Left is smaller, swap
-      if (leftNode && node.key > leftNode.key) {
-        temp = leftNode;
-        leftNode = node;
-        node = leftNode;
-        index = leftIndex;
-      }
-      // right is smaller, swap
-      else if (rightNode && node.key > rightNode.key) {
-        temp = rightNode;
-        rightNode = node;
-        node = rightNode;
-        index = rightIndex;
-      }
-      // out of moves, escape
-      else {
-        debug('heap remove', this.data);
-        return;
-      }
-    }
-
+    debug('heap remove', out);
     return out;
   }
 
@@ -505,25 +512,19 @@ class MinHeap {
   }
 
   getNode(index) {
-    return index > 0 && index < this.data.length - 1 ? this.data[index] : undefined;
+    return this.data[index] || undefined;
   }
 
   getParent(nodeIndex) {
-    nodeIndex = Math.floor(nodeIndex - 1 / 2);
-    // return this.getNode(nodeIndex);
-    return nodeIndex;
+    return parseInt(nodeIndex - 1 / 2) || undefined;
   }
 
   getLeft(nodeIndex) {
-    nodeIndex = 2 * nodeIndex + 1;
-    // return this.getNode(nodeIndex);
-    return nodeIndex;
+    return 2 * nodeIndex + 1 || undefined;
   }
 
   getRight(nodeIndex) {
-    nodeIndex = 2 * nodeIndex + 2;
-    // return this.getNode(nodeIndex);
-    return nodeIndex;
+    return 2 * nodeIndex + 2 || undefined;
   }
 }
 
