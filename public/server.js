@@ -232,6 +232,7 @@ class Grid extends Component {
    *   The shortest path from the node to the origin of nodeList.
    */
   buildPath(nodeList, node) {
+    debug('buildPath', nodeList);
     let out = [node];
     while (nodeList[node.id]) {
       node = nodeList[node.id];
@@ -283,19 +284,26 @@ class Grid extends Component {
     let node;
     let temp;
     while ((node = open.remove()) && node) {
+      debug('findPath node', node);
+      node = node.value;
       if (!node) break;
       if (node == end) return buildPath(cameFrom, node);
 
       this.getNeighbors(node.x, node.y).forEach((neighbor) => {
+        debug('findPath neighbor', neighbor);
         // this path to neighbor is better than any previous one, record it
         if (gScore[node.id] < (gScore[neighbor.id] || Number.MAX_SAFE_INTEGER)) {
-          cameFrom[neighbor.id] = current;
-          gScore[neighbor.id] = gScore[current.id];
+          cameFrom[neighbor.id] = node;
+          gScore[neighbor.id] = gScore[node.id];
           fScore[neighbor.id] = gScore[neighbor.id] + this.heuristic(neighbor, end);
+
+          debug('node', gScore[node.id], fScore[node.id]);
+          debug('neighbor', gScore[neighbor.id], fScore[neighbor.id]);
 
           // Only add the neighbor to the openset if it doesnt exist in there
           // note: only each nodes id is unique
-          temp = getNodesByKey(fScore[neighbor.id])
+          temp = open
+            .getNodesByKey(fScore[neighbor.id])
             .map((node) => node.id == neighbor.id)
             .reduce((acc, cur) => cur || acc, false);
           if (!temp) {
@@ -321,10 +329,11 @@ class Grid extends Component {
    *   The grid node or undefined
    */
   getNode(x, y) {
-    if (!(x < this.width) || !(y < this.height)) {
+    if (x > this.width - 1 || x < 0 || y > this.height - 1 || y < 0) {
       return undefined;
     }
 
+    debug('getNode', x, y, this.tiles[x][y]);
     return this.tiles[x][y];
   }
 
@@ -352,7 +361,7 @@ class Grid extends Component {
     if (temp) out.push(temp);
 
     // diag right top
-    temp = this.getNode(x + 1, y);
+    temp = this.getNode(x + 1, y + 1);
     if (temp) out.push(temp);
 
     // left
@@ -417,11 +426,13 @@ class MinHeap {
     let index = this.data.length;
     let node = new HeapNode(key, value);
     this.data.push(node);
+    debug('insert', node);
 
     // compare with parent
     let parent;
     let temp;
     while ((parent = this.getNode(this.getParent(index))) && parent) {
+      debug('insert parent', parent, node, index);
       if (parent.key > node.key) {
         temp = node;
         node = parent;
@@ -435,15 +446,15 @@ class MinHeap {
   }
 
   minHeap(index) {
-    debug(`minHeap ${index}`, this.data);
+    debug(`minHeap ${index}`, this.data.length);
 
     // rebalance
     let node;
     let left;
     let right;
     let temp;
-    while (true) {
-      node = this.getNode(index);
+    while ((node = this.getNode(index)) && node) {
+      // node = this.getNode(index);
       left = this.getNode(this.getLeft(index));
       right = this.getNode(this.getRight(index));
 
@@ -452,6 +463,7 @@ class MinHeap {
 
       // attempt left swap first
       if (left && node.key > left.key) {
+        debug('minHeap swap left', node.key, left.key);
         temp = left;
         left = node;
         node = temp;
@@ -461,6 +473,7 @@ class MinHeap {
 
       // now right is smaller, swap
       if (right && node.key > right.key) {
+        debug('minHeap swap left', node.key, right.key);
         temp = right;
         right = node;
         node = temp;
@@ -468,7 +481,8 @@ class MinHeap {
         this.minHeap(index);
       }
 
-      if (!left && !right) break;
+      // if (!left && !right)
+      break;
     }
   }
 
@@ -479,16 +493,18 @@ class MinHeap {
    */
   remove() {
     // get the first element, smallest, store for return.
-    let index = 0;
-    let out = this.getNode(index);
-    debug('remove', out);
+    let out = this.getNode(0);
+    delete this.data[0];
     if (!out) return;
 
     // set the head to the end node and rebalance
-    this.data[index] = this.data.pop();
-    this.minHeap(index);
+    let temp = this.data.pop();
+    if (temp != undefined) {
+      this.data[0] = temp;
+      this.minHeap(0);
+    }
 
-    debug('heap remove', out);
+    debug('heap remove', out, this.data.length, temp);
     return out;
   }
 
@@ -605,9 +621,12 @@ module.exports = Object.assign(
   },
   TEST && {
     path: (req, res, next) => {
-      let grid = new Grid();
+      let grid = new Grid(5, 5);
       grid.start();
-      let path = grid.findPath(0, 0, 20, 20);
+
+      debug('grid', grid);
+
+      let path = grid.findPath(0, 0, 2, 2);
       return res.json(path);
     },
   }
