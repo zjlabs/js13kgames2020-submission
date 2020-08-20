@@ -1,5 +1,5 @@
-let mouseX;
-let mouseY;
+let mouseX = 0;
+let mouseY = 0;
 
 document.addEventListener('mousemove', (event) => {
   mouseX = event.clientX;
