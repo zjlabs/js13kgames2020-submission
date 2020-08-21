@@ -10,7 +10,7 @@
     "start:dev": "nodemon",
     "test": "mocha test",
     "format": "prettier --write public/",
-    "build": "rollup"
+    "build": "rollup -c"
   },
   "keywords": [
     "js13kgames",

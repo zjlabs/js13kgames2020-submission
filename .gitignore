@@ -3,6 +3,9 @@
 /.vscode
 /dist.zip
 *.sqlite
+/public/client.js
+/public/server.js
+/public/shared.js
 
 # Created by https://www.toptal.com/developers/gitignore/api/windows,linux,macos,vim,emacs,visualstudiocode,openframeworks,node,nodechakratimetraveldebug,webstorm+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,linux,macos,vim,emacs,visualstudiocode,openframeworks,node,nodechakratimetraveldebug,webstorm+all
