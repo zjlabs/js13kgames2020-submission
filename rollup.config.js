@@ -1,7 +1,7 @@
-// rollup.config.js (building more than one bundle)
 export default [
   {
     input: 'public/client/index.js',
+    watch: 'public/{client,shared}/**.js',
     output: {
       file: 'public/client.js',
       format: 'umd',
@@ -9,15 +9,9 @@ export default [
   },
   {
     input: 'public/server/index.js',
+    watch: 'public/{server,shared}/**.js',
     output: {
       file: 'public/server.js',
-      format: 'umd',
-    },
-  },
-  {
-    input: 'public/shared/index.js',
-    output: {
-      file: 'public/shared.js',
       format: 'umd',
     },
   },
