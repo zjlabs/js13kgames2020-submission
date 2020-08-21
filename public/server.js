@@ -164,11 +164,12 @@ class Player extends Entity {
 }
 
 class Tile {
-  constructor(x, y, height = TILE_HEIGHT, width = TILE_WIDTH) {
+  constructor(x, y, walk = true, height = TILE_HEIGHT, width = TILE_WIDTH) {
     this.x = x;
     this.y = y;
     this.height = height;
     this.width = width;
+    this.walk = walk;
   }
 
   // Getter for unique tile id
@@ -220,6 +221,10 @@ class Grid extends Component {
     return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
   }
 
+  distance(a, b) {
+    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+  }
+
   /**
    * Util function to reconstruct the final path from findPath, on success.
    *
@@ -232,7 +237,7 @@ class Grid extends Component {
    *   The shortest path from the node to the origin of nodeList.
    */
   buildPath(nodeList, node) {
-    debug('buildPath', nodeList);
+    debug('buildPath', nodeList, node);
     let out = [node];
     while (nodeList[node.id]) {
       node = nodeList[node.id];
@@ -258,7 +263,7 @@ class Grid extends Component {
    *   The array of game tiles in the path
    */
   findPath(startX, startY, endX, endY) {
-    let open = new MinHeap();
+    let open = new BinaryHeap();
 
     // convert tile coords to actual tile nodes
     let start = this.getNode(startX, startY);
@@ -281,30 +286,28 @@ class Grid extends Component {
     // start the openset with the start node
     open.insert(fScore[start.id], start);
 
+    let iter = 0;
     let node;
     let temp;
-    while ((node = open.remove()) && node) {
-      debug('findPath node', node);
+    let tempG;
+    while ((node = open.extractMin()) && node && iter < 50) {
+      iter++;
       node = node.value;
       if (!node) break;
-      if (node == end) return buildPath(cameFrom, node);
+      if (node.id == end.id) return this.buildPath(cameFrom, node);
 
       this.getNeighbors(node.x, node.y).forEach((neighbor) => {
-        debug('findPath neighbor', neighbor);
         // this path to neighbor is better than any previous one, record it
-        if (gScore[node.id] < (gScore[neighbor.id] || Number.MAX_SAFE_INTEGER)) {
+        tempG = gScore[node.id] + this.distance(node, neighbor);
+        if (tempG < (gScore[neighbor.id] != undefined ? gScore[neighbor.id] : Number.MAX_SAFE_INTEGER)) {
           cameFrom[neighbor.id] = node;
-          gScore[neighbor.id] = gScore[node.id];
+          gScore[neighbor.id] = tempG;
           fScore[neighbor.id] = gScore[neighbor.id] + this.heuristic(neighbor, end);
 
-          debug('node', gScore[node.id], fScore[node.id]);
-          debug('neighbor', gScore[neighbor.id], fScore[neighbor.id]);
-
           // Only add the neighbor to the openset if it doesnt exist in there
-          // note: only each nodes id is unique
           temp = open
             .getNodesByKey(fScore[neighbor.id])
-            .map((node) => node.id == neighbor.id)
+            .map((node) => node.value.id == neighbor.id)
             .reduce((acc, cur) => cur || acc, false);
           if (!temp) {
             open.insert(fScore[neighbor.id], neighbor);
@@ -333,7 +336,6 @@ class Grid extends Component {
       return undefined;
     }
 
-    debug('getNode', x, y, this.tiles[x][y]);
     return this.tiles[x][y];
   }
 
@@ -354,35 +356,35 @@ class Grid extends Component {
 
     // diag left top
     temp = this.getNode(x - 1, y + 1);
-    if (temp) out.push(temp);
+    if (temp && temp.walk) out.push(temp);
 
     // top
     temp = this.getNode(x, y + 1);
-    if (temp) out.push(temp);
+    if (temp && temp.walk) out.push(temp);
 
     // diag right top
     temp = this.getNode(x + 1, y + 1);
-    if (temp) out.push(temp);
+    if (temp && temp.walk) out.push(temp);
 
     // left
     temp = this.getNode(x - 1, y);
-    if (temp) out.push(temp);
+    if (temp && temp.walk) out.push(temp);
 
     // right
     temp = this.getNode(x + 1, y);
-    if (temp) out.push(temp);
+    if (temp && temp.walk) out.push(temp);
 
     // diag left bot
     temp = this.getNode(x - 1, y - 1);
-    if (temp) out.push(temp);
+    if (temp && temp.walk) out.push(temp);
 
     // bot
     temp = this.getNode(x, y - 1);
-    if (temp) out.push(temp);
+    if (temp && temp.walk) out.push(temp);
 
     // diag right bot
     temp = this.getNode(x + 1, y - 1);
-    if (temp) out.push(temp);
+    if (temp && temp.walk) out.push(temp);
 
     return out;
   }
@@ -406,106 +408,79 @@ class Game extends Component {
   }
 }
 
-// logic from https://en.wikipedia.org/wiki/Binary_heap
-class MinHeap {
-  constructor(sort) {
-    this.sort = sort;
+class BinaryHeap {
+  constructor() {
     this.data = [];
   }
 
-  /**
-   *
-   *
-   * @param {Number} key
-   *   The primary key to sort on
-   * @param {Object} value
-   *   The stored values in this node
-   */
   insert(key, value) {
-    // Add the new data
-    let index = this.data.length;
     let node = new HeapNode(key, value);
     this.data.push(node);
-    debug('insert', node);
 
-    // compare with parent
-    let parent;
     let temp;
-    while ((parent = this.getNode(this.getParent(index))) && parent) {
-      debug('insert parent', parent, node, index);
-      if (parent.key > node.key) {
-        temp = node;
-        node = parent;
-        parent = temp;
-        index = this.getParent(index);
-        continue;
-      }
-
-      break;
+    let index = this.data.length;
+    let parent = this.getNode(this.parent(index));
+    while (index >= 0 && parent && parent.key < node.key) {
+      temp = parent;
+      parent = node;
+      node = temp;
+      index = this.parent(index);
     }
   }
 
-  minHeap(index) {
-    debug(`minHeap ${index}`, this.data.length);
-
-    // rebalance
-    let node;
-    let left;
-    let right;
-    let temp;
-    while ((node = this.getNode(index)) && node) {
-      // node = this.getNode(index);
-      left = this.getNode(this.getLeft(index));
-      right = this.getNode(this.getRight(index));
-
-      // escape if node doesnt exist anymore
-      if (!node) break;
-
-      // attempt left swap first
-      if (left && node.key > left.key) {
-        debug('minHeap swap left', node.key, left.key);
-        temp = left;
-        left = node;
-        node = temp;
-        index = this.getLeft(index);
-        this.minHeap(index);
-      }
-
-      // now right is smaller, swap
-      if (right && node.key > right.key) {
-        debug('minHeap swap left', node.key, right.key);
-        temp = right;
-        right = node;
-        node = temp;
-        index = this.getRight(index);
-        this.minHeap(index);
-      }
-
-      // if (!left && !right)
-      break;
-    }
-  }
-
-  /**
-   * Removes the node with the smallest key.
-   *
-   * @returns {Object|undefined}
-   */
-  remove() {
-    // get the first element, smallest, store for return.
-    let out = this.getNode(0);
-    delete this.data[0];
-    if (!out) return;
-
-    // set the head to the end node and rebalance
+  extractMin() {
+    if (this.data.length <= 0) return undefined;
+    let min = this.data[0];
+    this.data[0] = undefined;
     let temp = this.data.pop();
-    if (temp != undefined) {
+    if (!temp) {
+      this.data = [];
+    } else {
       this.data[0] = temp;
-      this.minHeap(0);
+    }
+    this.minHeap();
+    return min;
+  }
+
+  minHeap(index = 0) {
+    let min;
+    let left = this.getNode(this.left(index));
+    let right = this.getNode(this.right(index));
+    let current = this.getNode(index);
+
+    if (left && current && left.key < current.key) {
+      min = this.left(index);
+    } else {
+      min = index;
     }
 
-    debug('heap remove', out, this.data.length, temp);
-    return out;
+    current = this.getNode(min);
+    if (right && current && right.key < current.key) {
+      min = this.right(index);
+    }
+
+    if (min != index) {
+      let temp = this.data[index];
+      this.data[index] = this.data[min];
+      this.data[min] = temp;
+      return this.minHeap(min);
+    }
+  }
+
+  left(index) {
+    return 2 * index + 1 || undefined;
+  }
+
+  right(index) {
+    return 2 * index + 2 || undefined;
+  }
+
+  parent(index) {
+    return parseInt(index - 1 / 2) || undefined;
+  }
+
+  getNode(index) {
+    return this.data[index] || undefined;
   }
 
   /**
@@ -518,23 +493,7 @@ class MinHeap {
    *   Any matching nodes
    */
   getNodesByKey(key) {
-    return this.data.map((node) => node.key == key);
-  }
-
-  getNode(index) {
-    return this.data[index] || undefined;
-  }
-
-  getParent(nodeIndex) {
-    return parseInt(nodeIndex - 1 / 2) || undefined;
-  }
-
-  getLeft(nodeIndex) {
-    return 2 * nodeIndex + 1 || undefined;
-  }
-
-  getRight(nodeIndex) {
-    return 2 * nodeIndex + 2 || undefined;
+    return this.data.filter((node) => node.key == key);
   }
 }
 
@@ -624,8 +583,11 @@ module.exports = Object.assign(
       let grid = new Grid(5, 5);
       grid.start();
 
-      debug('grid', grid);
-
+      for (let a = 0; a < grid.tiles.length; a++) {
+        if (a < grid.tiles[1].length - 1) {
+          grid.tiles[1][a].walk = false;
+        }
+      }
       let path = grid.findPath(0, 0, 2, 2);
       return res.json(path);
     },
