@@ -1,5 +1,5 @@
 import state from './state';
-import { exit, error, info, debug, all } from '../shared/variables';
+import { exit, error, info, debug, all, TILE_HEIGHT, TILE_WIDTH } from '../shared/variables';
 
 export class Component {
   constructor() {
