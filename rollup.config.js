@@ -1,3 +1,4 @@
+import { terser } from 'rollup-plugin-terser';
 export default [
   {
     input: 'public/client/index.js',
@@ -6,6 +7,7 @@ export default [
       file: 'public/client.js',
       format: 'umd',
     },
+    plugins: [terser()],
   },
   {
     input: 'public/server/index.js',
@@ -14,5 +16,6 @@ export default [
       file: 'public/server.js',
       format: 'umd',
     },
+    plugins: [terser()],
   },
 ];
