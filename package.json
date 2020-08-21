@@ -9,7 +9,8 @@
     "start": "node index.js",
     "start:dev": "nodemon",
     "test": "mocha test",
-    "format": "prettier --write public/"
+    "format": "prettier --write public/",
+    "build": "rollup"
   },
   "keywords": [
     "js13kgames",
