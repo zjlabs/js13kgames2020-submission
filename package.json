@@ -7,7 +7,7 @@
   "private": "true",
   "scripts": {
     "start": "node index.js",
-    "start:dev": "nodemon",
+    "start:dev": "concurrently 'nodemon' && 'npm run build:dev'",
     "test": "mocha test",
     "format": "prettier --write public/",
     "build": "rollup -c --compact",
@@ -37,10 +37,14 @@
     "sqlite3": "^5.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^5.0.2",
+    "concurrently": "^5.3.0",
     "mocha": "^8.1.1",
     "nodemon": "^2.0.4",
     "prettier": "^2.0.5",
     "rollup": "^2.26.4",
-    "rollup-plugin-terser": "^7.0.0"
+    "rollup-plugin-terser": "^7.0.0",
+    "tslib": "^2.0.1",
+    "typescript": "^4.0.2"
   }
 }

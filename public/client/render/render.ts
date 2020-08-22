@@ -1,10 +1,10 @@
-import { getAngleRadiansFromDegrees } from '../math-utilities.js';
-import { getState } from '../state.js';
-import { renderBackground } from './background.js';
-import { createCanvas } from './canvas.js';
-import { renderGrid } from './grid.js';
-import { renderPlayer } from './player.js';
-import { clearCanvas } from './render-utilities.js';
+import { getAngleRadiansFromDegrees } from '../math-utilities';
+import { getState } from '../state';
+import { renderBackground } from './background';
+import { createCanvas } from './canvas';
+import { renderGrid } from './grid';
+import { renderPlayer } from './player';
+import { clearCanvas } from './render-utilities';
 
 const { ctx, width, height } = createCanvas();
 
