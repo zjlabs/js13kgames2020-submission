@@ -1,15 +1,24 @@
 import { getAngleRadiansFromDegrees } from '../math-utilities';
-import { getState } from '../state';
-import { renderBackground } from './background';
-import { createCanvas } from './canvas';
+import { getPlayerState } from '../state';
 import { renderGrid } from './grid';
 import { renderPlayer } from './player';
 import { clearCanvas } from './render-utilities';
-
-const { ctx, width, height } = createCanvas();
+import { getCanvas } from './canvas';
+import { renderBackground } from './background';
 
 export function renderGame() {
-  const { mouseAngleDegrees } = getState();
+  const { ctx, width, height } = getCanvas();
+  const playerState = getPlayerState();
+
+  if (width === 0 || height === 0) {
+    return;
+  }
+
+  if (playerState == null) {
+    return;
+  }
+
+  const { mouseAngleDegrees } = playerState;
   clearCanvas(ctx, width, height);
 
   renderBackground(ctx, width, height, getAngleRadiansFromDegrees(mouseAngleDegrees));

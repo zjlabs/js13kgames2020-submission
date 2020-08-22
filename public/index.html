@@ -8,10 +8,13 @@
   </head>
   <body>
     <span id="stats--mouseangle"></span>
-    <span> </span>
+    <label id="username-input-label">
+      Username
+      <input id="username-input" type="text" />
+    </label>
+    <button id="start-button" type="button">Play Game</button>
     <span id="stats--fps"></span>
     <div id="root"></div>
-
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="/shared.js"></script>
     <script type="module" src="/client.js"></script>

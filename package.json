@@ -7,7 +7,7 @@
   "private": "true",
   "scripts": {
     "start": "node index.js",
-    "start:dev": "concurrently 'nodemon' && 'npm run build:dev'",
+    "start:dev": "concurrently 'nodemon' 'npm run build:dev'",
     "test": "mocha test",
     "format": "prettier --write public/",
     "build": "rollup -c --compact",
@@ -32,12 +32,13 @@
     "mysql2": "^2.1.0",
     "pg": "^8.3.0",
     "pg-hstore": "^2.3.3",
+    "rollup-plugin-typescript2": "^0.27.2",
     "sequelize": "^6.3.3",
     "socket.io": "^2.3.0",
     "sqlite3": "^5.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-typescript": "^5.0.2",
+    "@types/socket.io-client": "^1.4.33",
     "concurrently": "^5.3.0",
     "mocha": "^8.1.1",
     "nodemon": "^2.0.4",
