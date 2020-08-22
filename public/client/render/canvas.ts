@@ -1,4 +1,5 @@
 import { info } from '../../shared/variables';
+import { initializeBackground } from './background';
 
 const rootEl = document.getElementById('root');
 
@@ -24,6 +25,9 @@ function createCanvas(): GameCanvas {
 
   canvasEl.setAttribute('width', constraint.toString());
   canvasEl.setAttribute('height', constraint.toString());
+
+  // TODO: Do this somewhere else!!!!!!!!!!!
+  initializeBackground(rootWidth, rootHeight);
 
   rootEl.append(canvasEl);
 
