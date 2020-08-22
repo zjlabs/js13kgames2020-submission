@@ -1,13 +1,15 @@
+import typescript from '@rollup/plugin-typescript';
 import { terser } from 'rollup-plugin-terser';
+
 export default [
   {
-    input: 'public/client/index.js',
-    watch: 'public/{client,shared}/**.js',
+    input: 'public/client/index.ts',
+    watch: 'public/{client,shared}/**.(js|ts)',
     output: {
       file: 'public/client.js',
-      format: 'umd',
+      format: 'iife',
     },
-    plugins: [terser()],
+    plugins: [typescript(), terser()],
   },
   {
     input: 'public/server/index.js',

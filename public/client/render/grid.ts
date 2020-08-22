@@ -1,4 +1,4 @@
-import { renderLine, renderStrokedRectangle } from './primitive-shapes.js';
+import { renderLine, renderStrokedRectangle } from './primitive-shapes';
 
 export function renderBoundingBox(canvasContext, xTopLeft, yTopLeft, xBottomRight, yBottomRight, strokeStyle) {
   const strokeWidth = 1;

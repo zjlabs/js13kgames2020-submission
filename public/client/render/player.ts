@@ -1,6 +1,6 @@
-import { renderBoundingBox } from './grid.js';
-import { renderLine, renderStrokedEllipse } from './primitive-shapes.js';
-import { completeRender, startRender } from './render-utilities.js';
+import { renderBoundingBox } from './grid';
+import { renderLine, renderStrokedEllipse } from './primitive-shapes';
+import { completeRender, startRender } from './render-utilities';
 
 export function renderPlayer(canvasContext, xPosition, yPosition, angleRadians, primaryColor, secondaryColor) {
   startRender(canvasContext, xPosition, yPosition, angleRadians, 60, 60);

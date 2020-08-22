@@ -1,4 +1,10 @@
-let state = {};
+export interface State {
+  mouseAngleDegrees: number;
+}
+
+let state: State = {
+  mouseAngleDegrees: 0,
+};
 
 export function getState() {
   return state;

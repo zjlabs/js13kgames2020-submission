@@ -1,5 +1,5 @@
-import { renderFilledRectangle, renderFilledTriangle } from './primitive-shapes.js';
-import { completeRender, startRender } from './render-utilities.js';
+import { renderFilledRectangle, renderFilledTriangle } from './primitive-shapes';
+import { completeRender, startRender } from './render-utilities';
 
 const triangleSidePx = 32;
 const patternPaddingPx = 8;
@@ -52,7 +52,7 @@ export function renderBackground(ctx, width, height, angleRadians = 0) {
   completeRender(ctx);
 
   // Render triangle pattern.
-  const { x, y } = getMovementOffset(angleRadians, width, height);
+  const { x, y } = getMovementOffset(angleRadians);
 
   // TODO: Figure out why the f88888888888k this works if I multiply by -8.
   for (

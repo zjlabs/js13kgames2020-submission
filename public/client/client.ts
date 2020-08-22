@@ -1,4 +1,4 @@
-import { render, tick } from './game-loop.js';
+import { render, tick } from './game-loop';
 
 // Kick off render cycle.
 render();

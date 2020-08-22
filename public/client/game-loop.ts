@@ -1,7 +1,7 @@
-import configuration from './configuration.js';
-import { getMouseAngle } from './input.js';
-import { renderGame } from './render/render.js';
-import { setStateItem } from './state.js';
+import configuration from './configuration';
+import { getMouseAngle } from './input';
+import { renderGame } from './render/render';
+import { setStateItem } from './state';
 
 // MS per game tick.
 const statsFpsEl = document.getElementById('stats--fps');
