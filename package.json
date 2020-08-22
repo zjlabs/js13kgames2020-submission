@@ -9,7 +9,9 @@
     "start": "node index.js",
     "start:dev": "nodemon",
     "test": "mocha test",
-    "format": "prettier --write public/"
+    "format": "prettier --write public/",
+    "build": "rollup -c --compact",
+    "build:dev": "rollup -c -w --compact"
   },
   "keywords": [
     "js13kgames",
@@ -35,8 +37,10 @@
     "sqlite3": "^5.0.0"
   },
   "devDependencies": {
-    "mocha": "^8.0.1",
+    "mocha": "^8.1.1",
     "nodemon": "^2.0.4",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "rollup": "^2.26.4",
+    "rollup-plugin-terser": "^7.0.0"
   }
 }
