@@ -1,5 +1,5 @@
 import state from './state';
-import { exit, error, info, debug, all, TILE_HEIGHT, TILE_WIDTH } from '../shared/variables';
+import { debug, TILE_HEIGHT, TILE_WIDTH } from '../shared/variables';
 
 export class Component {
   constructor() {
@@ -31,6 +31,19 @@ export class Entity extends Component {
 
     return undefined;
   }
+
+  getPojo() {
+    return Object.keys(this).reduce((acc, key) => {
+      if (this.unSerializableKeys != null && this.unSerializableKeys.includes(key)) {
+        return acc;
+      }
+
+      return {
+        ...acc,
+        [key]: this.get(key),
+      };
+    }, {});
+  }
 }
 
 export class Player extends Entity {
@@ -48,10 +61,12 @@ export class Player extends Entity {
     this.xp = 0;
     this.level = 1;
     this.health = 10;
-    this.items = [];
+    this.items = {};
     this.bot = false;
     this.skin = 0;
-    this.powerups = [];
+    this.powerups = {};
+
+    this.unSerializableKeys = ['components', 'unSerializableKeys', 'socket'];
   }
 
   update(deltaTime) {}

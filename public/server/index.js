@@ -1,6 +1,6 @@
 import state from './state';
-import { Player, Game, Grid } from './entities';
-import { STATS, TEST, TICK_TIME, exit, error, info, debug, all } from '../shared/variables';
+import { Game, Grid, Player } from './entities';
+import { all, debug, STATS, TEST, TICK_TIME } from '../shared/variables';
 
 /**
  * Handle incoming connections.
@@ -13,14 +13,16 @@ io.on('connection', (socket) => {
     debug('Disconnected', socket.id);
   });
 
-  socket.on('play', () => {
-    state.addPlayer(socket, player);
-  });
-
   socket.on('data', (obj) => {
     state.updatePlayer(socket, obj);
+    debug('Data', socket.id);
   });
 
+  socket.on('play', (obj) => {
+    state.updatePlayer(socket, obj);
+    state.sync(socket.id);
+    debug('Play', socket.id);
+  });
   debug('Connected', socket.id);
 });
 
@@ -51,12 +53,12 @@ const tick = () => {
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
   sleep = Math.max(TICK_TIME - elapsed, 0);
-  debug('TICK');
-  debug('delta', delta);
-  debug('current', current);
-  debug('last', last);
-  debug('elapsed', elapsed);
-  debug('sleep', sleep);
+  all('TICK');
+  all('delta', delta);
+  all('current', current);
+  all('last', last);
+  all('elapsed', elapsed);
+  all('sleep', sleep);
   STATS && io.emit('stats', { delta, current, last, elapsed, sleep });
   setTimeout(tick, sleep);
 };

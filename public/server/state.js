@@ -1,4 +1,5 @@
-import { exit, error, info, debug, all } from '../shared/variables';
+import { debug } from '../shared/variables';
+import { Player } from './entities';
 
 /**
  * The game state model
@@ -10,12 +11,10 @@ const colliders = {};
 let delta;
 
 export default {
-  addPlayer(socket, player) {
-    players[socket.id] = player;
-    debug('addPlayer', socket.id);
-  },
   updatePlayer(socket, obj) {
-    if (!players[socket.id]) return;
+    if (!players[socket.id]) {
+      players[socket.id] = new Player(socket);
+    }
 
     // update the player delta for every different key:value pair
     Object.keys(obj).forEach((key) => {
@@ -24,14 +23,17 @@ export default {
 
       if (oldVal != newVal) {
         players[socket.id].set(key, newVal);
-        delta.players[socket.id] = Object.assign(players[socket.id], { [key]: newVal });
+        delta.players[socket.id] = players[socket.id].getPojo();
       }
     });
     debug('updatePlayer', socket.id, obj, delta.players[socket.id]);
   },
   removePlayer(socket) {
-    delete players[socket.id];
-    delta.players[socket.id].set('active', false);
+    // TODO: Implement cleanup routine.
+    if (players[socket.id] != null) {
+      players[socket.id].set('active', false);
+    }
+
     debug('removePlayer', socket.id);
   },
   getPlayer(id = undefined) {
@@ -53,7 +55,17 @@ export default {
   },
   sync(id) {
     debug('sync', id);
-    io.to(id).emit('sync', { rooms, players, items, colliders });
+    io.to(id).emit('sync', {
+      rooms,
+      players: Object.keys(players).reduce((acc, key) => {
+        return {
+          ...acc,
+          [key]: players[key].getPojo(),
+        };
+      }, {}),
+      items,
+      colliders,
+    });
   },
   getDelta() {
     let out = delta;

@@ -1,16 +1,31 @@
 import configuration from './configuration';
 import { getMouseAngle } from './input';
 import { renderGame } from './render/render';
-import { setStateItem } from './state';
+import { getPlayerState, setPlayerStateItem } from './state';
+import { sendDataAction } from './socket/actions';
+import { getSocket } from './socket/socket';
+import { getDiff } from './object-utilities';
 
 // MS per game tick.
 const statsFpsEl = document.getElementById('stats--fps');
 
 export function tick() {
   const tickStart = Date.now();
+  const currentPlayerState = getPlayerState();
 
-  // Update state with input state.
-  setStateItem('mouseAngleDegrees', getMouseAngle());
+  if (currentPlayerState != null) {
+    // Update state with input state.
+    setPlayerStateItem('mouseAngleDegrees', getMouseAngle());
+
+    const updatedPlayerState = getPlayerState();
+
+    const diff = getDiff(currentPlayerState, updatedPlayerState);
+
+    if (diff != null) {
+      // Update server with input state.
+      sendDataAction(getSocket(), diff);
+    }
+  }
 
   // Wait until the next tick.
   setTimeout(tick, configuration.gameLoopTickMs - (Date.now() - tickStart));
