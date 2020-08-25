@@ -7,7 +7,7 @@
   "private": "true",
   "scripts": {
     "start": "node index.js",
-    "start:dev": "concurrently 'nodemon' 'npm run build:dev'",
+    "start:dev": "concurrently 'nodemon' 'npm:build:dev'",
     "test": "mocha test",
     "format": "prettier --write public/",
     "build": "rollup -c --compact",
