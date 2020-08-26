@@ -308,7 +308,9 @@ export class Game extends Component {
 
   start() {}
 
-  update(deltaTime) {}
+  update(deltaTime) {
+    this.components.forEach((component = component.update(deltaTime)));
+  }
 
   syncState() {
     io.emit('delta', state.getDelta());
