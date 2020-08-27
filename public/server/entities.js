@@ -92,8 +92,8 @@ export class Player extends Entity {
   }
 
   update(deltaTime) {
-    this.x += Math.cos(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0;
-    this.y += Math.sin(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0;
+    this.x += Math.cos(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
+    this.y += Math.sin(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
 
     // update all the children components
     this.components.forEach((component) => component.update(deltaTime));

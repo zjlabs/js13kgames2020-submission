@@ -1,7 +1,6 @@
 import state from './state';
 import { Game, Grid, Player } from './entities';
 import { all, debug, STATS, TEST, TICK_TIME } from '../shared/variables';
-import { stat } from 'fs';
 
 /**
  * Init game
