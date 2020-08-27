@@ -17,13 +17,16 @@ export default {
     }
 
     // update the player delta for every different key:value pair
+    console.log(Object.keys(obj));
     Object.keys(obj).forEach((key) => {
       let oldVal = players[socket.id].get(key);
       let newVal = obj[key];
 
+      console.log(`DIFF: ${key}, ${oldVal} -> ${newVal}`);
       if (oldVal != newVal) {
         players[socket.id].set(key, newVal);
         delta.players[socket.id] = players[socket.id].getPojo();
+        console.log('real', players[socket.id].getPojo());
       }
     });
     debug('updatePlayer', socket.id, obj, delta.players[socket.id]);
@@ -79,6 +82,12 @@ export default {
     return out || delta;
   },
   all() {
-    return { rooms, players, items, colliders, delta };
+    return {
+      rooms,
+      players: Object.keys(players).map((id) => ({ [id]: players[id].getPojo() })),
+      items,
+      colliders,
+      delta,
+    };
   },
 };

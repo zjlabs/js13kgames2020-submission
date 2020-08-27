@@ -1,6 +1,7 @@
 import state from './state';
 import { Game, Grid, Player } from './entities';
 import { all, debug, STATS, TEST, TICK_TIME } from '../shared/variables';
+import { stat } from 'fs';
 
 /**
  * Init game
@@ -15,19 +16,19 @@ io.on('connection', (socket) => {
   const player = new Player(socket);
 
   socket.on('disconnect', () => {
-    state.removePlayer(socket);
     debug('Disconnected', socket.id);
+    state.removePlayer(socket);
   });
 
   socket.on('data', (obj) => {
+    debug('Data', socket.id, obj);
     state.updatePlayer(socket, obj);
-    debug('Data', socket.id);
   });
 
   socket.on('play', (obj) => {
+    debug('Play', socket.id);
     state.updatePlayer(socket, obj);
     state.sync(socket.id);
-    debug('Play', socket.id);
   });
   debug('Connected', socket.id);
   game.addComponent(player);

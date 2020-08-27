@@ -75,8 +75,10 @@ export class Player extends Entity {
   }
 
   update(deltaTime) {
-    this.x += Math.cos(this.mouseAngleDegrees) * this.speed * deltaTime;
-    this.y += Math.sin(this.mouseAngleDegrees) * this.speed * deltaTime;
+    this.x += Math.cos(this.mouseAngleDegrees) * (this.speed / deltaTime) || 0;
+    this.y += Math.sin(this.mouseAngleDegrees) * (this.speed / deltaTime) || 0;
+    console.log('UPDATE', this.x, this.y);
+    console.log('dir', this.mouseAngleDegrees, Math.cos(this.mouseAngleDegrees), Math.sin(this.mouseAngleDegrees));
   }
 }
 
