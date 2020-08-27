@@ -7,7 +7,6 @@ import { stat } from 'fs';
  * Init game
  */
 const game = new Game();
-game.start();
 
 /**
  * Handle incoming connections.
@@ -83,7 +82,6 @@ module.exports = Object.assign(
   TEST && {
     path: (req, res, next) => {
       let grid = new Grid(5, 5);
-      grid.start();
 
       for (let a = 0; a < grid.tiles.length; a++) {
         if (a < grid.tiles[1].length - 1) {

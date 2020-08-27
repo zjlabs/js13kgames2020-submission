@@ -29,8 +29,6 @@ export class Component {
     }
   }
 
-  start() {}
-
   update(deltaTime) {
     this.component.forEach((component) => component.update(deltaTime));
   }
@@ -123,10 +121,7 @@ export class Grid extends Component {
     this.height = height;
     this.width = width;
     this.tiles = [];
-  }
 
-  start() {
-    this.tiles = [];
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
         this.tiles[x] = this.tiles[x] || [];
@@ -332,10 +327,7 @@ export class Grid extends Component {
 export class Game extends Component {
   constructor() {
     super();
-    console.log('------------------- START -----------------------');
   }
-
-  start() {}
 
   update(deltaTime) {
     this.components.forEach((component) => component.update(deltaTime));
