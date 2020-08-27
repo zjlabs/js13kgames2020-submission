@@ -3,6 +3,12 @@ import { Game, Grid, Player } from './entities';
 import { all, debug, STATS, TEST, TICK_TIME } from '../shared/variables';
 
 /**
+ * Init game
+ */
+const game = new Game();
+game.start();
+
+/**
  * Handle incoming connections.
  */
 io.on('connection', (socket) => {
@@ -24,13 +30,8 @@ io.on('connection', (socket) => {
     debug('Play', socket.id);
   });
   debug('Connected', socket.id);
+  game.addComponent(player);
 });
-
-/**
- * Init game
- */
-const game = new Game();
-game.start();
 
 // Start the game loop
 let delta = 0;

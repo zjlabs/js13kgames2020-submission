@@ -11,7 +11,10 @@ export class Component {
   }
 
   start() {}
-  update(deltaTime) {}
+
+  update(deltaTime) {
+    this.component.forEach((component) => component.update(deltaTime));
+  }
 }
 
 export class Entity extends Component {
@@ -71,7 +74,10 @@ export class Player extends Entity {
     this.unSerializableKeys = ['components', 'unSerializableKeys', 'socket'];
   }
 
-  update(deltaTime) {}
+  update(deltaTime) {
+    this.x += Math.cos(this.mouseAngleDegrees) * this.speed * deltaTime;
+    this.y += Math.sin(this.mouseAngleDegrees) * this.speed * deltaTime;
+  }
 }
 
 export class Tile {
@@ -309,7 +315,7 @@ export class Game extends Component {
   start() {}
 
   update(deltaTime) {
-    this.components.forEach((component = component.update(deltaTime)));
+    this.components.forEach((component) => component.update(deltaTime));
   }
 
   syncState() {
