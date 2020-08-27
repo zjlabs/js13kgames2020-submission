@@ -1,8 +1,5 @@
-import { getDiff } from '../client/object-utilities';
-import { get } from 'http';
-
 let num = 0;
 
-export function get() {
+export function getId() {
   return num++;
 }

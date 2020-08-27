@@ -13,7 +13,7 @@ game.start();
  * Handle incoming connections.
  */
 io.on('connection', (socket) => {
-  const player = new Player(socket);
+  const player = state.addPlayer(socket);
 
   socket.on('disconnect', () => {
     debug('Disconnected', socket.id);

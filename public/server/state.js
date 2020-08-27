@@ -11,11 +11,11 @@ const colliders = {};
 let delta;
 
 export default {
+  addPlayer(socket) {
+    players[socket.id] = players[socket.id] || new Player(socket);
+    return players[socket.id];
+  },
   updatePlayer(socket, obj) {
-    if (!players[socket.id]) {
-      players[socket.id] = new Player(socket);
-    }
-
     // update the player delta for every different key:value pair
     Object.keys(obj).forEach((key) => {
       let oldVal = players[socket.id].get(key);
@@ -25,7 +25,6 @@ export default {
       if (oldVal != newVal) {
         players[socket.id].set(key, newVal);
         delta.players[socket.id] = players[socket.id].getPojo();
-        console.log('real', players[socket.id].getPojo());
       }
     });
     debug('updatePlayer', socket.id, players[socket.id].getPojo());

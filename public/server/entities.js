@@ -1,11 +1,10 @@
 import state from './state';
 import { debug, error, TILE_HEIGHT, TILE_WIDTH } from '../shared/variables';
-import { get } from '../shared/id';
-import { relative } from 'path';
+import { getId } from '../shared/id';
 
 export class Component {
   constructor() {
-    this.id = get();
+    this.id = getId();
     this.components = [];
   }
 
@@ -19,7 +18,9 @@ export class Component {
   }
 
   removeComponent(remove, deep = false) {
-    this.components = this.components.filter((component) => component.id != remove.id);
+    this.components = this.components.filter((component) =>
+      component.id != remove.hasOwnProperty('id') ? remove.id : remove
+    );
 
     if (deep) {
       this.components.map((component) => {
@@ -94,17 +95,15 @@ export class Player extends Entity {
 
   update(deltaTime) {
     // if this parent is not active, ensure all the children are also not active.
-    if (!this.active) {
-      this.components.map((component) => {
-        component.active = false;
-      });
-      return;
-    }
+    // if (!this.active) {
+    //   this.components.map((component) => {
+    //     component.active = false;
+    //   });
+    //   return;
+    // }
 
     this.set('x', Math.cos(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0);
     this.set('y', Math.sin(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0);
-    console.log('UPDATE', this.x, this.y, this.id, this.active);
-    console.log('dir', this.mouseAngleDegrees, Math.cos(this.mouseAngleDegrees), Math.sin(this.mouseAngleDegrees));
 
     // update all the children components
     this.components.forEach((component) => component.update(deltaTime));
@@ -341,6 +340,7 @@ export class Grid extends Component {
 export class Game extends Component {
   constructor() {
     super();
+    console.log('------------------- START -----------------------');
   }
 
   start() {}
@@ -355,8 +355,7 @@ export class Game extends Component {
 
   pruneInactiveEntities() {
     let old = [].concat(state.prunePlayers());
-
-    this.components = this.components.filter((component) => component.id);
+    old.forEach((c) => this.removeComponent(c));
   }
 }
 
