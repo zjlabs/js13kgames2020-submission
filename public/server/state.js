@@ -17,7 +17,6 @@ export default {
     }
 
     // update the player delta for every different key:value pair
-    console.log(Object.keys(obj));
     Object.keys(obj).forEach((key) => {
       let oldVal = players[socket.id].get(key);
       let newVal = obj[key];
@@ -29,7 +28,7 @@ export default {
         console.log('real', players[socket.id].getPojo());
       }
     });
-    debug('updatePlayer', socket.id, obj, delta.players[socket.id]);
+    debug('updatePlayer', socket.id, players[socket.id].getPojo());
   },
   removePlayer(socket) {
     // TODO: Implement cleanup routine.
@@ -50,11 +49,15 @@ export default {
     return undefined;
   },
   prunePlayers() {
+    let out = [];
     Object.keys(players).forEach((id) => {
       if (players[id].get('active') == false) {
         delete players[id];
+        out.push(id);
       }
     });
+
+    return out;
   },
   sync(id) {
     debug('sync', id);

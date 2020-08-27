@@ -1,13 +1,31 @@
 import state from './state';
-import { debug, TILE_HEIGHT, TILE_WIDTH } from '../shared/variables';
+import { debug, error, TILE_HEIGHT, TILE_WIDTH } from '../shared/variables';
+import { get } from '../shared/id';
+import { relative } from 'path';
 
 export class Component {
   constructor() {
+    this.id = get();
     this.components = [];
   }
 
   addComponent(component) {
+    if (!component instanceof Component) {
+      error('Only components can be added as child components!');
+      return;
+    }
+
     this.components.push(component);
+  }
+
+  removeComponent(remove, deep = false) {
+    this.components = this.components.filter((component) => component.id != remove.id);
+
+    if (deep) {
+      this.components.map((component) => {
+        component.removeComponent(remove, deep);
+      });
+    }
   }
 
   start() {}
@@ -75,10 +93,21 @@ export class Player extends Entity {
   }
 
   update(deltaTime) {
-    this.x += Math.cos(this.mouseAngleDegrees) * (this.speed / deltaTime) || 0;
-    this.y += Math.sin(this.mouseAngleDegrees) * (this.speed / deltaTime) || 0;
-    console.log('UPDATE', this.x, this.y);
+    // if this parent is not active, ensure all the children are also not active.
+    if (!this.active) {
+      this.components.map((component) => {
+        component.active = false;
+      });
+      return;
+    }
+
+    this.set('x', Math.cos(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0);
+    this.set('y', Math.sin(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0);
+    console.log('UPDATE', this.x, this.y, this.id, this.active);
     console.log('dir', this.mouseAngleDegrees, Math.cos(this.mouseAngleDegrees), Math.sin(this.mouseAngleDegrees));
+
+    // update all the children components
+    this.components.forEach((component) => component.update(deltaTime));
   }
 }
 
@@ -325,7 +354,9 @@ export class Game extends Component {
   }
 
   pruneInactiveEntities() {
-    state.prunePlayers();
+    let old = [].concat(state.prunePlayers());
+
+    this.components = this.components.filter((component) => component.id);
   }
 }
 
