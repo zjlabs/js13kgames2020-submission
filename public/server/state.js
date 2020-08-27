@@ -21,7 +21,6 @@ export default {
       let oldVal = players[socket.id].get(key);
       let newVal = obj[key];
 
-      console.log(`DIFF: ${key}, ${oldVal} -> ${newVal}`);
       if (oldVal != newVal) {
         players[socket.id].set(key, newVal);
         delta.players[socket.id] = players[socket.id].getPojo();

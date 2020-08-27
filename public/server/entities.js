@@ -94,16 +94,8 @@ export class Player extends Entity {
   }
 
   update(deltaTime) {
-    // if this parent is not active, ensure all the children are also not active.
-    // if (!this.active) {
-    //   this.components.map((component) => {
-    //     component.active = false;
-    //   });
-    //   return;
-    // }
-
-    this.set('x', Math.cos(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0);
-    this.set('y', Math.sin(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0);
+    this.x += Math.cos(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0;
+    this.y += Math.sin(this.mouseAngleDegrees) * (deltaTime / this.speed) || 0;
 
     // update all the children components
     this.components.forEach((component) => component.update(deltaTime));
