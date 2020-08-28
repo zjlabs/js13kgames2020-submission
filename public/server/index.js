@@ -7,6 +7,15 @@ import { all, debug, STATS, TEST, TICK_TIME } from '../shared/variables';
  */
 const game = new Game();
 
+// start testing code
+let combatBot = state.addPlayer({ id: 'bot1' });
+combatBot.x = 0;
+combatBot.y = 0;
+combatBot.frozen = true;
+combatBot.bot = true;
+game.addComponent(combatBot);
+// end testing code
+
 /**
  * Handle incoming connections.
  */
