@@ -39,3 +39,7 @@ html, body {
   top: 1rem;
   position: absolute;
 }
+
+.statistics > span {
+  display: block;
+}
