@@ -327,6 +327,7 @@ export class Grid extends Component {
 export class Game extends Component {
   constructor() {
     super();
+    state.getDelta();
   }
 
   update(deltaTime) {
@@ -334,7 +335,7 @@ export class Game extends Component {
   }
 
   syncState() {
-    io.emit('delta', state.getDelta());
+    io.emit('delta', state.all());
   }
 
   pruneInactiveEntities() {
