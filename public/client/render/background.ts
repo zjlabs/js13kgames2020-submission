@@ -1,5 +1,4 @@
 import { renderFilledRectangle, renderFilledTriangle } from './primitive-shapes';
-import { completeRender, startRender } from './render-utilities';
 
 const triangleSidePx = 64;
 const patternPaddingPx = 8;
@@ -25,7 +24,7 @@ function getMovementOffsetVector(angleRadians) {
   };
 }
 
-function getMovementOffset(angleRadians: number, width: number, height: number) {
+function getMovementOffset(angleRadians: number) {
   const { x, y } = getMovementOffsetVector(angleRadians);
 
   movementOffsetPxX += x;
@@ -52,7 +51,7 @@ function getMovementOffset(angleRadians: number, width: number, height: number) 
 }
 
 export function renderBackground(ctx, width, height, angleRadians = 0) {
-  const { x, y } = getMovementOffset(angleRadians, width, height);
+  const { x, y } = getMovementOffset(angleRadians);
 
   ctx.drawImage(backgroundCanvas, (width / 2) * -1 + x, (height / 2) * -1 + y);
 }
