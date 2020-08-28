@@ -85,7 +85,7 @@ export default {
   all() {
     return {
       rooms,
-      players: Object.keys(players).map((id) => ({ [id]: players[id].getPojo() })),
+      players: Object.keys(players).reduce((acc, id) => ({ ...acc, [id]: players[id].getPojo() }), {}),
       items,
       colliders,
       delta,

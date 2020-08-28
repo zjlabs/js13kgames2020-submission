@@ -87,13 +87,16 @@ export class Player extends Entity {
     this.powerups = {};
     this.mouseAngleDegrees = 0;
     this.speed = 1;
+    this.frozen = false;
 
     this.unSerializableKeys = ['components', 'unSerializableKeys', 'socket'];
   }
 
   update(deltaTime) {
-    this.x += Math.cos(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
-    this.y += Math.sin(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
+    if (!this.frozen) {
+      this.x += Math.cos(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
+      this.y += Math.sin(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
+    }
 
     // update all the children components
     this.components.forEach((component) => component.update(deltaTime));
