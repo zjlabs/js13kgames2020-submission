@@ -1,9 +1,13 @@
+import { Player } from './models/player';
+
 export interface State {
   colliders?: any;
   items?: any;
   mouseAngleDegrees: number;
   playerId?: string;
-  players?: any;
+  players?: {
+    [key: string]: Player;
+  };
   rooms?: any;
 }
 
