@@ -11,11 +11,11 @@ const colliders = {};
 let delta;
 
 export default {
+  addPlayer(socket) {
+    players[socket.id] = players[socket.id] || new Player(socket);
+    return players[socket.id];
+  },
   updatePlayer(socket, obj) {
-    if (!players[socket.id]) {
-      players[socket.id] = new Player(socket);
-    }
-
     // update the player delta for every different key:value pair
     Object.keys(obj).forEach((key) => {
       let oldVal = players[socket.id].get(key);
@@ -26,7 +26,7 @@ export default {
         delta.players[socket.id] = players[socket.id].getPojo();
       }
     });
-    debug('updatePlayer', socket.id, obj, delta.players[socket.id]);
+    debug('updatePlayer', socket.id, players[socket.id].getPojo());
   },
   removePlayer(socket) {
     // TODO: Implement cleanup routine.
@@ -47,11 +47,15 @@ export default {
     return undefined;
   },
   prunePlayers() {
+    let out = [];
     Object.keys(players).forEach((id) => {
       if (players[id].get('active') == false) {
         delete players[id];
+        out.push(id);
       }
     });
+
+    return out;
   },
   sync(id) {
     debug('sync', id);
@@ -79,6 +83,12 @@ export default {
     return out || delta;
   },
   all() {
-    return { rooms, players, items, colliders, delta };
+    return {
+      rooms,
+      players: Object.keys(players).map((id) => ({ [id]: players[id].getPojo() })),
+      items,
+      colliders,
+      delta,
+    };
   },
 };

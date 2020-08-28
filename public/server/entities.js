@@ -1,17 +1,37 @@
 import state from './state';
-import { debug, TILE_HEIGHT, TILE_WIDTH } from '../shared/variables';
+import { debug, error, TILE_HEIGHT, TILE_WIDTH } from '../shared/variables';
+import { getId } from '../shared/id';
 
 export class Component {
   constructor() {
+    this.id = getId();
     this.components = [];
   }
 
   addComponent(component) {
+    if (!component instanceof Component) {
+      error('Only components can be added as child components!');
+      return;
+    }
+
     this.components.push(component);
   }
 
-  start() {}
-  update(deltaTime) {}
+  removeComponent(remove, deep = false) {
+    this.components = this.components.filter((component) =>
+      component.id != remove.hasOwnProperty('id') ? remove.id : remove
+    );
+
+    if (deep) {
+      this.components.map((component) => {
+        component.removeComponent(remove, deep);
+      });
+    }
+  }
+
+  update(deltaTime) {
+    this.component.forEach((component) => component.update(deltaTime));
+  }
 }
 
 export class Entity extends Component {
@@ -65,11 +85,19 @@ export class Player extends Entity {
     this.bot = false;
     this.skin = 0;
     this.powerups = {};
+    this.mouseAngleDegrees = 0;
+    this.speed = 1;
 
     this.unSerializableKeys = ['components', 'unSerializableKeys', 'socket'];
   }
 
-  update(deltaTime) {}
+  update(deltaTime) {
+    this.x += Math.cos(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
+    this.y += Math.sin(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
+
+    // update all the children components
+    this.components.forEach((component) => component.update(deltaTime));
+  }
 }
 
 export class Tile {
@@ -93,10 +121,7 @@ export class Grid extends Component {
     this.height = height;
     this.width = width;
     this.tiles = [];
-  }
 
-  start() {
-    this.tiles = [];
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
         this.tiles[x] = this.tiles[x] || [];
@@ -302,18 +327,20 @@ export class Grid extends Component {
 export class Game extends Component {
   constructor() {
     super();
+    state.getDelta();
   }
 
-  start() {}
-
-  update(deltaTime) {}
+  update(deltaTime) {
+    this.components.forEach((component) => component.update(deltaTime));
+  }
 
   syncState() {
-    io.emit('delta', state.getDelta());
+    io.emit('delta', state.all());
   }
 
   pruneInactiveEntities() {
-    state.prunePlayers();
+    let old = [].concat(state.prunePlayers());
+    old.forEach((c) => this.removeComponent(c));
   }
 }
 

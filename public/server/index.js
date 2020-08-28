@@ -3,34 +3,34 @@ import { Game, Grid, Player } from './entities';
 import { all, debug, STATS, TEST, TICK_TIME } from '../shared/variables';
 
 /**
- * Handle incoming connections.
- */
-io.on('connection', (socket) => {
-  const player = new Player(socket);
-
-  socket.on('disconnect', () => {
-    state.removePlayer(socket);
-    debug('Disconnected', socket.id);
-  });
-
-  socket.on('data', (obj) => {
-    state.updatePlayer(socket, obj);
-    debug('Data', socket.id);
-  });
-
-  socket.on('play', (obj) => {
-    state.updatePlayer(socket, obj);
-    state.sync(socket.id);
-    debug('Play', socket.id);
-  });
-  debug('Connected', socket.id);
-});
-
-/**
  * Init game
  */
 const game = new Game();
-game.start();
+
+/**
+ * Handle incoming connections.
+ */
+io.on('connection', (socket) => {
+  const player = state.addPlayer(socket);
+
+  socket.on('disconnect', () => {
+    debug('Disconnected', socket.id);
+    state.removePlayer(socket);
+  });
+
+  socket.on('data', (obj) => {
+    debug('Data', socket.id, obj);
+    state.updatePlayer(socket, obj);
+  });
+
+  socket.on('play', (obj) => {
+    debug('Play', socket.id);
+    state.updatePlayer(socket, obj);
+    state.sync(socket.id);
+  });
+  debug('Connected', socket.id);
+  game.addComponent(player);
+});
 
 // Start the game loop
 let delta = 0;
@@ -81,7 +81,6 @@ module.exports = Object.assign(
   TEST && {
     path: (req, res, next) => {
       let grid = new Grid(5, 5);
-      grid.start();
 
       for (let a = 0; a < grid.tiles.length; a++) {
         if (a < grid.tiles[1].length - 1) {
