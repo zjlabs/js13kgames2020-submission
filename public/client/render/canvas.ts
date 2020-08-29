@@ -21,23 +21,21 @@ function createCanvas(): GameCanvas {
   const rootHeight = rootEl.offsetHeight;
   const rootWidth = rootEl.offsetWidth;
 
-  const constraint = rootHeight < rootWidth ? rootHeight : rootWidth;
-
-  canvasEl.setAttribute('width', constraint.toString());
-  canvasEl.setAttribute('height', constraint.toString());
+  canvasEl.setAttribute('width', rootWidth.toString());
+  canvasEl.setAttribute('height', rootHeight.toString());
 
   // TODO: Do this somewhere else!!!!!!!!!!!
   initializeBackground(rootWidth, rootHeight);
 
   rootEl.append(canvasEl);
 
-  info('canvas created with width of', constraint, 'px and height of', constraint, 'px');
+  info('canvas created with width of', rootWidth, 'px and height of', rootHeight, 'px');
 
   return {
     ctx: canvasEl.getContext('2d'),
     el: canvasEl,
-    width: constraint,
-    height: constraint,
+    width: rootWidth,
+    height: rootHeight,
   };
 }
 

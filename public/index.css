@@ -19,8 +19,6 @@ html, body {
 
 #root canvas {
   display: block;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .sign-in-form {
