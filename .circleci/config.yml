@@ -22,5 +22,5 @@ jobs:
       - checkout
       - node/install-packages
       - run:
-          command: npm build
+          command: npm run build
           name: Build application.
