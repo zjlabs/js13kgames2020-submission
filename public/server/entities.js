@@ -46,7 +46,6 @@ export class Entity extends Component {
   constructor() {
     super();
     this.active = true;
-    this.collider = false;
   }
 
   set(key, val) {
@@ -73,6 +72,16 @@ export class Entity extends Component {
       };
     }, {});
   }
+
+  hasCollider() {
+    return false;
+  }
+
+  getCollider() {
+    return false;
+  }
+
+  onCollision(other) {}
 }
 
 export class Player extends Entity {
@@ -118,6 +127,12 @@ export class Player extends Entity {
   getCollider() {
     return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
   }
+
+  onCollision(other) {
+    if (other instanceof Tile) {
+    } else if (other instanceof Player) {
+    }
+  }
 }
 
 export class Tile extends Entity {
@@ -141,6 +156,8 @@ export class Tile extends Entity {
   getCollider() {
     return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
   }
+
+  onCollision(other) {}
 }
 
 export class Grid extends Component {
@@ -369,7 +386,7 @@ export class Game extends Component {
     }
 
     this.quadTree = new Quadtree();
-    collidables.forEach((component) => this.quadTree.insert(component));
+    collidables.forEach((component) => this.quadTree.insert(component.getCollider()));
   }
 
   getCollidables() {
@@ -390,7 +407,11 @@ export class Game extends Component {
 
     // check all collisions
     this.buildQuadtree();
-    this.getComponents().forEach((collider) => {});
+    this.getComponents().forEach((collider) => {
+      this.quadTree
+        .query(collider.getCollider())
+        .forEach((collision) => collider.data && collision.data && collider.data.onCollision(collision.data));
+    });
   }
 
   syncState() {
