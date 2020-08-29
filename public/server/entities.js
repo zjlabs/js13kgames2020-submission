@@ -137,6 +137,7 @@ export class Player extends Entity {
 
 export class Tile extends Entity {
   constructor(x, y, walk = true, height = TILE_HEIGHT, width = TILE_WIDTH) {
+    super();
     this.x = x;
     this.y = y;
     this.height = height;
@@ -145,7 +146,7 @@ export class Tile extends Entity {
   }
 
   // Getter for unique tile id
-  get id() {
+  get tid() {
     return `${this.x},${this.y}`;
   }
 
@@ -218,8 +219,8 @@ export class Grid extends Component {
   buildPath(nodeList, node) {
     debug('buildPath', nodeList, node);
     let out = [node];
-    while (nodeList[node.id]) {
-      node = nodeList[node.id];
+    while (nodeList[node.tid]) {
+      node = nodeList[node.tid];
       out.push(node);
     }
     return out.reverse();
@@ -256,14 +257,14 @@ export class Grid extends Component {
     let cameFrom = {};
 
     // For node n, gScore[n] is the cost of the cheapest path from start to n currently known.
-    let gScore = { [start.id]: 0 };
+    let gScore = { [start.tid]: 0 };
 
     // For node n, fScore[n] := gScore[n] + h(n). fScore[n] represents our current best guess as to
     // how short a path from start to finish can be if it goes through n.
-    let fScore = { [start.id]: this.heuristic(start, end) };
+    let fScore = { [start.tid]: this.heuristic(start, end) };
 
     // start the openset with the start node
-    open.insert(fScore[start.id], start);
+    open.insert(fScore[start.tid], start);
 
     let iter = 0;
     let node;
@@ -273,23 +274,23 @@ export class Grid extends Component {
       iter++;
       node = node.value;
       if (!node) break;
-      if (node.id == end.id) return this.buildPath(cameFrom, node);
+      if (node.tid == end.tid) return this.buildPath(cameFrom, node);
 
       this.getNeighbors(node.x, node.y).forEach((neighbor) => {
         // this path to neighbor is better than any previous one, record it
-        tempG = gScore[node.id] + this.distance(node, neighbor);
-        if (tempG < (gScore[neighbor.id] != undefined ? gScore[neighbor.id] : Number.MAX_SAFE_INTEGER)) {
-          cameFrom[neighbor.id] = node;
-          gScore[neighbor.id] = tempG;
-          fScore[neighbor.id] = gScore[neighbor.id] + this.heuristic(neighbor, end);
+        tempG = gScore[node.tid] + this.distance(node, neighbor);
+        if (tempG < (gScore[neighbor.tid] != undefined ? gScore[neighbor.tid] : Number.MAX_SAFE_INTEGER)) {
+          cameFrom[neighbor.tid] = node;
+          gScore[neighbor.tid] = tempG;
+          fScore[neighbor.tid] = gScore[neighbor.tid] + this.heuristic(neighbor, end);
 
           // Only add the neighbor to the openset if it doesnt exist in there
           temp = open
-            .getNodesByKey(fScore[neighbor.id])
-            .map((node) => node.value.id == neighbor.id)
+            .getNodesByKey(fScore[neighbor.tid])
+            .map((node) => node.value.tid == neighbor.tid)
             .reduce((acc, cur) => cur || acc, false);
           if (!temp) {
-            open.insert(fScore[neighbor.id], neighbor);
+            open.insert(fScore[neighbor.tid], neighbor);
           }
         }
       });
@@ -378,7 +379,6 @@ export class Game extends Component {
       throw new Error('Expected Grid for new Game');
     }
     this.grid = grid;
-    this.addComponent(this.grid);
     let totalWidth = this.grid.width * TILE_WIDTH;
     let totalHeight = this.grid.height * TILE_HEIGHT;
     this.world = new Rectangle(totalWidth / 2, totalHeight / 2, totalWidth / 2, totalHeight / 2);
