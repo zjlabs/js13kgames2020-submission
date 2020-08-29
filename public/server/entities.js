@@ -1,5 +1,5 @@
 import state from './state';
-import { debug, error, TILE_HEIGHT, TILE_WIDTH } from '../shared/variables';
+import { debug, error, TILE_HEIGHT, TILE_WIDTH, PLAYER_HEIGHT, PLAYER_WIDTH } from '../shared/variables';
 import { getId } from '../shared/id';
 
 export class Component {
@@ -29,6 +29,14 @@ export class Component {
     }
   }
 
+  getComponents(deep = false) {
+    if (!deep) {
+      return this.components;
+    }
+
+    return [...this.components, ...this.components.map((c) => c.getComponents(deep).flat())];
+  }
+
   update(deltaTime) {
     this.component.forEach((component) => component.update(deltaTime));
   }
@@ -53,9 +61,16 @@ export class Entity extends Component {
   }
 
   getPojo() {
-    return Object.keys(this).reduce((acc, key) => {
+    return [].concat(Object.keys(this), Object.keys(this.forceSerializableKeys)).reduce((acc, key) => {
       if (this.unSerializableKeys != null && this.unSerializableKeys.includes(key)) {
         return acc;
+      }
+
+      if (this.forceSerializableKeys && this.forceSerializableKeys[key]) {
+        return {
+          ...acc,
+          [key]: this.forceSerializableKeys[key](),
+        };
       }
 
       return {
@@ -64,6 +79,16 @@ export class Entity extends Component {
       };
     }, {});
   }
+
+  hasCollider() {
+    return false;
+  }
+
+  getCollider() {
+    return false;
+  }
+
+  onCollision(other) {}
 }
 
 export class Player extends Entity {
@@ -76,8 +101,8 @@ export class Player extends Entity {
     this.username = '';
     this.x = 0;
     this.y = 0;
-    this.height = 0;
-    this.width = 0;
+    this.height = PLAYER_HEIGHT;
+    this.width = PLAYER_WIDTH;
     this.xp = 0;
     this.level = 1;
     this.health = 10;
@@ -90,6 +115,13 @@ export class Player extends Entity {
     this.frozen = false;
 
     this.unSerializableKeys = ['components', 'unSerializableKeys', 'socket'];
+    this.forceSerializableKeys = {
+      collider: () => {
+        let out = this.getCollider();
+        delete out.data;
+        return out;
+      },
+    };
   }
 
   update(deltaTime) {
@@ -101,10 +133,25 @@ export class Player extends Entity {
     // update all the children components
     this.components.forEach((component) => component.update(deltaTime));
   }
+
+  hasCollider() {
+    return true;
+  }
+
+  getCollider() {
+    return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
+  }
+
+  onCollision(other) {
+    if (other instanceof Tile) {
+    } else if (other instanceof Player) {
+    }
+  }
 }
 
-export class Tile {
+export class Tile extends Entity {
   constructor(x, y, walk = true, height = TILE_HEIGHT, width = TILE_WIDTH) {
+    super();
     this.x = x;
     this.y = y;
     this.height = height;
@@ -113,9 +160,19 @@ export class Tile {
   }
 
   // Getter for unique tile id
-  get id() {
+  get tid() {
     return `${this.x},${this.y}`;
   }
+
+  hasCollider() {
+    return !this.walk;
+  }
+
+  getCollider() {
+    return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
+  }
+
+  onCollision(other) {}
 }
 
 export class Grid extends Component {
@@ -176,8 +233,8 @@ export class Grid extends Component {
   buildPath(nodeList, node) {
     debug('buildPath', nodeList, node);
     let out = [node];
-    while (nodeList[node.id]) {
-      node = nodeList[node.id];
+    while (nodeList[node.tid]) {
+      node = nodeList[node.tid];
       out.push(node);
     }
     return out.reverse();
@@ -214,14 +271,14 @@ export class Grid extends Component {
     let cameFrom = {};
 
     // For node n, gScore[n] is the cost of the cheapest path from start to n currently known.
-    let gScore = { [start.id]: 0 };
+    let gScore = { [start.tid]: 0 };
 
     // For node n, fScore[n] := gScore[n] + h(n). fScore[n] represents our current best guess as to
     // how short a path from start to finish can be if it goes through n.
-    let fScore = { [start.id]: this.heuristic(start, end) };
+    let fScore = { [start.tid]: this.heuristic(start, end) };
 
     // start the openset with the start node
-    open.insert(fScore[start.id], start);
+    open.insert(fScore[start.tid], start);
 
     let iter = 0;
     let node;
@@ -231,23 +288,23 @@ export class Grid extends Component {
       iter++;
       node = node.value;
       if (!node) break;
-      if (node.id == end.id) return this.buildPath(cameFrom, node);
+      if (node.tid == end.tid) return this.buildPath(cameFrom, node);
 
       this.getNeighbors(node.x, node.y).forEach((neighbor) => {
         // this path to neighbor is better than any previous one, record it
-        tempG = gScore[node.id] + this.distance(node, neighbor);
-        if (tempG < (gScore[neighbor.id] != undefined ? gScore[neighbor.id] : Number.MAX_SAFE_INTEGER)) {
-          cameFrom[neighbor.id] = node;
-          gScore[neighbor.id] = tempG;
-          fScore[neighbor.id] = gScore[neighbor.id] + this.heuristic(neighbor, end);
+        tempG = gScore[node.tid] + this.distance(node, neighbor);
+        if (tempG < (gScore[neighbor.tid] != undefined ? gScore[neighbor.tid] : Number.MAX_SAFE_INTEGER)) {
+          cameFrom[neighbor.tid] = node;
+          gScore[neighbor.tid] = tempG;
+          fScore[neighbor.tid] = gScore[neighbor.tid] + this.heuristic(neighbor, end);
 
           // Only add the neighbor to the openset if it doesnt exist in there
           temp = open
-            .getNodesByKey(fScore[neighbor.id])
-            .map((node) => node.value.id == neighbor.id)
+            .getNodesByKey(fScore[neighbor.tid])
+            .map((node) => node.value.tid == neighbor.tid)
             .reduce((acc, cur) => cur || acc, false);
           if (!temp) {
-            open.insert(fScore[neighbor.id], neighbor);
+            open.insert(fScore[neighbor.tid], neighbor);
           }
         }
       });
@@ -328,13 +385,57 @@ export class Grid extends Component {
 }
 
 export class Game extends Component {
-  constructor() {
+  constructor(grid) {
     super();
+
+    // Store the grid dimensions on init to popluate the quadtree correctly.
+    if (!grid) {
+      throw new Error('Expected Grid for new Game');
+    }
+    this.grid = grid;
+    let totalWidth = this.grid.width * TILE_WIDTH;
+    let totalHeight = this.grid.height * TILE_HEIGHT;
+    this.world = new Rectangle(totalWidth / 2, totalHeight / 2, totalWidth / 2, totalHeight / 2);
+
+    // hack to set initial delta
     state.getDelta();
+
+    // get the frame quadtree
+    this.buildQuadtree();
+  }
+
+  buildQuadtree(collidables) {
+    if (!collidables) {
+      collidables = this.getCollidables();
+    }
+
+    this.quadTree = new Quadtree(this.world);
+    collidables.forEach((component) => this.quadTree.insert(component.getCollider()));
+  }
+
+  getCollidables() {
+    if (!this._colliderCache) {
+      this._colliderCache = this.getComponents(true).filter(
+        (component) => component instanceof Entity && component.active && component.hasCollider()
+      );
+    }
+
+    return this._colliderCache;
   }
 
   update(deltaTime) {
+    this.clearFrameMemory();
+
+    // Update every component before applying primary control logic
     this.components.forEach((component) => component.update(deltaTime));
+
+    // check all collisions
+    this.buildQuadtree();
+    this.getComponents().forEach((collider) => {
+      this.quadTree
+        .query(collider.getCollider())
+        .forEach((collision) => collider.data && collision.data && collider.data.onCollision(collision.data));
+    });
   }
 
   syncState() {
@@ -345,8 +446,13 @@ export class Game extends Component {
     let old = [].concat(state.prunePlayers());
     old.forEach((c) => this.removeComponent(c));
   }
+
+  clearFrameMemory() {
+    this._colliderCache = undefined;
+  }
 }
 
+// Min Heap entitiy used for a*
 export class BinaryHeap {
   constructor() {
     this.data = [];
@@ -436,9 +542,98 @@ export class BinaryHeap {
   }
 }
 
+// Min Heap entitiy used for a*
 export class HeapNode {
   constructor(key, value) {
     this.key = key;
     this.value = value;
+  }
+}
+
+// Quadtree entity
+// should be middle centered with half-width dimensions
+export class Rectangle {
+  constructor(x, y, w, h, data) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.data = data;
+  }
+
+  contains(point) {
+    return (
+      point.x >= this.x - this.w &&
+      point.x <= this.x + this.w &&
+      point.y >= this.y - this.h &&
+      point.y <= this.y + this.h
+    );
+  }
+
+  // aabb
+  intersects(rect) {
+    return (
+      this.x < rect.x + rect.w && this.x + this.w > rect.x && this.y < rect.y + rect.height && this.y + this.h > rect.y
+    );
+  }
+}
+
+// Quadtree entity
+// should be middle centered with half-width dimensions
+export class Quadtree {
+  // 400x400
+  constructor(boundry = new Rectangle(200, 200, 200, 200), capacity = 10) {
+    this.boundry = boundry;
+    this.capacity = capacity;
+    this.points = [];
+    this.divided = false;
+  }
+
+  subdivide() {
+    this.divided = true;
+    let x = this.boundry.x;
+    let y = this.boundry.y;
+    let w = this.boundry.w;
+    let h = this.boundry.h;
+
+    this.northWest = new Quadtree(new Rectangle(x - w / 2, y + h / 2, w / 2, h / 2), this.capacity);
+    this.northEast = new Quadtree(new Rectangle(x + w / 2, y + h / 2, w / 2, h / 2), this.capacity);
+    this.southWest = new Quadtree(new Rectangle(x - w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+    this.southEast = new Quadtree(new Rectangle(x + w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+  }
+
+  insert(point) {
+    if (!this.boundry.contains(point)) return false;
+    if (this.points.length < this.capacity) {
+      this.points.push(point);
+      return true;
+    }
+
+    if (!this.divided) this.subdivide();
+    return (
+      this.northWest.insert(point) ||
+      this.northEast.insert(point) ||
+      this.southWest.insert(point) ||
+      this.southEast.insert(point)
+    );
+  }
+
+  query(boundry) {
+    let out = [];
+
+    if (this.boundry.intersects(boundry)) {
+      out = this.points;
+
+      if (this.divided) {
+        out = out.push(
+          ...this.northWest.query(boundry),
+          ...this.northEast.query(boundry),
+          ...this.southWest.query(boundry),
+          ...this.southEast.query(boundry)
+        );
+      }
+    }
+
+    return out;
   }
 }

@@ -31,5 +31,9 @@ export const all = (...message) => LOG_LEVEL === 0 && console.log('all', ...mess
 export const TICK_RATE = 120;
 export const TICK_TIME = 1000 / TICK_RATE;
 
-export const TILE_HEIGHT = 40;
-export const TILE_WIDTH = 40;
+export const WORLD_HEIGHT = 30000;
+export const WORLD_WIDTH = 30000;
+export const PLAYER_HEIGHT = 150;
+export const PLAYER_WIDTH = 150;
+export const TILE_HEIGHT = 50;
+export const TILE_WIDTH = 50;
