@@ -347,6 +347,7 @@ export class Game extends Component {
   }
 }
 
+// Min Heap entitiy used for a*
 export class BinaryHeap {
   constructor() {
     this.data = [];
@@ -436,9 +437,97 @@ export class BinaryHeap {
   }
 }
 
+// Min Heap entitiy used for a*
 export class HeapNode {
   constructor(key, value) {
     this.key = key;
     this.value = value;
+  }
+}
+
+// Quadtree entity
+// should be middle centered with half-width dimensions
+export class Rectangle {
+  constructor(x, y, w, h) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+  }
+
+  contains(point) {
+    return (
+      point.x >= this.x - this.w &&
+      point.x <= this.x + this.w &&
+      point.y >= this.y - this.h &&
+      point.y <= this.y + this.h
+    );
+  }
+
+  // aabb
+  intersects(rect) {
+    return (
+      this.x < rect.x + rect.w && this.x + this.w > rect.x && this.y < rect.y + rect.height && this.y + this.h > rect.y
+    );
+  }
+}
+
+// Quadtree entity
+// should be middle centered with half-width dimensions
+export class Quadtree {
+  // 400x400
+  constructor(boundry = new Rectangle(200, 200, 200, 200), capacity = 10) {
+    this.boundry = boundry;
+    this.capacity = capacity;
+    this.points = [];
+    this.divided = false;
+  }
+
+  subdivide() {
+    this.divided = true;
+    let x = this.boundry.x;
+    let y = this.boundry.y;
+    let w = this.boundry.w;
+    let h = this.boundry.h;
+
+    this.northWest = new Quadtree(new Rectangle(x - w / 2, y + h / 2, w / 2, h / 2), this.capacity);
+    this.northEast = new Quadtree(new Rectangle(x + w / 2, y + h / 2, w / 2, h / 2), this.capacity);
+    this.southWest = new Quadtree(new Rectangle(x - w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+    this.southEast = new Quadtree(new Rectangle(x + w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+  }
+
+  insert(point) {
+    if (!this.boundry.contains(point)) return false;
+    if (this.points.length < this.capacity) {
+      this.points.push(point);
+      return true;
+    }
+
+    if (!this.divided) this.subdivide();
+    return (
+      this.northWest.insert(point) ||
+      this.northEast.insert(point) ||
+      this.southWest.insert(point) ||
+      this.southEast.insert(point)
+    );
+  }
+
+  query(boundry) {
+    let out = [];
+
+    if (this.boundry.intersects(boundry)) {
+      out = this.points;
+
+      if (this.divided) {
+        out = out.push(
+          ...this.northWest.query(boundry),
+          ...this.northEast.query(boundry),
+          ...this.southWest.query(boundry),
+          ...this.southEast.query(boundry)
+        );
+      }
+    }
+
+    return out;
   }
 }
