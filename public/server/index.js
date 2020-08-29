@@ -5,7 +5,7 @@ import { all, debug, STATS, TEST, TICK_TIME } from '../shared/variables';
 /**
  * Init game
  */
-const game = new Game();
+const game = new Game(new Grid(50, 50));
 
 // start testing code
 let combatBot = state.addPlayer({ id: 'bot1' });

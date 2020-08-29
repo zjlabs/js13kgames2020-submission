@@ -370,8 +370,18 @@ export class Grid extends Component {
 }
 
 export class Game extends Component {
-  constructor() {
+  constructor(grid) {
     super();
+
+    // Store the grid dimensions on init to popluate the quadtree correctly.
+    if (!grid) {
+      throw new Error('Expected Grid for new Game');
+    }
+    this.grid = grid;
+    this.addComponent(this.grid);
+    let totalWidth = this.grid.width * TILE_WIDTH;
+    let totalHeight = this.grid.height * TILE_HEIGHT;
+    this.world = new Rectangle(totalWidth / 2, totalHeight / 2, totalWidth / 2, totalHeight / 2);
 
     // hack to set initial delta
     state.getDelta();
@@ -385,7 +395,7 @@ export class Game extends Component {
       collidables = this.getCollidables();
     }
 
-    this.quadTree = new Quadtree();
+    this.quadTree = new Quadtree(this.world);
     collidables.forEach((component) => this.quadTree.insert(component.getCollider()));
   }
 
