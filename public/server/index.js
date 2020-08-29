@@ -1,11 +1,23 @@
 import state from './state';
 import { Game, Grid, Player } from './entities';
-import { all, debug, STATS, TEST, TICK_TIME } from '../shared/variables';
+import {
+  all,
+  debug,
+  STATS,
+  TEST,
+  TICK_TIME,
+  WORLD_HEIGHT,
+  TILE_HEIGHT,
+  WORLD_WIDTH,
+  TILE_WIDTH,
+} from '../shared/variables';
 
 /**
  * Init game
  */
-const game = new Game(new Grid(50, 50));
+const tileH = WORLD_HEIGHT / TILE_HEIGHT;
+const tileW = WORLD_WIDTH / TILE_WIDTH;
+const game = new Game(new Grid(tileH, tileW));
 
 // start testing code
 let combatBot = state.addPlayer({ id: 'bot1' });
