@@ -61,9 +61,16 @@ export class Entity extends Component {
   }
 
   getPojo() {
-    return Object.keys(this).reduce((acc, key) => {
+    return [].concat(Object.keys(this), Object.keys(this.forceSerializableKeys)).reduce((acc, key) => {
       if (this.unSerializableKeys != null && this.unSerializableKeys.includes(key)) {
         return acc;
+      }
+
+      if (this.forceSerializableKeys && this.forceSerializableKeys[key]) {
+        return {
+          ...acc,
+          [key]: this.forceSerializableKeys[key](),
+        };
       }
 
       return {
@@ -108,6 +115,13 @@ export class Player extends Entity {
     this.frozen = false;
 
     this.unSerializableKeys = ['components', 'unSerializableKeys', 'socket'];
+    this.forceSerializableKeys = {
+      collider: () => {
+        let out = this.getCollider();
+        delete out.data;
+        return out;
+      },
+    };
   }
 
   update(deltaTime) {
