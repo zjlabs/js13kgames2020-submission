@@ -94,8 +94,8 @@ export class Player extends Entity {
 
   update(deltaTime) {
     if (!this.frozen) {
-      this.x += Math.cos(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
-      this.y += Math.sin(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
+      this.x += Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
+      this.y += Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
     }
 
     // update all the children components
