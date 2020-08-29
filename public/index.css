@@ -41,3 +41,7 @@ html, body {
 .statistics > span {
   display: block;
 }
+
+.statistics__statistic--server {
+  font-size: 1rem;
+}
