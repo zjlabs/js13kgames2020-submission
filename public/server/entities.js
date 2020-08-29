@@ -29,6 +29,14 @@ export class Component {
     }
   }
 
+  getComponents(deep = false) {
+    if (!deep) {
+      return this.components;
+    }
+
+    return [...this.components, ...this.components.map((c) => c.getComponents(deep).flat())];
+  }
+
   update(deltaTime) {
     this.component.forEach((component) => component.update(deltaTime));
   }
@@ -38,6 +46,7 @@ export class Entity extends Component {
   constructor() {
     super();
     this.active = true;
+    this.collider = false;
   }
 
   set(key, val) {
@@ -101,9 +110,17 @@ export class Player extends Entity {
     // update all the children components
     this.components.forEach((component) => component.update(deltaTime));
   }
+
+  hasCollider() {
+    return true;
+  }
+
+  getCollider() {
+    return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
+  }
 }
 
-export class Tile {
+export class Tile extends Entity {
   constructor(x, y, walk = true, height = TILE_HEIGHT, width = TILE_WIDTH) {
     this.x = x;
     this.y = y;
@@ -115,6 +132,14 @@ export class Tile {
   // Getter for unique tile id
   get id() {
     return `${this.x},${this.y}`;
+  }
+
+  hasCollider() {
+    return !this.walk;
+  }
+
+  getCollider() {
+    return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
   }
 }
 
@@ -330,11 +355,42 @@ export class Grid extends Component {
 export class Game extends Component {
   constructor() {
     super();
+
+    // hack to set initial delta
     state.getDelta();
+
+    // get the frame quadtree
+    this.buildQuadtree();
+  }
+
+  buildQuadtree(collidables) {
+    if (!collidables) {
+      collidables = this.getCollidables();
+    }
+
+    this.quadTree = new Quadtree();
+    collidables.forEach((component) => this.quadTree.insert(component));
+  }
+
+  getCollidables() {
+    if (!this._colliderCache) {
+      this._colliderCache = this.getComponents(true).filter(
+        (component) => component instanceof Entity && component.active && component.hasCollider()
+      );
+    }
+
+    return this._colliderCache;
   }
 
   update(deltaTime) {
+    this.clearFrameMemory();
+
+    // Update every component before applying primary control logic
     this.components.forEach((component) => component.update(deltaTime));
+
+    // check all collisions
+    this.buildQuadtree();
+    this.getComponents().forEach((collider) => {});
   }
 
   syncState() {
@@ -344,6 +400,10 @@ export class Game extends Component {
   pruneInactiveEntities() {
     let old = [].concat(state.prunePlayers());
     old.forEach((c) => this.removeComponent(c));
+  }
+
+  clearFrameMemory() {
+    this._colliderCache = undefined;
   }
 }
 
@@ -448,11 +508,12 @@ export class HeapNode {
 // Quadtree entity
 // should be middle centered with half-width dimensions
 export class Rectangle {
-  constructor(x, y, w, h) {
+  constructor(x, y, w, h, data) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
+    this.data = data;
   }
 
   contains(point) {
