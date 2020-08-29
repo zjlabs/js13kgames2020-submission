@@ -86,7 +86,7 @@ export class Player extends Entity {
     this.skin = 0;
     this.powerups = {};
     this.mouseAngleDegrees = 0;
-    this.speed = 1;
+    this.speed = 500;
     this.frozen = false;
 
     this.unSerializableKeys = ['components', 'unSerializableKeys', 'socket'];
