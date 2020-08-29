@@ -1,0 +1,26 @@
+version: 2.1
+
+orbs:
+  heroku: circleci/heroku@0.0.10
+  node: circleci/node@3.0.1
+
+workflows:
+  heroku_deploy:
+    jobs:
+      - build
+      - heroku/deploy-via-git: # Use the pre-configured job, deploy-via-git
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+jobs:
+  build:
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          command: npm run build
+          name: Build application.
