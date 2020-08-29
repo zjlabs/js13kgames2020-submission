@@ -29,7 +29,7 @@ export function renderGame() {
 
   renderBackground(ctx, width, height, getAngleRadiansFromDegrees(mouseAngleDegrees));
   renderGrid(ctx, width, height);
-  renderPlayer(ctx, width / 2, height / 2, getAngleRadiansFromDegrees(mouseAngleDegrees + 90), 'red', 'black');
+  renderPlayer(ctx, width / 2, height / 2, getAngleRadiansFromDegrees(mouseAngleDegrees), 'red', 'black');
 }
 
 let renderStatsThrottleBuffer = 0;
