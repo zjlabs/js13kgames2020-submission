@@ -135,8 +135,27 @@ export class Player extends Entity {
 
   update(deltaTime) {
     if (!this.frozen) {
-      this.x += Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
-      this.y += Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
+      // TODO: Determine if "world wrapping" will be a nightmare for bots.
+      const intendedXOffset = Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
+      const intendedYOffset = Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
+      const intendedXDestination = this.x + intendedXOffset;
+      const intendedYDestination = this.y + intendedYOffset;
+
+      if (intendedXDestination > WORLD_WIDTH) {
+        this.x = intendedXDestination - WORLD_WIDTH;
+      } else if (intendedXDestination < 0) {
+        this.x = WORLD_WIDTH + intendedXDestination;
+      } else {
+        this.x += intendedXOffset;
+      }
+
+      if (intendedYDestination > WORLD_HEIGHT) {
+        this.y = intendedYDestination - WORLD_HEIGHT;
+      } else if (intendedYDestination < 0) {
+        this.y = WORLD_HEIGHT + intendedYDestination;
+      } else {
+        this.y += intendedYOffset;
+      }
     }
 
     // update all the children components
