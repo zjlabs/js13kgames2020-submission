@@ -13,12 +13,9 @@ class EntityState {
 
   set(entity) {
     let diff = entity.getDiff();
-    this.delta[entity.id] = {
-      ...(this.delta[entity.id] || {}),
-      ...diff,
-    };
+    this.delta[entity.id] = {}, this.delta[entity.id], diff);
 
-    if (diff.active == false) {
+    if (diff.active === false) {
       this._prune = true;
     }
   }
@@ -26,7 +23,7 @@ class EntityState {
   reset() {
     Object.keys(this.delta).forEach((id) => {
       this.data[id] = {
-        ...this.data[id],
+        ...(this.data[id] || {}),
         ...this.delta[id],
       };
     });
@@ -40,7 +37,7 @@ class EntityState {
 
     this._prune = false;
     Object.keys(this.data).forEach((id) => {
-      if (!this.data[id].active) {
+      if (this.data[id].active === false) {
         delete this.data[id];
       }
     });

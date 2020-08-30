@@ -1,3 +1,4 @@
+// TODO: Add nested obj support.
 export function getDiff(base, compare) {
   const diff = {};
 

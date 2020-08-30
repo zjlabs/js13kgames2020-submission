@@ -484,7 +484,6 @@ export class Game extends Component {
         .forEach((collision) => collider.data && collision.data && collider.data.onCollision(collision.data));
     });
 
-    let diff;
     this.getComponents(true)
       .filter((c) => c instanceof Entity)
       .forEach((entity) => {
