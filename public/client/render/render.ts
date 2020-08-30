@@ -66,6 +66,7 @@ export function renderGame() {
         relativeCoordinateX,
         relativeCoordinateY,
         getAngleRadiansFromDegrees(player.mouseAngleDegrees),
+        player.username,
         player.id === id ? 'pink' : 'red',
         'black'
       );

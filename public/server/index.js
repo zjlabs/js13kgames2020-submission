@@ -25,6 +25,8 @@ combatBot.x = WORLD_WIDTH / 2;
 combatBot.y = WORLD_HEIGHT / 2;
 combatBot.frozen = true;
 combatBot.bot = true;
+combatBot.username = 'smashmaster69x420';
+combatBot.health = 69;
 game.addComponent(combatBot);
 // end testing code
 
