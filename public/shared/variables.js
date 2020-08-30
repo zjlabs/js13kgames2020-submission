@@ -28,7 +28,7 @@ export const all = (...message) => LOG_LEVEL === 0 && console.log('all', ...mess
 /**
  * The server tick rate info
  */
-export const TICK_RATE = 60;
+export const TICK_RATE = 120;
 export const TICK_TIME = 1000 / TICK_RATE;
 
 export const WORLD_HEIGHT = 30000;
