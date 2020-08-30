@@ -13,7 +13,10 @@ class EntityState {
 
   set(entity) {
     let diff = entity.getDiff();
-    this.delta[entity.id] = {}, this.delta[entity.id], diff);
+    this.delta[entity.id] = {
+      ...this.delta[entity.id],
+      ...diff,
+    };
 
     if (diff.active === false) {
       this._prune = true;
