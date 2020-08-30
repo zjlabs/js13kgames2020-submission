@@ -1,5 +1,5 @@
 import state from './state';
-import { Game, Grid } from './entities';
+import { Game, Grid, Player } from './entities';
 import {
   all,
   debug,
@@ -20,7 +20,7 @@ const tileW = WORLD_WIDTH / TILE_WIDTH;
 const game = new Game(new Grid(tileH, tileW));
 
 // start testing code
-let combatBot = state.addPlayer({ id: 'bot1' });
+let combatBot = new Player({ id: 'bot1' });
 combatBot.x = WORLD_WIDTH / 2;
 combatBot.y = WORLD_HEIGHT / 2;
 combatBot.frozen = true;
@@ -34,23 +34,32 @@ game.addComponent(combatBot);
  * Handle incoming connections.
  */
 io.on('connection', (socket) => {
-  const player = state.addPlayer(socket);
+  const player = new Player(socket);
 
   socket.on('disconnect', () => {
     debug('Disconnected', socket.id);
-    state.removePlayer(socket);
+    player.active = false;
   });
 
   socket.on('data', (obj) => {
     debug('Data', socket.id, obj);
-    state.updatePlayer(socket, obj);
+    // TODO: add field edit limitations
+    Object.keys(obj).forEach((key) => {
+      player.set(key, obj[key]);
+    });
+    state.player.set(player);
   });
 
   socket.on('play', (obj) => {
-    debug('Play', socket.id);
-    state.updatePlayer(socket, obj);
-    state.sync(socket.id);
+    debug('Play', socket.id, obj);
+    // TODO: add field edit limitations
+    Object.keys(obj).forEach((key) => {
+      player.set(key, obj[key]);
+    });
+    state.player.set(player);
+    state.sync(socket.id, player);
   });
+
   debug('Connected', socket.id);
   game.addComponent(player);
 });
@@ -69,8 +78,6 @@ const tick = () => {
   /**
    * GAME LOGIC
    */
-  game.syncState();
-  game.pruneInactiveEntities();
   game.update(delta);
 
   // Update the stats and wait for the next tick.
@@ -98,7 +105,11 @@ module.exports = Object.assign(
   {
     // Debug endpoint for server state
     state: (req, res, next) => {
-      return res.send(`<pre>${JSON.stringify(state.all(), null, 2)}</pre>`);
+      return res.send(`<pre>${JSON.stringify(state._data(), null, 2)}</pre>`);
+    },
+    // Debug endpoint for server delta
+    delta: (req, res, next) => {
+      return res.send(`<pre>${JSON.stringify(state._delta(), null, 2)}</pre>`);
     },
   },
   TEST && {

@@ -10,6 +10,7 @@ import {
   WORLD_WIDTH,
 } from '../shared/variables';
 import { getId } from '../shared/id';
+import { getDiff } from '../client/object-utilities.ts';
 
 export class Component {
   constructor() {
@@ -49,12 +50,21 @@ export class Component {
   update(deltaTime) {
     this.component.forEach((component) => component.update(deltaTime));
   }
+
+  getPojo() {
+    let { id, components } = this;
+    return {
+      id,
+      components,
+    };
+  }
 }
 
 export class Entity extends Component {
   constructor() {
     super();
     this.active = true;
+    this._prevState = {};
   }
 
   set(key, val) {
@@ -70,23 +80,19 @@ export class Entity extends Component {
   }
 
   getPojo() {
-    return [].concat(Object.keys(this), Object.keys(this.forceSerializableKeys)).reduce((acc, key) => {
-      if (this.unSerializableKeys != null && this.unSerializableKeys.includes(key)) {
-        return acc;
-      }
+    return {
+      ...super.getPojo(),
+      active: this.active,
+    };
+  }
 
-      if (this.forceSerializableKeys && this.forceSerializableKeys[key]) {
-        return {
-          ...acc,
-          [key]: this.forceSerializableKeys[key](),
-        };
-      }
+  getDiff() {
+    const pojo = this.getPojo();
+    let out = getDiff(this._prevState, pojo);
+    this._prevState = pojo;
 
-      return {
-        ...acc,
-        [key]: this.get(key),
-      };
-    }, {});
+    if (Object.keys(out) == 0) return false;
+    return out;
   }
 
   hasCollider() {
@@ -122,15 +128,6 @@ export class Player extends Entity {
     this.mouseAngleDegrees = 0;
     this.speed = 500;
     this.frozen = false;
-
-    this.unSerializableKeys = ['components', 'unSerializableKeys', 'socket'];
-    this.forceSerializableKeys = {
-      collider: () => {
-        let out = this.getCollider();
-        delete out.data;
-        return out;
-      },
-    };
   }
 
   update(deltaTime) {
@@ -175,6 +172,45 @@ export class Player extends Entity {
     } else if (other instanceof Player) {
     }
   }
+
+  getPojo() {
+    let {
+      username,
+      x,
+      y,
+      width,
+      height,
+      xp,
+      level,
+      health,
+      items,
+      bot,
+      skin,
+      powerups,
+      mouseAngleDegrees,
+      speed,
+      frozen,
+    } = this;
+    return {
+      ...super.getPojo(),
+      username,
+      x,
+      y,
+      width,
+      height,
+      xp,
+      level,
+      health,
+      items,
+      bot,
+      skin,
+      powerups,
+      mouseAngleDegrees,
+      speed,
+      frozen,
+      collider: this.getCollider().pure(),
+    };
+  }
 }
 
 export class Tile extends Entity {
@@ -201,6 +237,20 @@ export class Tile extends Entity {
   }
 
   onCollision(other) {}
+
+  getPojo() {
+    let { x, y, height, width, walk } = this;
+    return {
+      ...super.getPojo(),
+      x,
+      y,
+      height,
+      width,
+      walk,
+      tid: this.tid,
+      collider: this.getCollider().pure(),
+    };
+  }
 }
 
 export class Grid extends Component {
@@ -425,9 +475,6 @@ export class Game extends Component {
     let totalHeight = this.grid.height * TILE_HEIGHT;
     this.world = new Rectangle(totalWidth / 2, totalHeight / 2, totalWidth / 2, totalHeight / 2);
 
-    // hack to set initial delta
-    state.getDelta();
-
     // get the frame quadtree
     this.buildQuadtree();
   }
@@ -459,20 +506,23 @@ export class Game extends Component {
 
     // check all collisions
     this.buildQuadtree();
-    this.getComponents().forEach((collider) => {
+    this.getCollidables().forEach((collider) => {
       this.quadTree
         .query(collider.getCollider())
         .forEach((collision) => collider.data && collision.data && collider.data.onCollision(collision.data));
     });
-  }
 
-  syncState() {
-    io.emit('delta', state.all());
-  }
+    this.getComponents(true)
+      .filter((c) => c instanceof Entity)
+      .forEach((entity) => {
+        if (entity instanceof Player) {
+          state.player.set(entity);
+        } else if (entity instanceof Tile) {
+          state.tile.set(entity);
+        }
+      });
 
-  pruneInactiveEntities() {
-    let old = [].concat(state.prunePlayers());
-    old.forEach((c) => this.removeComponent(c));
+    state.delta();
   }
 
   clearFrameMemory() {
@@ -582,10 +632,10 @@ export class HeapNode {
 // should be middle centered with half-width dimensions
 export class Rectangle {
   constructor(x, y, w, h, data) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
+    this.x = x || 0;
+    this.y = y || 0;
+    this.w = w || 0;
+    this.h = h || 0;
     this.data = data;
   }
 
@@ -603,6 +653,16 @@ export class Rectangle {
     return (
       this.x < rect.x + rect.w && this.x + this.w > rect.x && this.y < rect.y + rect.height && this.y + this.h > rect.y
     );
+  }
+
+  pure() {
+    let { x, y, w, h } = this;
+    return {
+      x,
+      y,
+      w,
+      h,
+    };
   }
 }
 
