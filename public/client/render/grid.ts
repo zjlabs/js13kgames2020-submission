@@ -17,8 +17,8 @@ export function renderGrid(canvasContext, width, height) {
     canvasContext.beginPath();
     let strokeStyle =
       width / 2 - widthInterval < widthOffset && width / 2 + widthInterval > widthOffset
-        ? 'rgba(255, 0, 0, 0.5)'
-        : 'rgba(0, 0, 0, 0.2)';
+        ? 'rgba(255, 0, 0, 0.2)'
+        : 'rgba(0, 0, 0, 0.1)';
     renderLine(canvasContext, widthOffset, 0, widthOffset, height, 1, strokeStyle);
     canvasContext.closePath();
   }
@@ -27,8 +27,8 @@ export function renderGrid(canvasContext, width, height) {
     canvasContext.beginPath();
     let strokeStyle =
       height / 2 - heightInterval < heightOffset && height / 2 + heightInterval > heightOffset
-        ? 'rgba(255, 0, 0, 0.5)'
-        : 'rgba(0, 0, 0, 0.2)';
+        ? 'rgba(255, 0, 0, 0.2)'
+        : 'rgba(0, 0, 0, 0.1)';
     renderLine(canvasContext, 0, heightOffset, width, heightOffset, 1, strokeStyle);
     canvasContext.closePath();
   }

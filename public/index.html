@@ -3,6 +3,7 @@
   <head>
     <title>Knight Quest</title>
     <meta charset="UTF-8" />
+    <meta name="viewport" content= "width=device-width, user-scalable=no">
 
     <link href="index.css" rel="stylesheet" />
   </head>
@@ -15,8 +16,15 @@
       <button id="start-button" type="button">Play Game</button>
     </div>
     <div class="statistics">
-      <span id="stats--mouseangle"></span>
       <span id="stats--fps"></span>
+      <span id="stats--player-x"></span>
+      <span id="stats--player-y"></span>
+      <span id="stats--mouseangle"></span>
+      <span class="statistics__statistic--server" id="stats--current"></span>
+      <span class="statistics__statistic--server" id="stats--delta"></span>
+      <span class="statistics__statistic--server" id="stats--elapsed"></span>
+      <span class="statistics__statistic--server" id="stats--last"></span>
+      <span class="statistics__statistic--server" id="stats--sleep"></span>
     </div>
     <div id="root"></div>
     <script src="/socket.io/socket.io.js"></script>

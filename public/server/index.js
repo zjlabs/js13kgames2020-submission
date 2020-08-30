@@ -1,15 +1,15 @@
 import state from './state';
-import { Game, Grid, Player } from './entities';
+import { Game, Grid } from './entities';
 import {
   all,
   debug,
   STATS,
   TEST,
   TICK_TIME,
-  WORLD_HEIGHT,
   TILE_HEIGHT,
-  WORLD_WIDTH,
   TILE_WIDTH,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
 } from '../shared/variables';
 
 /**
@@ -21,10 +21,12 @@ const game = new Game(new Grid(tileH, tileW));
 
 // start testing code
 let combatBot = new Player({ id: 'bot1' });
-combatBot.x = 0;
-combatBot.y = 0;
+combatBot.x = WORLD_WIDTH / 2;
+combatBot.y = WORLD_HEIGHT / 2;
 combatBot.frozen = true;
 combatBot.bot = true;
+combatBot.username = 'smashmaster69x420';
+combatBot.health = 69;
 game.addComponent(combatBot);
 // end testing code
 

@@ -1,5 +1,14 @@
 import state from './state';
-import { debug, error, TILE_HEIGHT, TILE_WIDTH, PLAYER_HEIGHT, PLAYER_WIDTH } from '../shared/variables';
+import {
+  debug,
+  error,
+  PLAYER_HEIGHT,
+  PLAYER_WIDTH,
+  TILE_HEIGHT,
+  TILE_WIDTH,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+} from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
 
@@ -105,8 +114,8 @@ export class Player extends Entity {
     super();
     this.socket = socket;
     this.username = '';
-    this.x = 0;
-    this.y = 0;
+    this.x = WORLD_WIDTH / 2;
+    this.y = WORLD_HEIGHT / 2;
     this.height = PLAYER_HEIGHT;
     this.width = PLAYER_WIDTH;
     this.xp = 0;
@@ -117,14 +126,33 @@ export class Player extends Entity {
     this.skin = 0;
     this.powerups = {};
     this.mouseAngleDegrees = 0;
-    this.speed = 1;
+    this.speed = 500;
     this.frozen = false;
   }
 
   update(deltaTime) {
     if (!this.frozen) {
-      this.x += Math.cos(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
-      this.y += Math.sin(this.mouseAngleDegrees) * (deltaTime / 1000) * this.speed || 0;
+      // TODO: Determine if "world wrapping" will be a nightmare for bots.
+      const intendedXOffset = Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
+      const intendedYOffset = Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
+      const intendedXDestination = this.x + intendedXOffset;
+      const intendedYDestination = this.y + intendedYOffset;
+
+      if (intendedXDestination > WORLD_WIDTH) {
+        this.x = intendedXDestination - WORLD_WIDTH;
+      } else if (intendedXDestination < 0) {
+        this.x = WORLD_WIDTH + intendedXDestination;
+      } else {
+        this.x += intendedXOffset;
+      }
+
+      if (intendedYDestination > WORLD_HEIGHT) {
+        this.y = intendedYDestination - WORLD_HEIGHT;
+      } else if (intendedYDestination < 0) {
+        this.y = WORLD_HEIGHT + intendedYDestination;
+      } else {
+        this.y += intendedYOffset;
+      }
     }
 
     // update all the children components
