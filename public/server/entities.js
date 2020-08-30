@@ -64,7 +64,7 @@ export class Entity extends Component {
   constructor() {
     super();
     this.active = true;
-    this._prevState = this.getPojo();
+    this._prevState = {};
   }
 
   set(key, val) {
@@ -521,6 +521,8 @@ export class Game extends Component {
           state.tile.set(entity);
         }
       });
+
+    state.delta();
   }
 
   clearFrameMemory() {

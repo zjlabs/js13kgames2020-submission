@@ -79,7 +79,6 @@ const tick = () => {
    * GAME LOGIC
    */
   game.update(delta);
-  state.delta();
 
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
