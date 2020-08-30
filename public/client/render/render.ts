@@ -1,11 +1,11 @@
 import { getAngleRadiansFromDegrees } from '../math-utilities';
 import { getPlayerState, getState } from '../state';
-import { renderGrid } from './grid';
 import { renderPlayer } from './player';
 import { clearCanvas } from './render-utilities';
 import { getCanvas } from './canvas';
 import { renderBackground } from './background';
 import { renderPlayerCoordinatesStats, renderPlayerMouseAngleStats } from './stats';
+import { renderMap } from './map';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -38,40 +38,54 @@ export function renderGame() {
   // Render debug grid.
   // renderGrid(ctx, width, height);
 
-  const screenCoordinate0X = x - (width / 2);
-  const screenCoordinate0Y = y - (height / 2);
+  const screenCoordinate0X = x - width / 2;
+  const screenCoordinate0Y = y - height / 2;
 
   // Render players.
   Object.keys(state.players)
     // Map the id to the player object.
     .map((key) => {
-      return state.players[key]
+      return state.players[key];
     })
     // Filter out players outside of the screen view.
     // TODO: Use Zack's dank math machine to make this more efficient.
     .filter((player) => {
       return (
-        player.x > screenCoordinate0X
-        && player.x < screenCoordinate0X + width
-        && player.y > screenCoordinate0Y
-        && player.y < screenCoordinate0Y + height
-      )
+        player.x > screenCoordinate0X &&
+        player.x < screenCoordinate0X + width &&
+        player.y > screenCoordinate0Y &&
+        player.y < screenCoordinate0Y + height
+      );
     })
     // Render the foe relative to the player.
     .forEach((player) => {
       const relativeCoordinateX = player.x - screenCoordinate0X;
       const relativeCoordinateY = player.y - screenCoordinate0Y;
-      renderPlayer(ctx, relativeCoordinateX, relativeCoordinateY, getAngleRadiansFromDegrees(player.mouseAngleDegrees), player.id === id ? 'pink' : 'red', 'black')
-    })
+      renderPlayer(
+        ctx,
+        relativeCoordinateX,
+        relativeCoordinateY,
+        getAngleRadiansFromDegrees(player.mouseAngleDegrees),
+        player.id === id ? 'pink' : 'red',
+        'black'
+      );
+    });
 
-
-
-
-
-
-
-
-
+  // Render map.
+  renderMap(
+    ctx,
+    width,
+    height,
+    { x, y },
+    Object.keys(state.players)
+      // Map the id to the player object.
+      .map((key) => {
+        return state.players[key];
+      })
+      .filter((player) => {
+        return player.id !== id;
+      })
+  );
 
   // Render stats.
   renderPlayerCoordinatesStats(x, y);

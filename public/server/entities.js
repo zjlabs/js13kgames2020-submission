@@ -1,5 +1,14 @@
 import state from './state';
-import { debug, error, TILE_HEIGHT, TILE_WIDTH, PLAYER_HEIGHT, PLAYER_WIDTH } from '../shared/variables';
+import {
+  debug,
+  error,
+  PLAYER_HEIGHT,
+  PLAYER_WIDTH,
+  TILE_HEIGHT,
+  TILE_WIDTH,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
+} from '../shared/variables';
 import { getId } from '../shared/id';
 
 export class Component {
@@ -99,8 +108,8 @@ export class Player extends Entity {
     super();
     this.socket = socket;
     this.username = '';
-    this.x = 0;
-    this.y = 0;
+    this.x = WORLD_WIDTH / 2;
+    this.y = WORLD_HEIGHT / 2;
     this.height = PLAYER_HEIGHT;
     this.width = PLAYER_WIDTH;
     this.xp = 0;
