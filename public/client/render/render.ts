@@ -34,8 +34,9 @@ export function renderGame() {
   // Render background.
   renderBackground(ctx, width, height, getAngleRadiansFromDegrees(mouseAngleDegrees));
 
+  // TODO: This makes me feel like puking. Figure out how to get rid of motion sickness.
   // Render debug grid.
-  renderGrid(ctx, width, height);
+  // renderGrid(ctx, width, height);
 
   const screenCoordinate0X = x - (width / 2);
   const screenCoordinate0Y = y - (height / 2);
