@@ -18,10 +18,8 @@ let state: State = {
 export function applyState(serverUpdatedState: any) {
   state = {
     ...state,
-    colliders: deepMerge(state.colliders, serverUpdatedState.colliders),
-    items: deepMerge(state.items, serverUpdatedState.items),
-    players: deepMerge(state.players, serverUpdatedState.players),
-    rooms: deepMerge(state.rooms, serverUpdatedState.rooms),
+    items: deepMerge(state.items || {}, serverUpdatedState.items || {}),
+    players: deepMerge(state.players || {}, serverUpdatedState.players || {}),
   };
 }
 

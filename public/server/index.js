@@ -1,5 +1,5 @@
 import state from './state';
-import { Game, Grid } from './entities';
+import { Game, Grid, Player } from './entities';
 import {
   all,
   debug,
