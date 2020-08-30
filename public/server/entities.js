@@ -95,12 +95,12 @@ export class Entity extends Component {
     return out;
   }
 
-  hasCollider() {
+  hasColliders() {
     return false;
   }
 
-  getCollider() {
-    return false;
+  getColliders() {
+    return [];
   }
 
   onCollision(other) {}
@@ -159,15 +159,17 @@ export class Player extends Entity {
     this.components.forEach((component) => component.update(deltaTime));
   }
 
-  hasCollider() {
+  hasColliders() {
     return true;
   }
 
-  getCollider() {
-    return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
+  getColliders() {
+    return [
+      new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this, 'damage'),
+    ];
   }
 
-  onCollision(other) {
+  onCollision(other, action) {
     if (other instanceof Tile) {
     } else if (other instanceof Player) {
     }
@@ -208,7 +210,7 @@ export class Player extends Entity {
       mouseAngleDegrees,
       speed,
       frozen,
-      collider: this.getCollider().pure(),
+      colliders: this.getColliders().map((c) => c.pure()),
     };
   }
 }
@@ -228,15 +230,17 @@ export class Tile extends Entity {
     return `${this.x},${this.y}`;
   }
 
-  hasCollider() {
+  hasColliders() {
     return !this.walk;
   }
 
-  getCollider() {
-    return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
+  getColliders() {
+    return [
+      new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this, 'tile'),
+    ];
   }
 
-  onCollision(other) {}
+  onCollision(other, action) {}
 
   getPojo() {
     let { x, y, height, width, walk } = this;
@@ -248,7 +252,7 @@ export class Tile extends Entity {
       width,
       walk,
       tid: this.tid,
-      collider: this.getCollider().pure(),
+      colliders: this.getColliders().map((c) => c.pure()),
     };
   }
 }
@@ -485,13 +489,17 @@ export class Game extends Component {
     }
 
     this.quadTree = new Quadtree(this.world);
-    collidables.forEach((component) => this.quadTree.insert(component.getCollider()));
+    collidables.forEach((component) => {
+      component.getColliders().forEach((collider) => {
+        this.quadTree.insert(collider);
+      });
+    });
   }
 
   getCollidables() {
     if (!this._colliderCache) {
       this._colliderCache = this.getComponents(true).filter(
-        (component) => component instanceof Entity && component.active && component.hasCollider()
+        (component) => component instanceof Entity && component.active && component.hasColliders()
       );
     }
 
@@ -506,10 +514,14 @@ export class Game extends Component {
 
     // check all collisions
     this.buildQuadtree();
-    this.getCollidables().forEach((collider) => {
-      this.quadTree
-        .query(collider.getCollider())
-        .forEach((collision) => collider.data && collision.data && collider.data.onCollision(collision.data));
+    this.getCollidables().forEach((entity) => {
+      entity.getColliders().forEach((collider) => {
+        this.quadTree
+          .query(collider)
+          .forEach(
+            (collision) => entity.data && collision.data && entity.data.onCollision(collision.data, collision.active)
+          );
+      });
     });
 
     this.getComponents(true)
@@ -631,12 +643,13 @@ export class HeapNode {
 // Quadtree entity
 // should be middle centered with half-width dimensions
 export class Rectangle {
-  constructor(x, y, w, h, data) {
+  constructor(x, y, w, h, data, action) {
     this.x = x || 0;
     this.y = y || 0;
     this.w = w || 0;
     this.h = h || 0;
     this.data = data;
+    this.action = action;
   }
 
   contains(point) {
@@ -656,12 +669,13 @@ export class Rectangle {
   }
 
   pure() {
-    let { x, y, w, h } = this;
+    let { x, y, w, h, action } = this;
     return {
       x,
       y,
       w,
       h,
+      action,
     };
   }
 }
