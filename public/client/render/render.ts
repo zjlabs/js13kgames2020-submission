@@ -68,7 +68,7 @@ export function renderGame() {
         getAngleRadiansFromDegrees(player.mouseAngleDegrees),
         player.username,
         player.health,
-        player.id === id ? 'pink' : 'red',
+        player.id === id ? '#0F9BF2' : '#F25C05',
         'black'
       );
     });

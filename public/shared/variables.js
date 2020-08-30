@@ -33,7 +33,9 @@ export const TICK_TIME = 1000 / TICK_RATE;
 
 export const WORLD_HEIGHT = 30000;
 export const WORLD_WIDTH = 30000;
-export const PLAYER_HEIGHT = 150;
-export const PLAYER_WIDTH = 150;
+export const PLAYER_HEIGHT = 60;
+export const PLAYER_WIDTH = 100;
+export const WEAPON_HEIGHT = 200;
+export const WEAPON_WIDTH = 5;
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
