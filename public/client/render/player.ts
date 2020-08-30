@@ -1,5 +1,5 @@
 import { renderBoundingBox } from './grid';
-import { renderLine, renderStrokedEllipse } from './primitive-shapes';
+import { renderFilledRectangle, renderLine, renderStrokedEllipse } from './primitive-shapes';
 import { completeRender, startRender } from './render-utilities';
 
 export function renderPlayer(
@@ -8,6 +8,7 @@ export function renderPlayer(
   yPosition,
   angleRadians,
   username: string,
+  healthPercent: number,
   primaryColor,
   secondaryColor
 ) {
@@ -44,9 +45,17 @@ export function renderPlayer(
   // Username.
   startRender(canvasContext, xPosition, yPosition, 0);
   canvasContext.fillStyle = 'white';
-  canvasContext.font = '32px sans-serif';
+  canvasContext.font = '24px sans-serif';
   canvasContext.textAlign = 'center';
   canvasContext.fillText(username, 0, 80);
+  completeRender(canvasContext);
+
+  // Health.
+  startRender(canvasContext, xPosition, yPosition, 0);
+  renderFilledRectangle(canvasContext, -50, 90, 100, 10, 'red');
+  completeRender(canvasContext);
+  startRender(canvasContext, xPosition, yPosition, 0);
+  renderFilledRectangle(canvasContext, -50, 90, healthPercent, 10, 'green');
   completeRender(canvasContext);
 }
 
