@@ -6,6 +6,7 @@ import { Player } from './entities';
  */
 const rooms = {};
 const players = {};
+const tiles = {};
 const items = {};
 const colliders = {};
 let delta;
@@ -30,7 +31,7 @@ export default {
   },
   removePlayer(socket) {
     // TODO: Implement cleanup routine.
-    if (players[socket.id] != null) {
+    if (players[socket.id]) {
       players[socket.id].set('active', false);
     }
 
@@ -59,17 +60,7 @@ export default {
   },
   sync(id) {
     debug('sync', id);
-    io.to(id).emit('sync', {
-      rooms,
-      players: Object.keys(players).reduce((acc, key) => {
-        return {
-          ...acc,
-          [key]: players[key].getPojo(),
-        };
-      }, {}),
-      items,
-      colliders,
-    });
+    io.to(id).emit('sync', this.all());
   },
   getDelta() {
     let out = delta;
@@ -84,11 +75,17 @@ export default {
   },
   all() {
     return {
-      rooms,
-      players: Object.keys(players).reduce((acc, id) => ({ ...acc, [id]: players[id].getPojo() }), {}),
-      items,
-      colliders,
-      delta,
+      // rooms,
+      // players: Object.keys(players).reduce((acc, id) => ({ ...acc, [id]: players[id].getPojo() }), {}),
+      // items,
+      // colliders,
+      // delta,
+      temp,
     };
   },
+  setTemp(obj) {
+    temp = obj;
+  },
+  setPlayers(obj) {},
+  setTiles(obj) {},
 };

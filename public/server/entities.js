@@ -1,6 +1,7 @@
 import state from './state';
 import { debug, error, TILE_HEIGHT, TILE_WIDTH, PLAYER_HEIGHT, PLAYER_WIDTH } from '../shared/variables';
 import { getId } from '../shared/id';
+import { getDiff } from '../client/object-utilities.ts';
 
 export class Component {
   constructor() {
@@ -40,12 +41,21 @@ export class Component {
   update(deltaTime) {
     this.component.forEach((component) => component.update(deltaTime));
   }
+
+  getPojo() {
+    let { id, components } = this;
+    return {
+      id,
+      components,
+    };
+  }
 }
 
 export class Entity extends Component {
   constructor() {
     super();
     this.active = true;
+    this._prevState = this.getPojo();
   }
 
   set(key, val) {
@@ -61,23 +71,19 @@ export class Entity extends Component {
   }
 
   getPojo() {
-    return [].concat(Object.keys(this), Object.keys(this.forceSerializableKeys)).reduce((acc, key) => {
-      if (this.unSerializableKeys != null && this.unSerializableKeys.includes(key)) {
-        return acc;
-      }
+    return {
+      ...super.getPojo(),
+      active: this.active,
+    };
+  }
 
-      if (this.forceSerializableKeys && this.forceSerializableKeys[key]) {
-        return {
-          ...acc,
-          [key]: this.forceSerializableKeys[key](),
-        };
-      }
+  getDiff() {
+    const pojo = this.getPojo();
+    let out = getDiff(this._prevState, pojo);
+    this._prevState = pojo;
 
-      return {
-        ...acc,
-        [key]: this.get(key),
-      };
-    }, {});
+    if (Object.keys(out) == 0) return false;
+    return out;
   }
 
   hasCollider() {
@@ -113,15 +119,6 @@ export class Player extends Entity {
     this.mouseAngleDegrees = 0;
     this.speed = 1;
     this.frozen = false;
-
-    this.unSerializableKeys = ['components', 'unSerializableKeys', 'socket'];
-    this.forceSerializableKeys = {
-      collider: () => {
-        let out = this.getCollider();
-        delete out.data;
-        return out;
-      },
-    };
   }
 
   update(deltaTime) {
@@ -146,6 +143,45 @@ export class Player extends Entity {
     if (other instanceof Tile) {
     } else if (other instanceof Player) {
     }
+  }
+
+  getPojo() {
+    let {
+      username,
+      x,
+      y,
+      width,
+      height,
+      xp,
+      level,
+      health,
+      items,
+      bot,
+      skin,
+      powerups,
+      mouseAngleDegrees,
+      speed,
+      frozen,
+    } = this;
+    return {
+      ...super.getPojo(),
+      username,
+      x,
+      y,
+      width,
+      height,
+      xp,
+      level,
+      health,
+      items,
+      bot,
+      skin,
+      powerups,
+      mouseAngleDegrees,
+      speed,
+      frozen,
+      collider: this.getCollider().pure(),
+    };
   }
 }
 
@@ -173,6 +209,20 @@ export class Tile extends Entity {
   }
 
   onCollision(other) {}
+
+  getPojo() {
+    let { x, y, height, width, walk } = this;
+    return {
+      ...super.getPojo(),
+      x,
+      y,
+      height,
+      width,
+      walk,
+      tid: this.tid,
+      collider: this.getCollider().pure(),
+    };
+  }
 }
 
 export class Grid extends Component {
@@ -431,11 +481,32 @@ export class Game extends Component {
 
     // check all collisions
     this.buildQuadtree();
-    this.getComponents().forEach((collider) => {
+    this.getCollidables().forEach((collider) => {
       this.quadTree
         .query(collider.getCollider())
         .forEach((collision) => collider.data && collision.data && collider.data.onCollision(collision.data));
     });
+
+    let diff;
+    this.getComponents(true)
+      .filter((c) => c instanceof Entity)
+      .forEach((entity) => {
+        let diff = entity.getDiff();
+        if (entity instanceof Player) {
+          // state.updatePlayer();
+        } else if (entity instanceof Tile) {
+          // state.updateTile();
+        }
+      });
+    // .reduce((acc, cur) => {
+    //   let data = cur.getDiff();
+    //   if (!data) return acc;
+
+    //   return {
+    //     ...acc,
+    //     [cur.id]: data,
+    //   };
+    // }, {})
   }
 
   syncState() {
@@ -554,10 +625,10 @@ export class HeapNode {
 // should be middle centered with half-width dimensions
 export class Rectangle {
   constructor(x, y, w, h, data) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
+    this.x = x || 0;
+    this.y = y || 0;
+    this.w = w || 0;
+    this.h = h || 0;
     this.data = data;
   }
 
@@ -575,6 +646,16 @@ export class Rectangle {
     return (
       this.x < rect.x + rect.w && this.x + this.w > rect.x && this.y < rect.y + rect.height && this.y + this.h > rect.y
     );
+  }
+
+  pure() {
+    let { x, y, w, h } = this;
+    return {
+      x,
+      y,
+      w,
+      h,
+    };
   }
 }
 
