@@ -18,7 +18,7 @@ class EntityState {
       ...diff,
     };
 
-    if (diff.active === false) {
+    if (!diff.active) {
       this._prune = true;
     }
   }
@@ -40,7 +40,7 @@ class EntityState {
 
     this._prune = false;
     Object.keys(this.data).forEach((id) => {
-      if (this.data[id].active === false) {
+      if (!this.data[id].active) {
         delete this.data[id];
       }
     });
