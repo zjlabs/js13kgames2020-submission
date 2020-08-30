@@ -33,7 +33,7 @@ html, body {
   color: #FFFFFF;
   font-family: monospace;
   font-size: 2rem;
-  left: 1rem;
+  right: 1rem;
   top: 1rem;
   position: absolute;
 }
