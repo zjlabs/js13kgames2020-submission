@@ -1,91 +1,83 @@
 import { debug } from '../shared/variables';
-import { Player } from './entities';
 
-/**
- * The game state model
- */
-const rooms = {};
-const players = {};
-const tiles = {};
-const items = {};
-const colliders = {};
-let delta;
+class EntityState {
+  constructor() {
+    this.data = {};
+    this.delta = {};
+    this._prune = false;
+  }
+
+  get(id) {
+    return this.data[id] || false;
+  }
+
+  set(entity) {
+    let diff = entity.getDiff();
+    this.delta[entity.id] = {
+      ...(this.delta[entity.id] || {}),
+      ...diff,
+    };
+
+    if (diff.active == false) {
+      this._prune = true;
+    }
+  }
+
+  reset() {
+    Object.keys(this.delta).forEach((id) => {
+      this.data[id] = {
+        ...this.data[id],
+        ...this.delta[id],
+      };
+    });
+
+    this.delta = {};
+    this.prune();
+  }
+
+  prune() {
+    if (!this._prune) return;
+
+    this._prune = false;
+    Object.keys(this.data).forEach((id) => {
+      if (!this.data[id].active) {
+        delete this.data[id];
+      }
+    });
+  }
+}
+
+const _players = new EntityState();
+const _tiles = new EntityState();
 
 export default {
-  addPlayer(socket) {
-    players[socket.id] = players[socket.id] || new Player(socket);
-    return players[socket.id];
-  },
-  updatePlayer(socket, obj) {
-    // update the player delta for every different key:value pair
-    Object.keys(obj).forEach((key) => {
-      let oldVal = players[socket.id].get(key);
-      let newVal = obj[key];
-
-      if (oldVal != newVal) {
-        players[socket.id].set(key, newVal);
-        delta.players[socket.id] = players[socket.id].getPojo();
-      }
-    });
-    debug('updatePlayer', socket.id, players[socket.id].getPojo());
-  },
-  removePlayer(socket) {
-    // TODO: Implement cleanup routine.
-    if (players[socket.id]) {
-      players[socket.id].set('active', false);
-    }
-
-    debug('removePlayer', socket.id);
-  },
-  getPlayer(id = undefined) {
-    if (id == undefined) {
-      return players;
-    }
-    if (players[id]) {
-      return players[id];
-    }
-
-    return undefined;
-  },
-  prunePlayers() {
-    let out = [];
-    Object.keys(players).forEach((id) => {
-      if (players[id].get('active') == false) {
-        delete players[id];
-        out.push(id);
-      }
-    });
-
-    return out;
-  },
+  // IO functions
   sync(id) {
-    debug('sync', id);
-    io.to(id).emit('sync', this.all());
+    io.to(id).emit('sync', this._data());
   },
-  getDelta() {
-    let out = delta;
-    delta = {
-      rooms: {},
-      players: {},
-      items: {},
-      colliders: {},
-    };
+  delta() {
+    io.emit('delta', this._delta());
 
-    return out || delta;
+    // reset internal state
+    _players.reset();
+    _tiles.reset();
   },
-  all() {
+
+  // State objs
+  player: _players,
+  tile: _tiles,
+
+  // POJO functions
+  _delta() {
     return {
-      // rooms,
-      // players: Object.keys(players).reduce((acc, id) => ({ ...acc, [id]: players[id].getPojo() }), {}),
-      // items,
-      // colliders,
-      // delta,
-      temp,
+      players: _players.delta,
+      tiles: _tiles.delta,
     };
   },
-  setTemp(obj) {
-    temp = obj;
+  _data() {
+    return {
+      players: _players.data,
+      tiles: _tiles.data,
+    };
   },
-  setPlayers(obj) {},
-  setTiles(obj) {},
 };

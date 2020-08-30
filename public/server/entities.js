@@ -447,9 +447,6 @@ export class Game extends Component {
     let totalHeight = this.grid.height * TILE_HEIGHT;
     this.world = new Rectangle(totalWidth / 2, totalHeight / 2, totalWidth / 2, totalHeight / 2);
 
-    // hack to set initial delta
-    state.getDelta();
-
     // get the frame quadtree
     this.buildQuadtree();
   }
@@ -491,31 +488,12 @@ export class Game extends Component {
     this.getComponents(true)
       .filter((c) => c instanceof Entity)
       .forEach((entity) => {
-        let diff = entity.getDiff();
         if (entity instanceof Player) {
-          // state.updatePlayer();
+          state.player.set(entity);
         } else if (entity instanceof Tile) {
-          // state.updateTile();
+          state.tile.set(entity);
         }
       });
-    // .reduce((acc, cur) => {
-    //   let data = cur.getDiff();
-    //   if (!data) return acc;
-
-    //   return {
-    //     ...acc,
-    //     [cur.id]: data,
-    //   };
-    // }, {})
-  }
-
-  syncState() {
-    io.emit('delta', state.all());
-  }
-
-  pruneInactiveEntities() {
-    let old = [].concat(state.prunePlayers());
-    old.forEach((c) => this.removeComponent(c));
   }
 
   clearFrameMemory() {
