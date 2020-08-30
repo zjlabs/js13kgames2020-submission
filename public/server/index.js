@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
       player.set(key, obj[key]);
     });
     state.player.set(player);
-    state.sync(socket.id);
+    state.sync(socket.id, player);
   });
 
   debug('Connected', socket.id);

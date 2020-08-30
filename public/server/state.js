@@ -52,8 +52,15 @@ const _tiles = new EntityState();
 
 export default {
   // IO functions
-  sync(id) {
-    io.to(id).emit('sync', this._data());
+  sync(id, player) {
+    io.to(id).emit(
+      'sync',
+      this._data({
+        currentPlayer: {
+          id: player.id,
+        },
+      })
+    );
   },
   delta() {
     io.emit('delta', this._delta());
@@ -74,8 +81,9 @@ export default {
       tiles: _tiles.delta,
     };
   },
-  _data() {
+  _data(data = {}) {
     return {
+      ...data,
       players: _players.data,
       tiles: _tiles.data,
     };
