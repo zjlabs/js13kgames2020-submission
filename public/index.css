@@ -19,8 +19,6 @@ html, body {
 
 #root canvas {
   display: block;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .sign-in-form {
@@ -35,7 +33,22 @@ html, body {
   color: #FFFFFF;
   font-family: monospace;
   font-size: 2rem;
-  left: 1rem;
+  right: 1rem;
   top: 1rem;
   position: absolute;
+}
+
+.statistics > span {
+  display: block;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.statistics__statistic--server {
+  font-size: 1rem;
 }

@@ -31,14 +31,14 @@ function getMovementOffset(angleRadians: number) {
   movementOffsetPxY += y;
 
   if (
-    movementOffsetPxX >= (triangleSidePx + patternPaddingPx) ||
+    movementOffsetPxX >= triangleSidePx + patternPaddingPx ||
     movementOffsetPxX <= (triangleSidePx + patternPaddingPx) * -1
   ) {
     movementOffsetPxX = 0;
   }
 
   if (
-    movementOffsetPxY >= (triangleSidePx + patternPaddingPx) ||
+    movementOffsetPxY >= triangleSidePx + patternPaddingPx ||
     movementOffsetPxY <= (triangleSidePx + patternPaddingPx) * -1
   ) {
     movementOffsetPxY = 0;
