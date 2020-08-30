@@ -1,7 +1,7 @@
 import configuration from './configuration';
 import { getMouseAngle } from './input';
 import { renderGame } from './render/render';
-import { getPlayerState, setPlayerStateItem } from './state';
+import { getPlayerState } from './state';
 import { sendDataAction } from './socket/actions';
 import { getSocket } from './socket/socket';
 import { getDiff } from './object-utilities';
@@ -15,9 +15,13 @@ export function tick() {
 
   if (currentPlayerState != null) {
     // Update state with input state.
-    setPlayerStateItem('mouseAngleDegrees', getMouseAngle());
+    // setPlayerStateItem('mouseAngleDegrees', getMouseAngle());
+    // const updatedPlayerState = getPlayerState();
 
-    const updatedPlayerState = getPlayerState();
+    const updatedPlayerState = {
+      ...currentPlayerState,
+      mouseAngleDegrees: getMouseAngle(),
+    };
 
     const diff = getDiff(currentPlayerState, updatedPlayerState);
 
