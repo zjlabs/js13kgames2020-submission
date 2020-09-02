@@ -8,6 +8,10 @@ import {
   TILE_WIDTH,
   WORLD_HEIGHT,
   WORLD_WIDTH,
+  WEAPON_HEIGHT,
+  WEAPON_RESOLUTION,
+  WEAPON_WIDTH,
+  WEAPON_Y_OFFSET,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -116,8 +120,8 @@ export class Player extends Entity {
     this.username = '';
     this.x = WORLD_WIDTH / 2;
     this.y = WORLD_HEIGHT / 2;
-    this.height = PLAYER_HEIGHT;
-    this.width = PLAYER_WIDTH;
+    this.height = PLAYER_HEIGHT / 2;
+    this.width = PLAYER_WIDTH / 2;
     this.xp = 0;
     this.level = 1;
     this.health = 10;
@@ -163,9 +167,28 @@ export class Player extends Entity {
     return true;
   }
 
+  getWeaponColliders() {
+    let out = [];
+
+    const startX = this.x;
+    const endX = Math.cos(this.mouseAngleDegrees) * WEAPON_HEIGHT;
+    const xTick = endX / WEAPON_RESOLUTION;
+
+    const startY = this.y;
+    const endY = Math.sin(this.mouseAngleDegrees) * WEAPON_HEIGHT;
+    const yTick = endY / WEAPON_RESOLUTION;
+
+    for (let i = 0; i < WEAPON_RESOLUTION; i++) {
+      out.push(new Rectangle(this.x, this.y, this.x + xTick * i, this.Y + yTick * i));
+    }
+
+    return out;
+  }
+
   getColliders() {
     return [
-      new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this, 'damage'),
+      new Rectangle(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2, this, 'damage'),
+      ...this.getWeaponColliders(),
     ];
   }
 
