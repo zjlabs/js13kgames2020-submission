@@ -65,6 +65,8 @@ export function renderGame() {
         ctx,
         relativeCoordinateX,
         relativeCoordinateY,
+        player.width,
+        player.height,
         getAngleRadiansFromDegrees(player.mouseAngleDegrees),
         player.username,
         player.health,
