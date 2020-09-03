@@ -1,11 +1,14 @@
+import { SHOW_PERFORMANCE_METRICS } from '../../shared/variables';
 import { applyState, setPlayerId } from '../state';
 import { ServerStats } from '../models/server-stats';
 import { renderServerStats } from '../render/stats';
 
 export function registerEventHandlers(socket) {
-  socket.on('stats', (serverStats: ServerStats) => {
-    renderServerStats(serverStats);
-  });
+  if (SHOW_PERFORMANCE_METRICS) {
+    socket.on('stats', (serverStats: ServerStats) => {
+      renderServerStats(serverStats);
+    });
+  }
 
   // Sent 1 time after initial play command is sent.
   socket.on('sync', (obj) => {

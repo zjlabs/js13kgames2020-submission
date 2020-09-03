@@ -1,3 +1,4 @@
+import { SHOW_GRID, SHOW_PERFORMANCE_METRICS } from '../../shared/variables';
 import { getAngleRadiansFromDegrees } from '../math-utilities';
 import { getPlayerState, getState } from '../state';
 import { renderPlayer } from './player';
@@ -6,6 +7,7 @@ import { getCanvas } from './canvas';
 import { renderBackground } from './background';
 import { renderPlayerCoordinatesStats, renderPlayerMouseAngleStats } from './stats';
 import { renderMap } from './map';
+import { renderGrid } from './grid';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -36,7 +38,9 @@ export function renderGame() {
 
   // TODO: This makes me feel like puking. Figure out how to get rid of motion sickness.
   // Render debug grid.
-  // renderGrid(ctx, width, height);
+  if (SHOW_GRID) {
+    renderGrid(ctx, width, height);
+  }
 
   const screenCoordinate0X = x - width / 2;
   const screenCoordinate0Y = y - height / 2;
@@ -65,6 +69,8 @@ export function renderGame() {
         ctx,
         relativeCoordinateX,
         relativeCoordinateY,
+        player.width,
+        player.height,
         getAngleRadiansFromDegrees(player.mouseAngleDegrees),
         player.username,
         player.health,
@@ -90,8 +96,10 @@ export function renderGame() {
   );
 
   // Render stats.
-  renderPlayerCoordinatesStats(x, y);
-  renderPlayerMouseAngleStats(mouseAngleDegrees);
+  if (SHOW_PERFORMANCE_METRICS) {
+    renderPlayerCoordinatesStats(x, y);
+    renderPlayerMouseAngleStats(mouseAngleDegrees);
+  }
 }
 
 let renderStatsThrottleBuffer = 0;

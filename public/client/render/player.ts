@@ -1,188 +1,155 @@
-import { PLAYER_HEIGHT, PLAYER_WIDTH, WEAPON_HEIGHT, WEAPON_WIDTH } from '../../shared/variables';
+import { renderFilledRectangle, renderFilledTriangle, renderStrokedEllipse } from './primitive-shapes';
+import { SHOW_BOUNDING_BOXES, WEAPON_HEIGHT, WEAPON_WIDTH } from '../../shared/variables';
 import { renderBoundingBox } from './grid';
-import { renderFilledRectangle, renderLine, renderStrokedEllipse } from './primitive-shapes';
-import { completeRender, startRender } from './render-utilities';
-
-const angle0OffsetRadians = Math.PI / 2;
 
 export function renderPlayer(
-  canvasContext,
+  ctx,
   xPosition,
   yPosition,
+  width,
+  height,
   angleRadians,
   username: string,
   healthPercent: number,
   primaryColor,
   secondaryColor
 ) {
-  const PLAYER_MIN_BOUND = PLAYER_HEIGHT < PLAYER_WIDTH ? PLAYER_HEIGHT : PLAYER_WIDTH;
+  // Render body.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  renderPlayerBody(ctx, 0, 0, height, primaryColor, secondaryColor);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
 
-  startRender(
-    canvasContext,
-    xPosition,
-    yPosition,
-    angleRadians + angle0OffsetRadians,
-    PLAYER_MIN_BOUND,
-    PLAYER_MIN_BOUND
-  );
-  renderPlayerBody(
-    canvasContext,
-    PLAYER_MIN_BOUND / 2,
-    PLAYER_MIN_BOUND / 2,
-    PLAYER_MIN_BOUND / 2,
-    primaryColor,
-    secondaryColor
-  );
-  completeRender(canvasContext);
+  // Render sword.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.rotate(angleRadians);
+  renderPlayerSword(ctx, 0, width * 0.75, WEAPON_HEIGHT, '#333333');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
 
-  startRender(canvasContext, xPosition, yPosition, angleRadians + angle0OffsetRadians, WEAPON_WIDTH, WEAPON_HEIGHT);
-  renderPlayerSword(canvasContext, PLAYER_WIDTH * 0.4, PLAYER_HEIGHT * 2, WEAPON_HEIGHT, 'rgba(0, 0, 70, 0.5)');
-  completeRender(canvasContext);
+  // Render left pauldron.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.rotate(angleRadians);
+  renderPlayerPauldron(ctx, 0, -width / 2, height / 3, width / 2, primaryColor, secondaryColor);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
 
-  startRender(
-    canvasContext,
-    xPosition,
-    yPosition,
-    angleRadians + angle0OffsetRadians,
-    (PLAYER_WIDTH / 5) * 2,
-    (PLAYER_HEIGHT / 6) * 2
-  );
-  renderPlayerPauldron(
-    canvasContext,
-    PLAYER_WIDTH / 5 - PLAYER_MIN_BOUND / 2,
-    PLAYER_MIN_BOUND / 6,
-    PLAYER_WIDTH / 5,
-    PLAYER_HEIGHT / 6,
-    primaryColor,
-    secondaryColor
-  );
-  completeRender(canvasContext);
+  // Render right pauldron.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.rotate(angleRadians);
+  renderPlayerPauldron(ctx, 0, width / 2, height / 3, width / 2, primaryColor, secondaryColor);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
 
-  startRender(
-    canvasContext,
-    xPosition,
-    yPosition,
-    angleRadians + angle0OffsetRadians,
-    (PLAYER_WIDTH / 5) * 2,
-    (PLAYER_HEIGHT / 6) * 2
-  );
-  renderPlayerPauldron(
-    canvasContext,
-    PLAYER_WIDTH - PLAYER_MIN_BOUND / 2 - PLAYER_WIDTH / 5,
-    PLAYER_MIN_BOUND / 6,
-    PLAYER_WIDTH / 5,
-    PLAYER_HEIGHT / 6,
-    primaryColor,
-    secondaryColor
-  );
-  completeRender(canvasContext);
+  // Render head.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  renderPlayerHead(ctx, 0, 0, height / 2, primaryColor, secondaryColor);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
 
-  startRender(
-    canvasContext,
-    xPosition,
-    yPosition,
-    angleRadians + angle0OffsetRadians,
-    PLAYER_MIN_BOUND / 2,
-    PLAYER_MIN_BOUND / 2
-  );
-  renderPlayerHead(
-    canvasContext,
-    PLAYER_MIN_BOUND / 4,
-    PLAYER_MIN_BOUND / 4,
-    PLAYER_MIN_BOUND / 4,
-    primaryColor,
-    secondaryColor
-  );
-  completeRender(canvasContext);
+  // Render username.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.fillStyle = '#FFFFFFDD';
+  ctx.font = '24px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(username, 0, height + 20);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
 
-  // Player bounding box.
-  startRender(canvasContext, xPosition, yPosition, angleRadians + angle0OffsetRadians, PLAYER_WIDTH, PLAYER_HEIGHT);
-  renderBoundingBox(canvasContext, 0, 0, PLAYER_WIDTH, PLAYER_HEIGHT, 'blue');
-  completeRender(canvasContext);
+  // Render health bar base.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  renderFilledRectangle(ctx, width / -2, height + 30, width, 10, '#F07F5C');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
 
-  // Weapon bounding box.
-  startRender(canvasContext, xPosition, yPosition, angleRadians + angle0OffsetRadians, 9, 100);
-  renderBoundingBox(
-    canvasContext,
-    PLAYER_WIDTH * 0.4 + WEAPON_WIDTH,
-    WEAPON_HEIGHT * 0.65 * -1,
-    PLAYER_WIDTH * 0.4,
-    PLAYER_HEIGHT + PLAYER_HEIGHT / 6,
-    'red'
-  );
-  completeRender(canvasContext);
+  // Render health bar value.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  renderFilledRectangle(ctx, width / -2, height + 30, (width * healthPercent) / 100, 10, '#89F026');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
 
-  // Username.
-  startRender(canvasContext, xPosition, yPosition, 0);
-  canvasContext.fillStyle = '#FFFFFFDD';
-  canvasContext.font = '24px sans-serif';
-  canvasContext.textAlign = 'center';
-  canvasContext.fillText(username, 0, PLAYER_HEIGHT + 20);
-  completeRender(canvasContext);
+  if (SHOW_BOUNDING_BOXES) {
+    // Render player bounding box.
+    ctx.beginPath();
+    ctx.translate(xPosition, yPosition);
+    ctx.rotate(angleRadians);
+    renderBoundingBox(ctx, -height, -width, height, width, 'blue');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.closePath();
 
-  // Health.
-  startRender(canvasContext, xPosition, yPosition, 0);
-  renderFilledRectangle(canvasContext, PLAYER_WIDTH / -2, PLAYER_HEIGHT + 30, PLAYER_WIDTH, 10, '#F07F5C');
-  completeRender(canvasContext);
-  startRender(canvasContext, xPosition, yPosition, 0);
-  renderFilledRectangle(canvasContext, PLAYER_WIDTH / -2, PLAYER_HEIGHT + 30, healthPercent, 10, '#89F026');
-  completeRender(canvasContext);
+    // Render weapon bounding box.
+    ctx.beginPath();
+    ctx.translate(xPosition, yPosition);
+    ctx.rotate(angleRadians);
+    renderBoundingBox(ctx, 0, width * 0.75 - WEAPON_WIDTH / 2, WEAPON_HEIGHT, width * 0.75 + WEAPON_WIDTH / 2, 'red');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.closePath();
+  }
 }
 
-function renderPlayerBody(canvasContext, xPosition, yPosition, radius, fillStyle, strokeStyle) {
-  renderStrokedEllipse(canvasContext, xPosition, yPosition, radius, radius, fillStyle, strokeStyle);
+function renderPlayerBody(ctx, xPosition, yPosition, radius, fillStyle, strokeStyle) {
+  renderStrokedEllipse(ctx, xPosition, yPosition, radius, radius, fillStyle, strokeStyle);
 }
 
-function renderPlayerHead(canvasContext, xPosition, yPosition, radius, fillStyle, strokeStyle) {
-  renderStrokedEllipse(canvasContext, xPosition, yPosition, radius, radius, fillStyle, strokeStyle);
+function renderPlayerHead(ctx, xPosition, yPosition, radius, fillStyle, strokeStyle) {
+  renderStrokedEllipse(ctx, xPosition, yPosition, radius, radius, fillStyle, strokeStyle);
 }
 
-function renderPlayerPauldron(canvasContext, xPosition, yPosition, radiusX, radiusY, fillStyle, strokeStyle) {
-  renderStrokedEllipse(canvasContext, xPosition, yPosition, radiusX, radiusY, fillStyle, strokeStyle);
+function renderPlayerPauldron(ctx, xPosition, yPosition, radiusX, radiusY, fillStyle, strokeStyle) {
+  renderStrokedEllipse(ctx, xPosition, yPosition, radiusX, radiusY, fillStyle, strokeStyle);
 }
 
-function renderPlayerSword(canvasContext, xPosition, yPosition, length, strokeStyle) {
-  const xPositionStart = xPosition;
-  const yPositionStart = yPosition;
-  const xPositionEnd = xPosition;
-  const yPositionEnd = yPosition - length;
+function renderPlayerSword(ctx, xPosition, yPosition, length, strokeStyle) {
+  const edgeLength = length * 0.95;
+  const pointLength = length * 0.05;
+  const gripLength = length * 0.1;
+  const guardWidth = length * 0.1;
+  const pommelRadius = WEAPON_WIDTH;
 
-  const width = 1;
-  renderLine(
-    canvasContext,
-    xPositionStart - width * 2,
-    yPositionStart,
-    xPositionEnd - width * 2,
-    yPositionEnd + 6,
-    width,
+  // Render blade edge.
+  renderFilledRectangle(ctx, xPosition, yPosition - WEAPON_WIDTH / 2, edgeLength, WEAPON_WIDTH, strokeStyle);
+
+  // Render blade point.
+  renderFilledTriangle(
+    ctx,
+    xPosition + edgeLength,
+    yPosition - WEAPON_WIDTH / 2,
+    edgeLength + pointLength,
+    yPosition,
+    xPosition + edgeLength,
+    yPosition + WEAPON_WIDTH / 2,
     strokeStyle
   );
-  renderLine(
-    canvasContext,
-    xPositionStart - width,
-    yPositionStart,
-    xPositionEnd - width,
-    yPositionEnd + 2,
-    width,
+
+  // Render blade guard
+  renderFilledRectangle(ctx, xPosition + guardWidth, yPosition - guardWidth / 2, WEAPON_WIDTH, guardWidth, strokeStyle);
+
+  // Render blade grip
+  renderFilledRectangle(
+    ctx,
+    xPosition - gripLength,
+    yPosition - WEAPON_WIDTH / 2,
+    gripLength,
+    WEAPON_WIDTH,
     strokeStyle
   );
-  renderLine(canvasContext, xPositionStart, yPositionStart, xPositionEnd, yPositionEnd, width, strokeStyle);
-  renderLine(
-    canvasContext,
-    xPositionStart + width,
-    yPositionStart,
-    xPositionEnd + width,
-    yPositionEnd + 2,
-    width,
-    strokeStyle
-  );
-  renderLine(
-    canvasContext,
-    xPositionStart + width * 2,
-    yPositionStart,
-    xPositionEnd + width * 2,
-    yPositionEnd + 6,
-    width,
+
+  // Render blade pommel.
+  renderStrokedEllipse(
+    ctx,
+    xPosition - gripLength - pommelRadius,
+    yPosition,
+    pommelRadius,
+    pommelRadius,
+    strokeStyle,
     strokeStyle
   );
 }
