@@ -49,3 +49,9 @@ export const WEAPON_X_OFFSET = 3 / 5;
 export const WEAPON_Y_OFFSET = 0;
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
+
+// math utils
+export const PRECISION = 10;
+export const rad = (d) => (d * Math.PI) / 180;
+export const sin = (d) => parseFloat(Math.sin(rad(d)).toFixed(PRECISION));
+export const cos = (d) => parseFloat(Math.cos(rad(d)).toFixed(PRECISION));

@@ -12,6 +12,9 @@ import {
   WEAPON_RESOLUTION,
   WEAPON_WIDTH,
   WEAPON_Y_OFFSET,
+  rad,
+  sin,
+  cos,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -167,19 +170,25 @@ export class Player extends Entity {
     return true;
   }
 
+  // Drawn center origin
+  // starting at 0 deg
+  // rotate b around a, mouseAngleDegrees degrees
   getWeaponColliders() {
     let out = [];
 
-    const startX = this.x;
-    const endX = Math.cos(this.mouseAngleDegrees) * WEAPON_HEIGHT;
-    const xTick = endX / WEAPON_RESOLUTION;
+    // get the x/y angle for the following calcs
+    const c = cos(mouseAngleDegrees);
+    const s = sin(mouseAngleDegrees);
 
-    const startY = this.y;
-    const endY = Math.sin(this.mouseAngleDegrees) * WEAPON_HEIGHT;
-    const yTick = endY / WEAPON_RESOLUTION;
+    for (let i = 1; i <= WEAPON_RESOLUTION; i++) {
+      let aX = x;
+      let aY = y;
+      let bX = x + i * len;
+      let bY = y;
+      let botX = c * (bX - aX) - s * (bY - aY) + aX;
+      let botY = s * (bX - aX) + c * (bY - aY) + aY;
 
-    for (let i = 0; i < WEAPON_RESOLUTION; i++) {
-      out.push(new Rectangle(this.x, this.y, this.x + xTick * i, this.Y + yTick * i));
+      out.push(new Rectangle(botX, botY, 0, 0));
     }
 
     return out;
