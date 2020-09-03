@@ -26,6 +26,13 @@ export const debug = (...message) => LOG_LEVEL <= 1 && console.log('debug', ...m
 export const all = (...message) => LOG_LEVEL === 0 && console.log('all', ...message);
 
 /**
+ * Client stats debug options.
+ */
+export const SHOW_PERFORMANCE_METRICS = true;
+export const SHOW_BOUNDING_BOXES = true;
+export const SHOW_GRID = false;
+
+/**
  * The server tick rate info
  */
 export const TICK_RATE = 120;

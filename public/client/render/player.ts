@@ -1,5 +1,6 @@
 import { renderFilledRectangle, renderFilledTriangle, renderStrokedEllipse } from './primitive-shapes';
-import { WEAPON_HEIGHT, WEAPON_WIDTH } from '../../shared/variables';
+import { SHOW_BOUNDING_BOXES, WEAPON_HEIGHT, WEAPON_WIDTH } from '../../shared/variables';
+import { renderBoundingBox } from './grid';
 
 export function renderPlayer(
   ctx,
@@ -75,21 +76,23 @@ export function renderPlayer(
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
-  // // Render player bounding box.
-  // ctx.beginPath();
-  // ctx.translate(xPosition, yPosition);
-  // ctx.rotate(angleRadians);
-  // renderBoundingBox(ctx, -height, -width, height, width, 'blue');
-  // ctx.setTransform(1, 0, 0, 1, 0, 0);
-  // ctx.closePath();
-  //
-  // // Render weapon bounding box.
-  // ctx.beginPath();
-  // ctx.translate(xPosition, yPosition);
-  // ctx.rotate(angleRadians);
-  // renderBoundingBox(ctx, 0, width * 0.75 - WEAPON_WIDTH / 2, WEAPON_HEIGHT, width * 0.75 + WEAPON_WIDTH / 2, 'red');
-  // ctx.setTransform(1, 0, 0, 1, 0, 0);
-  // ctx.closePath();
+  if (SHOW_BOUNDING_BOXES) {
+    // Render player bounding box.
+    ctx.beginPath();
+    ctx.translate(xPosition, yPosition);
+    ctx.rotate(angleRadians);
+    renderBoundingBox(ctx, -height, -width, height, width, 'blue');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.closePath();
+
+    // Render weapon bounding box.
+    ctx.beginPath();
+    ctx.translate(xPosition, yPosition);
+    ctx.rotate(angleRadians);
+    renderBoundingBox(ctx, 0, width * 0.75 - WEAPON_WIDTH / 2, WEAPON_HEIGHT, width * 0.75 + WEAPON_WIDTH / 2, 'red');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.closePath();
+  }
 }
 
 function renderPlayerBody(ctx, xPosition, yPosition, radius, fillStyle, strokeStyle) {

@@ -1,3 +1,4 @@
+import { SHOW_PERFORMANCE_METRICS } from '../shared/variables';
 import configuration from './configuration';
 import { getMouseAngle } from './input';
 import { renderGame } from './render/render';
@@ -45,7 +46,7 @@ export function render() {
 
   renderTimes.push(renderMs);
 
-  if (renderTimes.length === 60) {
+  if (renderTimes.length === 60 && SHOW_PERFORMANCE_METRICS) {
     const averageRenderTime = renderTimes.reduce((total, item) => total + item, 0) / renderTimes.length;
     statsFpsEl.innerHTML = `${Math.round(1000 / averageRenderTime)} fps`;
     renderTimes = [];
