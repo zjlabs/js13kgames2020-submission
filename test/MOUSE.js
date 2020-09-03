@@ -1,6 +1,6 @@
 let x = 0;
 let y = 0;
-let mouseAngleDegrees = 90;
+let mouseAngleDegrees = 270;
 let WEAPON_HEIGHT = 200;
 let WEAPON_WIDTH = 5;
 let WEAPON_RESOLUTION = 5;
@@ -12,37 +12,33 @@ const cos = (d) => parseFloat(Math.cos(rad(d)).toFixed(PRECISION));
 
 // Drawn center origin
 // starting at 0 deg
+// rotate b around a, mouseAngleDegrees degrees
 function getWeaponColliders() {
   let out = [];
 
-  const xOffset = 0;
-  const YOffset = 0;
-
   // get the x/y angle for the following calcs
-  const aX = cos(mouseAngleDegrees);
-  const aY = sin(mouseAngleDegrees);
+  const c = cos(mouseAngleDegrees);
+  const s = sin(mouseAngleDegrees);
 
   // get the hit box dimensions
-  const dX = WEAPON_HEIGHT / WEAPON_RESOLUTION;
-  const dY = WEAPON_WIDTH;
+  const len = WEAPON_HEIGHT / WEAPON_RESOLUTION;
+  const wid = WEAPON_WIDTH;
 
-  for (let i = 0; i < WEAPON_RESOLUTION; i++) {
-    let startX = dX * i * aX;
-    let endX = dX * (i + 1) * aX;
+  for (let i = 1; i <= WEAPON_RESOLUTION; i++) {
+    let aX = x;
+    let bX = x + i * len;
+    let aY = y;
+    let bY = y;
 
-    let startY = dY * i * aY;
-    let endY = dY * (i + 1) * aY;
+    let outX = c * (bX - aX) - s * (bY - aY) + aX;
+    let outY = s * (bX - aX) + c * (bY - aY) + aY;
 
-    console.log(`i (${i}) startX (${startX}) endX (${endX}) dX (${dX}) startY (${startY}) endY (${endY}) dY (${dY})`);
-    out.push([x + startX, y + startY, dX, dY]);
-
-    // out.push([
-    //   x + ((cos(mouseAngleDegrees) * WEAPON_HEIGHT) / WEAPON_RESOLUTION) * (i - 1),
-    //   y + ((sin(mouseAngleDegrees) * WEAPON_WIDTH) / WEAPON_RESOLUTION) * (i - 1),
-
-    //   x + ((cos(mouseAngleDegrees) * WEAPON_HEIGHT) / WEAPON_RESOLUTION) * i,
-    //   y + ((sin(mouseAngleDegrees) * WEAPON_WIDTH) / WEAPON_RESOLUTION) * i + cos(mouseAngleDegrees) * WEAPON_WIDTH,
-    // ]);
+    console.log(`i: ${i}`);
+    console.log(`len: ${len}, wid: ${wid}`);
+    console.log(`aX: ${aX}, aY: ${aY}`);
+    console.log(`bX: ${bX}, bY: ${bY}`);
+    console.log(`outX: ${outX}, outY: ${outY}`);
+    out.push([outX, outY]);
   }
 
   return out;
