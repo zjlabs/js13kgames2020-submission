@@ -51,6 +51,30 @@ export function renderPlayer(
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
+  // Render username.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.fillStyle = '#FFFFFFDD';
+  ctx.font = '24px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(username, 0, height + 20);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
+  // Render health bar base.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  renderFilledRectangle(ctx, width / -2, height + 30, width, 10, '#F07F5C');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
+  // Render health bar value.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  renderFilledRectangle(ctx, width / -2, height + 30, (width * healthPercent) / 100, 10, '#89F026');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
   // // Render player bounding box.
   // ctx.beginPath();
   // ctx.translate(xPosition, yPosition);
