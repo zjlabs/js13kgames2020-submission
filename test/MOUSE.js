@@ -13,10 +13,6 @@ const min = (...i) => Math.min(...i);
 const max = (...i) => Math.max(...i);
 const abs = (i) => Math.abs(i);
 
-// get the hit box dimensions
-const len = WEAPON_HEIGHT / WEAPON_RESOLUTION;
-const wid = WEAPON_WIDTH;
-
 // Drawn center origin
 // starting at 0 deg
 // rotate b around a, mouseAngleDegrees degrees
@@ -30,7 +26,7 @@ function getWeaponColliders() {
   for (let i = 1; i <= WEAPON_RESOLUTION; i++) {
     let aX = x;
     let aY = y;
-    let bX = x + i * len;
+    let bX = x + i * (WEAPON_HEIGHT / WEAPON_RESOLUTION);
     let bY = y;
     let botX = c * (bX - aX) - s * (bY - aY) + aX;
     let botY = s * (bX - aX) + c * (bY - aY) + aY;

@@ -55,3 +55,6 @@ export const PRECISION = 10;
 export const rad = (d) => (d * Math.PI) / 180;
 export const sin = (d) => parseFloat(Math.sin(rad(d)).toFixed(PRECISION));
 export const cos = (d) => parseFloat(Math.cos(rad(d)).toFixed(PRECISION));
+export const min = (...i) => Math.min(...i);
+export const max = (...i) => Math.max(...i);
+export const abs = (i) => Math.abs(i);

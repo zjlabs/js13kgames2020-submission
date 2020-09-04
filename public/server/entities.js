@@ -15,6 +15,9 @@ import {
   rad,
   sin,
   cos,
+  min,
+  max,
+  abs,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -173,31 +176,75 @@ export class Player extends Entity {
   // Drawn center origin
   // starting at 0 deg
   // rotate b around a, mouseAngleDegrees degrees
-  getWeaponColliders() {
+  getWeaponColliderCoords() {
     let out = [];
 
     // get the x/y angle for the following calcs
-    const c = cos(mouseAngleDegrees);
-    const s = sin(mouseAngleDegrees);
+    const c = cos(this.mouseAngleDegrees);
+    const s = sin(this.mouseAngleDegrees);
 
     for (let i = 1; i <= WEAPON_RESOLUTION; i++) {
-      let aX = x;
-      let aY = y;
-      let bX = x + i * len;
-      let bY = y;
+      let aX = this.x;
+      let aY = this.y;
+      let bX = this.x + i * (WEAPON_HEIGHT / WEAPON_RESOLUTION);
+      let bY = this.y;
       let botX = c * (bX - aX) - s * (bY - aY) + aX;
       let botY = s * (bX - aX) + c * (bY - aY) + aY;
 
-      out.push(new Rectangle(botX, botY, 0, 0));
+      out.push([botX, botY]);
     }
 
+    return out;
+  }
+
+  // rects are drawn from bottom left to top right
+  // when the canvas is centered in the top left as 0,0
+  colliderCoordsToRects(colliders) {
+    // right
+    if (this.mouseAngleDegrees === 0) {
+      return [new Rectangle(this.x, this.y + WEAPON_WIDTH / 2, WEAPON_HEIGHT, WEAPON_WIDTH, this, 'weapon')];
+    }
+    // down
+    if (this.mouseAngleDegrees === 90) {
+      return [new Rectangle(this.x - WEAPON_WIDTH / 2, this.y, WEAPON_WIDTH, WEAPON_HEIGHT, this, 'weapon')];
+    }
+    // left
+    if (this.mouseAngleDegrees === 180) {
+      return [new Rectangle(this.x, this.y - WEAPON_WIDTH / 2, WEAPON_HEIGHT, WEAPON_WIDTH, this, 'weapon')];
+    }
+    // up
+    if (this.mouseAngleDegrees === 270) {
+      return [new Rectangle(this.x + WEAPON_WIDTH / 2, this.y, WEAPON_WIDTH, WEAPON_HEIGHT, this, 'weapon')];
+    }
+
+    let out = [];
+    let lastX = this.x;
+    let lastY = this.y;
+    colliders.forEach((c, i) => {
+      const [cx, cy] = c;
+      const minX = min(abs(cx), abs(lastX));
+      const maxX = max(abs(cx), abs(lastX));
+      const minY = min(abs(cy), abs(lastY));
+      const maxY = max(abs(cy), abs(lastY));
+      const width = maxX - minX;
+      const height = maxY - minY;
+
+      let invertX = cx < 0;
+      let invertY = cy < 0;
+
+      out.push(
+        new Rectangle(invertX ? lastX - width : lastX, invertY ? lastY - height : lastY, width, height, this, 'weapon')
+      );
+      lastX += invertX ? -width : width;
+      lastY += invertY ? -height : height;
+    });
     return out;
   }
 
   getColliders() {
     return [
       new Rectangle(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2, this, 'damage'),
-      ...this.getWeaponColliders(),
+      ...this.colliderCoordsToRects(this.getWeaponColliderCoords()),
     ];
   }
 
