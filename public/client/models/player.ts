@@ -1,6 +1,9 @@
+import { Collider } from './collider';
+
 export interface Player {
   active: boolean;
   bot: boolean;
+  colliders: Collider[];
   frozen: boolean;
   health: number;
   height: number;
