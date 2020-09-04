@@ -38,11 +38,30 @@ export const SHOW_GRID = false;
 export const TICK_RATE = 120;
 export const TICK_TIME = 1000 / TICK_RATE;
 
+/**
+ * ASSUMPTIONS
+ *
+ * - Everything renders with 0,0 in the top left
+ * - width and height are 100% of the full rendered width
+ * - everything has its origin x,y in the center (1/2 w and 1/2 h)
+ */
 export const WORLD_HEIGHT = 30000;
 export const WORLD_WIDTH = 30000;
 export const PLAYER_HEIGHT = 60;
 export const PLAYER_WIDTH = 100;
 export const WEAPON_HEIGHT = 200;
 export const WEAPON_WIDTH = 5;
+export const WEAPON_RESOLUTION = 5;
+export const WEAPON_X_OFFSET = (3 / 5) * PLAYER_WIDTH;
+export const WEAPON_Y_OFFSET = 0;
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
+
+// math utils
+export const PRECISION = 10;
+export const rad = (d) => (d * Math.PI) / 180;
+export const sin = (d) => parseFloat(Math.sin(rad(d)).toFixed(PRECISION));
+export const cos = (d) => parseFloat(Math.cos(rad(d)).toFixed(PRECISION));
+export const min = (...i) => Math.min(...i);
+export const max = (...i) => Math.max(...i);
+export const abs = (i) => Math.abs(i);

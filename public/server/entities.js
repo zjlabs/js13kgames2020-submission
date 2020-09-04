@@ -8,6 +8,17 @@ import {
   TILE_WIDTH,
   WORLD_HEIGHT,
   WORLD_WIDTH,
+  WEAPON_HEIGHT,
+  WEAPON_RESOLUTION,
+  WEAPON_WIDTH,
+  WEAPON_X_OFFSET,
+  WEAPON_Y_OFFSET,
+  rad,
+  sin,
+  cos,
+  min,
+  max,
+  abs,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -95,12 +106,12 @@ export class Entity extends Component {
     return out;
   }
 
-  hasCollider() {
+  hasColliders() {
     return false;
   }
 
-  getCollider() {
-    return false;
+  getColliders() {
+    return [];
   }
 
   onCollision(other) {}
@@ -116,8 +127,8 @@ export class Player extends Entity {
     this.username = '';
     this.x = WORLD_WIDTH / 2;
     this.y = WORLD_HEIGHT / 2;
-    this.height = PLAYER_HEIGHT;
-    this.width = PLAYER_WIDTH;
+    this.height = PLAYER_HEIGHT / 2;
+    this.width = PLAYER_WIDTH / 2;
     this.xp = 0;
     this.level = 1;
     this.health = 10;
@@ -159,15 +170,86 @@ export class Player extends Entity {
     this.components.forEach((component) => component.update(deltaTime));
   }
 
-  hasCollider() {
+  hasColliders() {
     return true;
   }
 
-  getCollider() {
-    return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
+  // Drawn center origin
+  // starting at 0 deg
+  // rotate b around a, mouseAngleDegrees degrees
+  getWeaponColliderCoords() {
+    let out = [];
+
+    // get the x/y angle for the following calcs
+    const c = cos(this.mouseAngleDegrees);
+    const s = sin(this.mouseAngleDegrees);
+
+    for (let i = 1; i <= WEAPON_RESOLUTION; i++) {
+      let aX = this.x;
+      let aY = this.y;
+      let bX = this.x + i * (WEAPON_HEIGHT / WEAPON_RESOLUTION);
+      let bY = this.y;
+      let botX = c * (bX - aX) - s * (bY - aY) + aX;
+      let botY = s * (bX - aX) + c * (bY - aY) + aY;
+
+      out.push([botX, botY]);
+    }
+
+    return out;
   }
 
-  onCollision(other) {
+  // rects are drawn from bottom left to top right
+  // when the canvas is centered in the top left as 0,0
+  colliderCoordsToRects(colliders) {
+    // right
+    if (this.mouseAngleDegrees === 0) {
+      return [new Rectangle(this.x, this.y + WEAPON_WIDTH / 2, WEAPON_HEIGHT, WEAPON_WIDTH, this, 'weapon')];
+    }
+    // down
+    if (this.mouseAngleDegrees === 90) {
+      return [new Rectangle(this.x - WEAPON_WIDTH / 2, this.y, WEAPON_WIDTH, WEAPON_HEIGHT, this, 'weapon')];
+    }
+    // left
+    if (this.mouseAngleDegrees === 180) {
+      return [new Rectangle(this.x, this.y - WEAPON_WIDTH / 2, WEAPON_HEIGHT, WEAPON_WIDTH, this, 'weapon')];
+    }
+    // up
+    if (this.mouseAngleDegrees === 270) {
+      return [new Rectangle(this.x + WEAPON_WIDTH / 2, this.y, WEAPON_WIDTH, WEAPON_HEIGHT, this, 'weapon')];
+    }
+
+    let out = [];
+    let lastX = this.x;
+    let lastY = this.y;
+    colliders.forEach((c, i) => {
+      const [cx, cy] = c;
+      const minX = min(abs(cx), abs(lastX));
+      const maxX = max(abs(cx), abs(lastX));
+      const minY = min(abs(cy), abs(lastY));
+      const maxY = max(abs(cy), abs(lastY));
+      const width = maxX - minX;
+      const height = maxY - minY;
+
+      let invertX = cx < 0;
+      let invertY = cy < 0;
+
+      out.push(
+        new Rectangle(invertX ? lastX - width : lastX, invertY ? lastY - height : lastY, width, height, this, 'weapon')
+      );
+      lastX += invertX ? -width : width;
+      lastY += invertY ? -height : height;
+    });
+    return out;
+  }
+
+  getColliders() {
+    return [
+      new Rectangle(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2, this, 'damage'),
+      ...this.colliderCoordsToRects(this.getWeaponColliderCoords()),
+    ];
+  }
+
+  onCollision(other, action) {
     if (other instanceof Tile) {
     } else if (other instanceof Player) {
     }
@@ -208,7 +290,7 @@ export class Player extends Entity {
       mouseAngleDegrees,
       speed,
       frozen,
-      collider: this.getCollider().pure(),
+      colliders: this.getColliders().map((c) => c.pure()),
     };
   }
 }
@@ -228,15 +310,17 @@ export class Tile extends Entity {
     return `${this.x},${this.y}`;
   }
 
-  hasCollider() {
+  hasColliders() {
     return !this.walk;
   }
 
-  getCollider() {
-    return new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this);
+  getColliders() {
+    return [
+      new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this, 'tile'),
+    ];
   }
 
-  onCollision(other) {}
+  onCollision(other, action) {}
 
   getPojo() {
     let { x, y, height, width, walk } = this;
@@ -248,7 +332,7 @@ export class Tile extends Entity {
       width,
       walk,
       tid: this.tid,
-      collider: this.getCollider().pure(),
+      colliders: this.getColliders().map((c) => c.pure()),
     };
   }
 }
@@ -485,13 +569,17 @@ export class Game extends Component {
     }
 
     this.quadTree = new Quadtree(this.world);
-    collidables.forEach((component) => this.quadTree.insert(component.getCollider()));
+    collidables.forEach((component) => {
+      component.getColliders().forEach((collider) => {
+        this.quadTree.insert(collider);
+      });
+    });
   }
 
   getCollidables() {
     if (!this._colliderCache) {
       this._colliderCache = this.getComponents(true).filter(
-        (component) => component instanceof Entity && component.active && component.hasCollider()
+        (component) => component instanceof Entity && component.active && component.hasColliders()
       );
     }
 
@@ -506,10 +594,14 @@ export class Game extends Component {
 
     // check all collisions
     this.buildQuadtree();
-    this.getCollidables().forEach((collider) => {
-      this.quadTree
-        .query(collider.getCollider())
-        .forEach((collision) => collider.data && collision.data && collider.data.onCollision(collision.data));
+    this.getCollidables().forEach((entity) => {
+      entity.getColliders().forEach((collider) => {
+        this.quadTree
+          .query(collider)
+          .forEach(
+            (collision) => entity.data && collision.data && entity.data.onCollision(collision.data, collision.active)
+          );
+      });
     });
 
     this.getComponents(true)
@@ -631,12 +723,13 @@ export class HeapNode {
 // Quadtree entity
 // should be middle centered with half-width dimensions
 export class Rectangle {
-  constructor(x, y, w, h, data) {
+  constructor(x, y, w, h, data, action) {
     this.x = x || 0;
     this.y = y || 0;
     this.w = w || 0;
     this.h = h || 0;
     this.data = data;
+    this.action = action;
   }
 
   contains(point) {
@@ -656,12 +749,13 @@ export class Rectangle {
   }
 
   pure() {
-    let { x, y, w, h } = this;
+    let { x, y, w, h, action } = this;
     return {
       x,
       y,
       w,
       h,
+      action,
     };
   }
 }
