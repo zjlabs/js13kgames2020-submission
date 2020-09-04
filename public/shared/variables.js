@@ -52,8 +52,8 @@ export const PLAYER_WIDTH = 100;
 export const WEAPON_HEIGHT = 200;
 export const WEAPON_WIDTH = 5;
 export const WEAPON_RESOLUTION = 5;
-export const WEAPON_X_OFFSET = (3 / 5) * PLAYER_WIDTH;
-export const WEAPON_Y_OFFSET = 0;
+export const WEAPON_Y_OFFSET = (3 / 5) * (PLAYER_WIDTH / 2);
+export const WEAPON_X_OFFSET = 10;
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
 
@@ -62,6 +62,3 @@ export const PRECISION = 10;
 export const rad = (d) => (d * Math.PI) / 180;
 export const sin = (d) => parseFloat(Math.sin(rad(d)).toFixed(PRECISION));
 export const cos = (d) => parseFloat(Math.cos(rad(d)).toFixed(PRECISION));
-export const min = (...i) => Math.min(...i);
-export const max = (...i) => Math.max(...i);
-export const abs = (i) => Math.abs(i);

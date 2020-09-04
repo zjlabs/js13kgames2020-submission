@@ -16,12 +16,10 @@ import {
   rad,
   sin,
   cos,
-  min,
-  max,
-  abs,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
+const { min, max, abs, sqrt } = Math;
 
 export class Component {
   constructor() {
@@ -203,39 +201,73 @@ export class Player extends Entity {
   colliderCoordsToRects(colliders) {
     // right
     if (this.mouseAngleDegrees === 0) {
-      return [new Rectangle(this.x, this.y + WEAPON_WIDTH / 2, WEAPON_HEIGHT, WEAPON_WIDTH, this, 'weapon')];
+      return [
+        new Rectangle(
+          this.x + WEAPON_X_OFFSET,
+          this.y + WEAPON_Y_OFFSET + WEAPON_WIDTH,
+          WEAPON_HEIGHT,
+          WEAPON_WIDTH,
+          this,
+          'weapon'
+        ),
+      ];
     }
     // down
     if (this.mouseAngleDegrees === 90) {
-      return [new Rectangle(this.x - WEAPON_WIDTH / 2, this.y, WEAPON_WIDTH, WEAPON_HEIGHT, this, 'weapon')];
+      return [
+        new Rectangle(
+          this.x - WEAPON_Y_OFFSET - WEAPON_WIDTH * 2,
+          this.y + WEAPON_X_OFFSET,
+          WEAPON_WIDTH,
+          WEAPON_HEIGHT,
+          this,
+          'weapon'
+        ),
+      ];
     }
     // left
     if (this.mouseAngleDegrees === 180) {
-      return [new Rectangle(this.x, this.y - WEAPON_WIDTH / 2, WEAPON_HEIGHT, WEAPON_WIDTH, this, 'weapon')];
+      return [
+        new Rectangle(
+          this.x - WEAPON_X_OFFSET - WEAPON_HEIGHT,
+          this.y - WEAPON_Y_OFFSET - WEAPON_WIDTH * 2,
+          WEAPON_HEIGHT,
+          WEAPON_WIDTH,
+          this,
+          'weapon'
+        ),
+      ];
     }
     // up
     if (this.mouseAngleDegrees === 270) {
-      return [new Rectangle(this.x + WEAPON_WIDTH / 2, this.y, WEAPON_WIDTH, WEAPON_HEIGHT, this, 'weapon')];
+      return [
+        new Rectangle(
+          this.x + WEAPON_Y_OFFSET + WEAPON_WIDTH,
+          this.y - WEAPON_X_OFFSET - WEAPON_HEIGHT,
+          WEAPON_WIDTH,
+          WEAPON_HEIGHT,
+          this,
+          'weapon'
+        ),
+      ];
     }
 
     let out = [];
-    let lastX = this.x;
-    let lastY = this.y;
+    let lastX = this.x + WEAPON_X_OFFSET;
+    let lastY = this.y + WEAPON_Y_OFFSET;
     colliders.forEach((c, i) => {
       const [cx, cy] = c;
-      const minX = min(abs(cx), abs(lastX));
-      const maxX = max(abs(cx), abs(lastX));
-      const minY = min(abs(cy), abs(lastY));
-      const maxY = max(abs(cy), abs(lastY));
-      const width = maxX - minX;
-      const height = maxY - minY;
+      // const minX = min(abs(cx), abs(lastX));
+      // const maxX = max(abs(cx), abs(lastX));
+      // const minY = min(abs(cy), abs(lastY));
+      // const maxY = max(abs(cy), abs(lastY));
+      const width = lastX - cx;
+      const height = lastY - cy;
 
-      let invertX = cx < 0;
-      let invertY = cy < 0;
+      let invertX = false; //cx < 0;
+      let invertY = false; //cy < 0;
 
-      out.push(
-        new Rectangle(invertX ? lastX - width : lastX, invertY ? lastY - height : lastY, width, height, this, 'weapon')
-      );
+      out.push(new Rectangle(lastX, lastY, width, height, this, 'weapon'));
       lastX += invertX ? -width : width;
       lastY += invertY ? -height : height;
     });
