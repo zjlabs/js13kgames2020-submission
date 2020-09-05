@@ -182,11 +182,28 @@ export class Player extends Entity {
     const c = cos(this.mouseAngleDegrees);
     const s = sin(this.mouseAngleDegrees);
 
-    for (let i = 1; i <= WEAPON_RESOLUTION; i++) {
-      let aX = this.x;
-      let aY = this.y;
-      let bX = this.x + i * (WEAPON_HEIGHT / WEAPON_RESOLUTION);
-      let bY = this.y;
+    let x = this.x + WEAPON_X_OFFSET;
+    let y = this.y + WEAPON_Y_OFFSET + WEAPON_WIDTH;
+
+    // if (this.mouseAngleDegrees >= 0 && this.mouseAngleDegrees < 90) {
+    //   lastX = WEAPON_X_OFFSET;
+    //   lastY = WEAPON_Y_OFFSET + WEAPON_WIDTH;
+    // } else if (this.mouseAngleDegrees >= 90 && this.mouseAngleDegrees < 180) {
+    //   lastX = -WEAPON_Y_OFFSET - WEAPON_WIDTH * 2;
+    //   lastY = WEAPON_X_OFFSET;
+    // } else if (this.mouseAngleDegrees >= 180 && this.mouseAngleDegrees < 270) {
+    //   lastX = -WEAPON_X_OFFSET - WEAPON_HEIGHT;
+    //   lastY = -WEAPON_Y_OFFSET - WEAPON_WIDTH * 2;
+    // } else if (this.mouseAngleDegrees >= 270 && this.mouseAngleDegrees < 360) {
+    //   lastX = WEAPON_Y_OFFSET + WEAPON_WIDTH;
+    //   lastY = -WEAPON_X_OFFSET - WEAPON_HEIGHT;
+    // }
+
+    for (let i = 0; i < WEAPON_RESOLUTION; i++) {
+      let aX = x;
+      let aY = y;
+      let bX = x + i * (WEAPON_HEIGHT / WEAPON_RESOLUTION);
+      let bY = y;
       let botX = c * (bX - aX) - s * (bY - aY) + aX;
       let botY = s * (bX - aX) + c * (bY - aY) + aY;
 
@@ -199,26 +216,23 @@ export class Player extends Entity {
   // rects are drawn from bottom left to top right
   // when the canvas is centered in the top left as 0,0
   colliderCoordsToRects(colliders) {
-    const c = cos(this.mouseAngleDegrees);
-    const s = sin(this.mouseAngleDegrees);
-
     let out = [];
-    let lastX = this.x;
-    let lastY = this.y;
+    // let lastX = 0; //this.x;
+    // let lastY = 0; //;this.y;
 
-    if (this.mouseAngleDegrees >= 0 && this.mouseAngleDegrees < 90) {
-      lastX += WEAPON_X_OFFSET;
-      lastY += WEAPON_Y_OFFSET + WEAPON_WIDTH;
-    } else if (this.mouseAngleDegrees >= 90 && this.mouseAngleDegrees < 180) {
-      lastX += -WEAPON_Y_OFFSET - WEAPON_WIDTH * 2;
-      lastY += WEAPON_X_OFFSET;
-    } else if (this.mouseAngleDegrees >= 180 && this.mouseAngleDegrees < 270) {
-      lastX += -WEAPON_X_OFFSET - WEAPON_HEIGHT;
-      lastY += -WEAPON_Y_OFFSET - WEAPON_WIDTH * 2;
-    } else if (this.mouseAngleDegrees >= 270 && this.mouseAngleDegrees < 360) {
-      lastX += WEAPON_Y_OFFSET + WEAPON_WIDTH;
-      lastY += -WEAPON_X_OFFSET - WEAPON_HEIGHT;
-    }
+    // if (this.mouseAngleDegrees >= 0 && this.mouseAngleDegrees < 90) {
+    //   lastX = WEAPON_X_OFFSET;
+    //   lastY = WEAPON_Y_OFFSET + WEAPON_WIDTH;
+    // } else if (this.mouseAngleDegrees >= 90 && this.mouseAngleDegrees < 180) {
+    //   lastX = -WEAPON_Y_OFFSET - WEAPON_WIDTH * 2;
+    //   lastY = WEAPON_X_OFFSET;
+    // } else if (this.mouseAngleDegrees >= 180 && this.mouseAngleDegrees < 270) {
+    //   lastX = -WEAPON_X_OFFSET - WEAPON_HEIGHT;
+    //   lastY = -WEAPON_Y_OFFSET - WEAPON_WIDTH * 2;
+    // } else if (this.mouseAngleDegrees >= 270 && this.mouseAngleDegrees < 360) {
+    //   lastX = WEAPON_Y_OFFSET + WEAPON_WIDTH;
+    //   lastY = -WEAPON_X_OFFSET - WEAPON_HEIGHT;
+    // }
 
     colliders.forEach((c, i) => {
       const [cx, cy] = c;
