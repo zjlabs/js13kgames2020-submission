@@ -199,77 +199,30 @@ export class Player extends Entity {
   // rects are drawn from bottom left to top right
   // when the canvas is centered in the top left as 0,0
   colliderCoordsToRects(colliders) {
-    // right
-    if (this.mouseAngleDegrees === 0) {
-      return [
-        new Rectangle(
-          this.x + WEAPON_X_OFFSET,
-          this.y + WEAPON_Y_OFFSET + WEAPON_WIDTH,
-          WEAPON_HEIGHT,
-          WEAPON_WIDTH,
-          this,
-          'weapon'
-        ),
-      ];
-    }
-    // down
-    if (this.mouseAngleDegrees === 90) {
-      return [
-        new Rectangle(
-          this.x - WEAPON_Y_OFFSET - WEAPON_WIDTH * 2,
-          this.y + WEAPON_X_OFFSET,
-          WEAPON_WIDTH,
-          WEAPON_HEIGHT,
-          this,
-          'weapon'
-        ),
-      ];
-    }
-    // left
-    if (this.mouseAngleDegrees === 180) {
-      return [
-        new Rectangle(
-          this.x - WEAPON_X_OFFSET - WEAPON_HEIGHT,
-          this.y - WEAPON_Y_OFFSET - WEAPON_WIDTH * 2,
-          WEAPON_HEIGHT,
-          WEAPON_WIDTH,
-          this,
-          'weapon'
-        ),
-      ];
-    }
-    // up
-    if (this.mouseAngleDegrees === 270) {
-      return [
-        new Rectangle(
-          this.x + WEAPON_Y_OFFSET + WEAPON_WIDTH,
-          this.y - WEAPON_X_OFFSET - WEAPON_HEIGHT,
-          WEAPON_WIDTH,
-          WEAPON_HEIGHT,
-          this,
-          'weapon'
-        ),
-      ];
-    }
+    const c = cos(this.mouseAngleDegrees);
+    const s = sin(this.mouseAngleDegrees);
 
     let out = [];
-    let lastX = this.x + WEAPON_X_OFFSET;
-    let lastY = this.y + WEAPON_Y_OFFSET;
+    let lastX = this.x;
+    let lastY = this.y;
+
+    if (this.mouseAngleDegrees >= 0 && this.mouseAngleDegrees < 90) {
+      lastX += WEAPON_X_OFFSET;
+      lastY += WEAPON_Y_OFFSET + WEAPON_WIDTH;
+    } else if (this.mouseAngleDegrees >= 90 && this.mouseAngleDegrees < 180) {
+      lastX += -WEAPON_Y_OFFSET - WEAPON_WIDTH * 2;
+      lastY += WEAPON_X_OFFSET;
+    } else if (this.mouseAngleDegrees >= 180 && this.mouseAngleDegrees < 270) {
+      lastX += -WEAPON_X_OFFSET - WEAPON_HEIGHT;
+      lastY += -WEAPON_Y_OFFSET - WEAPON_WIDTH * 2;
+    } else if (this.mouseAngleDegrees >= 270 && this.mouseAngleDegrees < 360) {
+      lastX += WEAPON_Y_OFFSET + WEAPON_WIDTH;
+      lastY += -WEAPON_X_OFFSET - WEAPON_HEIGHT;
+    }
+
     colliders.forEach((c, i) => {
       const [cx, cy] = c;
-      // const minX = min(abs(cx), abs(lastX));
-      // const maxX = max(abs(cx), abs(lastX));
-      // const minY = min(abs(cy), abs(lastY));
-      // const maxY = max(abs(cy), abs(lastY));
-      const width = lastX - cx;
-      const height = lastY - cy;
-
-      let invertX = false; //cx < 0;
-      let invertY = false; //cy < 0;
-
-      out.push(new Rectangle(lastX, lastY, width, height, this, 'weapon'));
-      lastX += invertX ? -width : width;
-      lastY += invertY ? -height : height;
+      out.push(new Rectangle(cx, cy, 40, 40, this, 'weapon'));
     });
     return out;
   }
