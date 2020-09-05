@@ -1,4 +1,4 @@
-import { SHOW_GRID, SHOW_PERFORMANCE_METRICS } from '../../shared/variables';
+import { SHOW_BOUNDING_BOXES, SHOW_GRID, SHOW_PERFORMANCE_METRICS } from '../../shared/variables';
 import { getAngleRadiansFromDegrees } from '../math-utilities';
 import { getPlayerState, getState } from '../state';
 import { renderPlayer } from './player';
@@ -8,7 +8,7 @@ import { renderBackground } from './background';
 import { renderPlayerCoordinatesStats, renderPlayerMouseAngleStats } from './stats';
 import { renderMap } from './map';
 import { renderGrid } from './grid';
-import { renderStrokedRectangle } from './primitive-shapes';
+import { renderColliders } from './colliders';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -67,15 +67,8 @@ export function renderGame() {
       const relativeCoordinateX = player.x - screenCoordinate0X;
       const relativeCoordinateY = player.y - screenCoordinate0Y;
 
-      // TODO: Do this in a less ghetto way.
-      if (player.colliders != null) {
-        Object.values(player.colliders).forEach(({ x, y, w, h, action }) => {
-          let strokeStyle = action === 'weapon' ? 'green' : 'pink';
-
-          ctx.beginPath();
-          renderStrokedRectangle(ctx, x - screenCoordinate0X, y - screenCoordinate0Y, w, h, 1, strokeStyle);
-          ctx.closePath();
-        });
+      if (SHOW_BOUNDING_BOXES) {
+        renderColliders(ctx, player.colliders, screenCoordinate0X, screenCoordinate0Y);
       }
 
       renderPlayer(
