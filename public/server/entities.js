@@ -19,9 +19,15 @@ import {
   min,
   max,
   abs,
-  LIFE_HEIGHT,
-  LIFE_WIDTH,
   ITEM_TYPES,
+  ITEM_LIFE_HEIGHT,
+  ITEM_LIFE_WIDTH,
+  ITEM_SWORD_HEIGHT,
+  ITEM_SWORD_WIDTH,
+  ITEM_HELM_HEIGHT,
+  ITEM_HELM_WIDTH,
+  ITEM_ARMOR_HEIGHT,
+  ITEM_ARMOR_WIDTH,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -337,7 +343,25 @@ export class Item extends Entity {
 
 export class Life extends Item {
   constructor(x, y) {
-    super(x, y, LIFE_WIDTH, LIFE_HEIGHT, ITEM_TYPES['life']);
+    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, ITEM_TYPES['life']);
+  }
+}
+
+export class Sword extends Item {
+  constructor(x, y) {
+    super(x, y, ITEM_SWORD_WIDTH, ITEM_SWORD_HEIGHT, ITEM_TYPES['sword']);
+  }
+}
+
+export class Helm extends Item {
+  constructor(x, y) {
+    super(x, y, ITEM_HELM_WIDTH, ITEM_HELM_HEIGHT, ITEM_TYPES['helm']);
+  }
+}
+
+export class Armor extends Item {
+  constructor(x, y) {
+    super(x, y, ITEM_ARMOR_WIDTH, ITEM_ARMOR_HEIGHT, ITEM_TYPES['armor']);
   }
 }
 
