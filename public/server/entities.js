@@ -16,6 +16,15 @@ import {
   rad,
   sin,
   cos,
+  ITEM_TYPES,
+  ITEM_LIFE_HEIGHT,
+  ITEM_LIFE_WIDTH,
+  ITEM_SWORD_HEIGHT,
+  ITEM_SWORD_WIDTH,
+  ITEM_HELM_HEIGHT,
+  ITEM_HELM_WIDTH,
+  ITEM_ARMOR_HEIGHT,
+  ITEM_ARMOR_WIDTH,
   rot,
 } from '../shared/variables';
 import { getId } from '../shared/id';
@@ -77,6 +86,8 @@ export class Entity extends Component {
     this._prevState = {};
   }
 
+  update(delta) {}
+
   set(key, val) {
     if (this.hasOwnProperty(key)) {
       this[key] = val;
@@ -113,7 +124,7 @@ export class Entity extends Component {
     return [];
   }
 
-  onCollision(other) {}
+  onCollision(other, action) {}
 }
 
 export class Player extends Entity {
@@ -138,6 +149,7 @@ export class Player extends Entity {
     this.mouseAngleDegrees = 0;
     this.speed = 500;
     this.frozen = false;
+    state.player.set(this);
   }
 
   update(deltaTime) {
@@ -250,6 +262,64 @@ export class Player extends Entity {
       frozen,
       colliders: this.getColliders().map((c) => c.pure()),
     };
+  }
+}
+
+export class Item extends Entity {
+  constructor(x, y, width, height, type = '', scale = 1) {
+    super();
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.type = type;
+    this.scale = scale;
+    state.items.set(this);
+  }
+
+  hasColliders() {
+    return true;
+  }
+
+  getColliders() {
+    return [new Rectangle(this.x, this.y, this.scale * this.width, this.scale * this.height, this, this.type)];
+  }
+
+  getPojo() {
+    const { x, y, width, height, type, scale } = this;
+    return {
+      ...super.getPojo(),
+      x,
+      y,
+      width,
+      height,
+      type,
+      scale,
+    };
+  }
+}
+
+export class Life extends Item {
+  constructor(x, y) {
+    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, ITEM_TYPES['life']);
+  }
+}
+
+export class Sword extends Item {
+  constructor(x, y) {
+    super(x, y, ITEM_SWORD_WIDTH, ITEM_SWORD_HEIGHT, ITEM_TYPES['sword']);
+  }
+}
+
+export class Helm extends Item {
+  constructor(x, y) {
+    super(x, y, ITEM_HELM_WIDTH, ITEM_HELM_HEIGHT, ITEM_TYPES['helm']);
+  }
+}
+
+export class Armor extends Item {
+  constructor(x, y) {
+    super(x, y, ITEM_ARMOR_WIDTH, ITEM_ARMOR_HEIGHT, ITEM_TYPES['armor']);
   }
 }
 
@@ -568,7 +638,6 @@ export class Game extends Component {
         if (entity instanceof Player) {
           state.player.set(entity);
         } else if (entity instanceof Tile) {
-          state.tile.set(entity);
         }
       });
 

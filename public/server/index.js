@@ -1,5 +1,5 @@
 import state from './state';
-import { Game, Grid, Player } from './entities';
+import { Game, Grid, Player, Life, Sword, Armor, Helm } from './entities';
 import {
   all,
   debug,
@@ -10,6 +10,8 @@ import {
   TILE_WIDTH,
   WORLD_HEIGHT,
   WORLD_WIDTH,
+  ITEM_LIFE_HEIGHT,
+  ITEM_LIFE_WIDTH,
 } from '../shared/variables';
 
 /**
@@ -28,6 +30,23 @@ combatBot.bot = true;
 combatBot.username = 'smashmaster69x420';
 combatBot.health = 69;
 game.addComponent(combatBot);
+
+let lifeCount = 5;
+let lifeSpace = 20;
+for (let x = 0; x < lifeCount; x++) {
+  for (let y = 0; y < lifeCount; y++) {
+    game.addComponent(
+      new Life(
+        WORLD_WIDTH / 2 + x * (ITEM_LIFE_WIDTH + lifeSpace),
+        WORLD_HEIGHT / 2 + y * (ITEM_LIFE_HEIGHT + lifeSpace)
+      )
+    );
+  }
+}
+
+game.addComponent(new Sword(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2));
+game.addComponent(new Helm(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2 + 100));
+game.addComponent(new Armor(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2 + 200));
 // end testing code
 
 /**

@@ -57,6 +57,25 @@ export const WEAPON_X_OFFSET = 0;
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
 
+export const ITEM_TYPES = {
+  life: 0,
+  0: 'life',
+  sword: 1,
+  1: 'sword',
+  helm: 2,
+  2: 'helm',
+  armor: 3,
+  3: 'armor',
+};
+export const ITEM_LIFE_HEIGHT = 50;
+export const ITEM_LIFE_WIDTH = 50;
+export const ITEM_SWORD_HEIGHT = 50;
+export const ITEM_SWORD_WIDTH = 50;
+export const ITEM_HELM_HEIGHT = 50;
+export const ITEM_HELM_WIDTH = 50;
+export const ITEM_ARMOR_HEIGHT = 50;
+export const ITEM_ARMOR_WIDTH = 50;
+
 // math utils
 export const PRECISION = 10;
 export const rad = (d) => (d * Math.PI) / 180;
