@@ -638,7 +638,6 @@ export class Game extends Component {
         if (entity instanceof Player) {
           state.player.set(entity);
         } else if (entity instanceof Tile) {
-          state.tile.set(entity);
         }
       });
 
