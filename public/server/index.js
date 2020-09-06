@@ -1,5 +1,5 @@
 import state from './state';
-import { Game, Grid, Player } from './entities';
+import { Game, Grid, Player, Life } from './entities';
 import {
   all,
   debug,
@@ -10,6 +10,8 @@ import {
   TILE_WIDTH,
   WORLD_HEIGHT,
   WORLD_WIDTH,
+  LIFE_WIDTH,
+  LIFE_HEIGHT,
 } from '../shared/variables';
 
 /**
@@ -28,6 +30,16 @@ combatBot.bot = true;
 combatBot.username = 'smashmaster69x420';
 combatBot.health = 69;
 game.addComponent(combatBot);
+
+let lifeCount = 5;
+let lifeSpace = 20;
+for (let x = 0; x < lifeCount; x++) {
+  for (let y = 0; y < lifeCount; y++) {
+    game.addComponent(
+      new Life(WORLD_WIDTH / 2 + x * (LIFE_WIDTH + lifeSpace), WORLD_HEIGHT / 2 + y * (LIFE_HEIGHT + lifeSpace))
+    );
+  }
+}
 // end testing code
 
 /**

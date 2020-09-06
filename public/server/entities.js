@@ -19,6 +19,9 @@ import {
   min,
   max,
   abs,
+  LIFE_HEIGHT,
+  LIFE_WIDTH,
+  ITEM_TYPES,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -78,6 +81,8 @@ export class Entity extends Component {
     this._prevState = {};
   }
 
+  update(delta) {}
+
   set(key, val) {
     if (this.hasOwnProperty(key)) {
       this[key] = val;
@@ -114,7 +119,7 @@ export class Entity extends Component {
     return [];
   }
 
-  onCollision(other) {}
+  onCollision(other, action) {}
 }
 
 export class Player extends Entity {
@@ -139,6 +144,7 @@ export class Player extends Entity {
     this.mouseAngleDegrees = 0;
     this.speed = 500;
     this.frozen = false;
+    state.player.set(this);
   }
 
   update(deltaTime) {
@@ -292,6 +298,46 @@ export class Player extends Entity {
       frozen,
       colliders: this.getColliders().map((c) => c.pure()),
     };
+  }
+}
+
+export class Item extends Entity {
+  constructor(x, y, width, height, type = '', scale = 1) {
+    super();
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.type = type;
+    this.scale = scale;
+    state.items.set(this);
+  }
+
+  hasColliders() {
+    return true;
+  }
+
+  getColliders() {
+    return [new Rectangle(this.x, this.y, this.scale * this.width, this.scale * this.height, this, this.type)];
+  }
+
+  getPojo() {
+    const { x, y, width, height, type, scale } = this;
+    return {
+      ...super.getPojo(),
+      x,
+      y,
+      width,
+      height,
+      type,
+      scale,
+    };
+  }
+}
+
+export class Life extends Item {
+  constructor(x, y) {
+    super(x, y, LIFE_WIDTH, LIFE_HEIGHT, ITEM_TYPES['life']);
   }
 }
 

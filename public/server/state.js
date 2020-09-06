@@ -49,6 +49,7 @@ class EntityState {
 
 const _players = new EntityState();
 const _tiles = new EntityState();
+const _items = new EntityState();
 
 export default {
   // IO functions
@@ -68,17 +69,20 @@ export default {
     // reset internal state
     _players.reset();
     _tiles.reset();
+    _items.reset();
   },
 
   // State objs
   player: _players,
   tile: _tiles,
+  items: _items,
 
   // POJO functions
   _delta() {
     return {
       players: _players.delta,
       tiles: _tiles.delta,
+      items: _items.delta,
     };
   },
   _data(data = {}) {
@@ -86,6 +90,7 @@ export default {
       ...data,
       players: _players.data,
       tiles: _tiles.data,
+      items: _items.data,
     };
   },
 };

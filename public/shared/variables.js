@@ -57,6 +57,13 @@ export const WEAPON_Y_OFFSET = 0;
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
 
+export const ITEM_TYPES = {
+  life: 0,
+  0: 'life',
+};
+export const LIFE_HEIGHT = 50;
+export const LIFE_WIDTH = 50;
+
 // math utils
 export const PRECISION = 10;
 export const rad = (d) => (d * Math.PI) / 180;
