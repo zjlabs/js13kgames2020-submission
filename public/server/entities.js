@@ -198,13 +198,7 @@ export class Player extends Entity {
   }
 
   getColliders() {
-    return [
-      new Rectangle(this.x, this.y, this.height, this.width, this, 'damage').rotateAround(
-        this.mouseAngleDegrees,
-        new Point(this.x, this.y)
-      ),
-      ...this.getWeaponColliderCoords(),
-    ];
+    return [new Rectangle(this.x, this.y, this.height, this.height, this, 'damage'), ...this.getWeaponColliderCoords()];
   }
 
   onCollision(other, action) {
