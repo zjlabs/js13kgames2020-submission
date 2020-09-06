@@ -190,19 +190,19 @@ export class Player extends Entity {
 
     for (let i = 1; i <= WEAPON_RESOLUTION; i++) {
       let [aX, aY] = rot(this.mouseAngleDegrees, x, y, x + step * i, y + WEAPON_WIDTH);
-      let newX = aX;
-      let newY = aY;
       let width = (aX - x) / i;
       let height = (aY - y) / i;
 
-      out.push(new Rectangle(newX, newY, width, height, this, 'weapon'));
+      out.push(new Rectangle(aX, aY, width, height, this, 'weapon'));
     }
     return out;
   }
 
   getColliders() {
+    let [aX, aY] = rot(this.mouseAngleDegrees, this.x, this.y, this.x - PLAYER_WIDTH / 2, this.y);
+
     return [
-      new Rectangle(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2, this, 'damage'),
+      new Rectangle(this.x - PLAYER_HEIGHT / 2, this.y + PLAYER_WIDTH / 2, PLAYER_HEIGHT, PLAYER_WIDTH, this, 'damage'),
       ...this.getWeaponColliderCoords(),
     ];
   }
