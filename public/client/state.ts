@@ -1,8 +1,9 @@
 import { Player } from './models/player';
+import { Item } from './models/items';
 
 export interface State {
   colliders?: any;
-  items?: any;
+  items?: Item[];
   mouseAngleDegrees: number;
   playerId?: string;
   players?: {
@@ -72,3 +73,8 @@ function deepMerge(stateObj = {}, obj: any) {
     };
   }, stateObj);
 }
+
+// Debug functionality.
+(window as any).getState = () => {
+  return state;
+};

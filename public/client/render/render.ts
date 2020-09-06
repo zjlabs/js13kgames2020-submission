@@ -9,6 +9,8 @@ import { renderPlayerCoordinatesStats, renderPlayerMouseAngleStats } from './sta
 import { renderMap } from './map';
 import { renderGrid } from './grid';
 import { renderColliders } from './colliders';
+import { Item } from '../models/items';
+import { renderItem } from './item';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -83,6 +85,27 @@ export function renderGame() {
         player.id === id ? '#0F9BF2' : '#F25C05',
         'black'
       );
+    });
+
+  // Render items.
+  Object.keys(state.items)
+    .map((key: string) => {
+      return state.items[key];
+    })
+    // TODO: Use Zack's dank math machine to make this more efficient.
+    .filter((item: Item) => {
+      return (
+        item.x > screenCoordinate0X &&
+        item.x < screenCoordinate0X + width &&
+        item.y > screenCoordinate0Y &&
+        item.y < screenCoordinate0Y + height
+      );
+    })
+    .forEach((item: Item) => {
+      const relativeCoordinateX = item.x - screenCoordinate0X;
+      const relativeCoordinateY = item.y - screenCoordinate0Y;
+
+      renderItem(ctx, relativeCoordinateX, relativeCoordinateY, item.height);
     });
 
   // Render map.

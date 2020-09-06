@@ -1,4 +1,5 @@
 import { Collider } from './collider';
+import { Item } from './items';
 
 export interface Player {
   active: boolean;
@@ -8,7 +9,7 @@ export interface Player {
   health: number;
   height: number;
   id: number | string;
-  items: unknown;
+  items: Item[];
   level: number;
   mouseAngleDegrees: number;
   powerups: unknown;
