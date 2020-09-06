@@ -179,14 +179,18 @@ export class Player extends Entity {
   getWeaponColliderCoords() {
     let out = [];
 
-    const w = WEAPON_HEIGHT / 2;
+    const w = WEAPON_HEIGHT / 2 / WEAPON_RESOLUTION;
     const h = WEAPON_WIDTH / 2;
     for (let i = 1; i <= WEAPON_RESOLUTION; i++) {
       out.push(
-        new Rectangle(this.x + WEAPON_X_OFFSET + w, this.y + WEAPON_Y_OFFSET - h, w, h, this, 'weapon').rotateAround(
-          this.mouseAngleDegrees,
-          new Point(this.x, this.y)
-        )
+        new Rectangle(
+          this.x + WEAPON_X_OFFSET + w + 2 * w * (i - 1),
+          this.y + WEAPON_Y_OFFSET - h,
+          w,
+          h,
+          this,
+          'weapon'
+        ).rotateAround(this.mouseAngleDegrees, new Point(this.x, this.y))
       );
     }
 
