@@ -67,14 +67,14 @@ export const ITEM_TYPES = {
   armor: 3,
   3: 'armor',
 };
-export const ITEM_LIFE_HEIGHT = 50;
-export const ITEM_LIFE_WIDTH = 50;
-export const ITEM_SWORD_HEIGHT = 50;
-export const ITEM_SWORD_WIDTH = 50;
-export const ITEM_HELM_HEIGHT = 50;
-export const ITEM_HELM_WIDTH = 50;
-export const ITEM_ARMOR_HEIGHT = 50;
-export const ITEM_ARMOR_WIDTH = 50;
+export const ITEM_LIFE_HEIGHT = 10;
+export const ITEM_LIFE_WIDTH = 10;
+export const ITEM_SWORD_HEIGHT = 20;
+export const ITEM_SWORD_WIDTH = 20;
+export const ITEM_HELM_HEIGHT = 20;
+export const ITEM_HELM_WIDTH = 20;
+export const ITEM_ARMOR_HEIGHT = 20;
+export const ITEM_ARMOR_WIDTH = 20;
 
 // bot utils
 export const PATH_ACCURACY = 0.25;

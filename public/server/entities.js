@@ -622,17 +622,11 @@ export class Grid extends Component {
 }
 
 export class Game extends Component {
-  constructor(grid) {
+  constructor() {
     super();
-
-    // Store the grid dimensions on init to popluate the quadtree correctly.
-    if (!grid) {
-      throw new Error('Expected Grid for new Game');
-    }
-    this.grid = grid;
-    let totalWidth = this.grid.width * TILE_WIDTH;
-    let totalHeight = this.grid.height * TILE_HEIGHT;
-    this.world = new Rectangle(totalWidth / 2, totalHeight / 2, totalWidth / 2, totalHeight / 2);
+    const w = WORLD_WIDTH / 2;
+    const h = WORLD_HEIGHT / 2;
+    this.world = new Rectangle(w, h, w, h);
 
     // get the frame quadtree
     this.buildQuadtree();
@@ -654,7 +648,7 @@ export class Game extends Component {
   getCollidables() {
     if (!this._colliderCache) {
       this._colliderCache = this.getComponents(true).filter(
-        (component) => component instanceof Entity && component.active && component.hasColliders()
+        (component) => component instanceof Player && component.active && component.hasColliders()
       );
     }
 
@@ -665,7 +659,13 @@ export class Game extends Component {
     this.clearFrameMemory();
 
     // Update every component before applying primary control logic
-    this.components.forEach((component) => component.update(deltaTime));
+    this.components.forEach((component) => {
+      component.update(deltaTime);
+
+      if (component instanceof Player) {
+        state.player.set(component);
+      }
+    });
 
     // check all collisions
     this.buildQuadtree();
@@ -678,15 +678,6 @@ export class Game extends Component {
           );
       });
     });
-
-    this.getComponents(true)
-      .filter((c) => c instanceof Entity)
-      .forEach((entity) => {
-        if (entity instanceof Player) {
-          state.player.set(entity);
-        } else if (entity instanceof Tile) {
-        }
-      });
 
     state.delta();
   }

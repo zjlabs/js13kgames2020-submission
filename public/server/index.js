@@ -20,9 +20,7 @@ import {
 /**
  * Init game
  */
-const tileH = WORLD_HEIGHT / TILE_HEIGHT;
-const tileW = WORLD_WIDTH / TILE_WIDTH;
-const game = new Game(new Grid(tileH, tileW));
+const game = new Game();
 
 // start testing code
 let combatBot = new Player({ id: 'bot1' });
@@ -36,7 +34,7 @@ game.addComponent(combatBot);
 
 // add random life pick ups
 let lifeCount = 5;
-let lifeSpace = 20;
+let lifeSpace = 100;
 for (let x = 0; x < lifeCount; x++) {
   for (let y = 0; y < lifeCount; y++) {
     game.addComponent(
@@ -49,9 +47,9 @@ for (let x = 0; x < lifeCount; x++) {
 }
 
 // add random items
-game.addComponent(new Sword(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2));
-game.addComponent(new Helm(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2 + 100));
-game.addComponent(new Armor(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2 + 200));
+game.addComponent(new Sword(WORLD_WIDTH / 2 - 100, WORLD_HEIGHT / 2));
+game.addComponent(new Helm(WORLD_WIDTH / 2 - 100, WORLD_HEIGHT / 2 + 100));
+game.addComponent(new Armor(WORLD_WIDTH / 2 - 100, WORLD_HEIGHT / 2 + 200));
 
 // add patrol bot
 const halfW = WORLD_WIDTH / 2;
@@ -92,6 +90,8 @@ game.addComponent(wanderBot);
 io.on('connection', (socket) => {
   const player = new Player(socket);
   player.frozen = true;
+  player.x = WORLD_WIDTH / 2 - 200;
+  player.y = WORLD_HEIGHT / 2;
 
   socket.on('disconnect', () => {
     debug('Disconnected', socket.id);
