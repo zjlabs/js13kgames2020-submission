@@ -89,9 +89,6 @@ game.addComponent(wanderBot);
  */
 io.on('connection', (socket) => {
   const player = new Player(socket);
-  player.frozen = true;
-  player.x = WORLD_WIDTH / 2 - 200;
-  player.y = WORLD_HEIGHT / 2;
 
   socket.on('disconnect', () => {
     debug('Disconnected', socket.id);
