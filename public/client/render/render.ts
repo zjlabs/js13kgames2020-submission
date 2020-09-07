@@ -69,10 +69,6 @@ export function renderGame() {
       const relativeCoordinateX = player.x - screenCoordinate0X;
       const relativeCoordinateY = player.y - screenCoordinate0Y;
 
-      if (SHOW_BOUNDING_BOXES) {
-        renderColliders(ctx, player.colliders, screenCoordinate0X, screenCoordinate0Y);
-      }
-
       renderPlayer(
         ctx,
         relativeCoordinateX,
@@ -85,6 +81,10 @@ export function renderGame() {
         player.id === id ? '#0F9BF2' : '#F25C05',
         'black'
       );
+
+      if (SHOW_BOUNDING_BOXES) {
+        renderColliders(ctx, player.colliders, screenCoordinate0X, screenCoordinate0Y);
+      }
     });
 
   // Render items.

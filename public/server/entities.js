@@ -191,32 +191,26 @@ export class Player extends Entity {
   getWeaponColliderCoords() {
     let out = [];
 
-    const step = WEAPON_HEIGHT / WEAPON_RESOLUTION;
-    let [x, y] = rot(
-      this.mouseAngleDegrees,
-      this.x,
-      this.y,
-      this.x + WEAPON_X_OFFSET - step,
-      this.y + WEAPON_Y_OFFSET - WEAPON_WIDTH
-    );
-
+    const w = WEAPON_HEIGHT / 2 / WEAPON_RESOLUTION;
+    const h = WEAPON_WIDTH / 2;
     for (let i = 1; i <= WEAPON_RESOLUTION; i++) {
-      let [aX, aY] = rot(this.mouseAngleDegrees, x, y, x + step * i, y + WEAPON_WIDTH);
-      let newX = aX;
-      let newY = aY;
-      let width = (aX - x) / i;
-      let height = (aY - y) / i;
-
-      out.push(new Rectangle(newX, newY, width, height, this, 'weapon'));
+      out.push(
+        new Rectangle(
+          this.x + WEAPON_X_OFFSET + w + 2 * w * (i - 1),
+          this.y + WEAPON_Y_OFFSET - h,
+          w,
+          h,
+          this,
+          'weapon'
+        ).rotateAround(this.mouseAngleDegrees, new Point(this.x, this.y))
+      );
     }
+
     return out;
   }
 
   getColliders() {
-    return [
-      new Rectangle(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2, this, 'damage'),
-      ...this.getWeaponColliderCoords(),
-    ];
+    return [new Rectangle(this.x, this.y, this.height, this.height, this, 'damage'), ...this.getWeaponColliderCoords()];
   }
 
   onCollision(other, action) {
@@ -747,8 +741,23 @@ export class HeapNode {
   }
 }
 
+export class Point {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  rotateAround(angle, origin = new Point(0, 0)) {
+    let [x, y] = rot(angle, origin.x, origin.y, this.x, this.y);
+    this.x = x;
+    this.y = y;
+    return this;
+  }
+}
+
 // Quadtree entity
 // should be middle centered with half-width dimensions
+// 0,0 in the top left
 export class Rectangle {
   constructor(x, y, w, h, data, action) {
     this.x = x || 0;
@@ -784,6 +793,31 @@ export class Rectangle {
       h,
       action,
     };
+  }
+
+  rotateAround(angle, origin = new Point(0, 0)) {
+    let topLeft = new Point(this.x - this.w, this.y - this.h).rotateAround(angle, origin);
+    let botLeft = new Point(this.x - this.w, this.y + this.h).rotateAround(angle, origin);
+    let topRight = new Point(this.x + this.w, this.y - this.h).rotateAround(angle, origin);
+    let botRight = new Point(this.x + this.w, this.y + this.h).rotateAround(angle, origin);
+    return this.toAABB([topLeft, botLeft, topRight, botRight]);
+  }
+
+  toAABB(points = []) {
+    let x = points.map((point) => point.x);
+    let y = points.map((point) => point.y);
+
+    let minX = min(...x);
+    let minY = min(...y);
+
+    let dx = (max(...x) - minX) / 2;
+    let dy = (max(...y) - minY) / 2;
+
+    this.x = minX + dx;
+    this.y = minY + dy;
+    this.w = dx;
+    this.h = dy;
+    return this;
   }
 }
 
