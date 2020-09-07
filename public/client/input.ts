@@ -1,3 +1,5 @@
+import { ang } from '../shared/variables';
+
 let mouseX = 0;
 let mouseY = 0;
 const rootEl = document.getElementById('root');
@@ -15,7 +17,5 @@ window.addEventListener('resize', () => {
 });
 
 export function getMouseAngle() {
-  const rawAngle = (Math.atan2(mouseY - centerY, mouseX - centerX) * 180) / Math.PI;
-  const correctedAngle = (rawAngle + 360) % 360;
-  return parseInt(correctedAngle as any);
+  return ang(mouseY - centerY, mouseX - centerX);
 }

@@ -1,5 +1,4 @@
-import { SHOW_BOUNDING_BOXES, SHOW_GRID, SHOW_PERFORMANCE_METRICS } from '../../shared/variables';
-import { getAngleRadiansFromDegrees } from '../math-utilities';
+import { SHOW_BOUNDING_BOXES, SHOW_GRID, SHOW_PERFORMANCE_METRICS, rad } from '../../shared/variables';
 import { getPlayerState, getState } from '../state';
 import { renderPlayer } from './player';
 import { clearCanvas } from './render-utilities';
@@ -37,7 +36,7 @@ export function renderGame() {
   clearCanvas(ctx, width, height);
 
   // Render background.
-  renderBackground(ctx, width, height, getAngleRadiansFromDegrees(mouseAngleDegrees));
+  renderBackground(ctx, width, height, rad(mouseAngleDegrees));
 
   // TODO: This makes me feel like puking. Figure out how to get rid of motion sickness.
   // Render debug grid.
@@ -75,7 +74,7 @@ export function renderGame() {
         relativeCoordinateY,
         player.width,
         player.height,
-        getAngleRadiansFromDegrees(player.mouseAngleDegrees),
+        rad(player.mouseAngleDegrees),
         player.username,
         player.health,
         player.id === id ? '#0F9BF2' : '#F25C05',
