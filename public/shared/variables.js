@@ -76,12 +76,18 @@ export const ITEM_HELM_WIDTH = 50;
 export const ITEM_ARMOR_HEIGHT = 50;
 export const ITEM_ARMOR_WIDTH = 50;
 
+// bot utils
+export const PATH_ACCURACY = 0.25;
+export const WANDER_MIN = 400;
+export const WANDER_MAX = 400;
+
 // math utils
 export const PRECISION = 10;
 export const rad = (d) => (d * Math.PI) / 180;
 export const sin = (d) => parseFloat(Math.sin(rad(d)).toFixed(PRECISION));
 export const cos = (d) => parseFloat(Math.cos(rad(d)).toFixed(PRECISION));
 
+// rotate bX/bY around aX/aY, angle degrees
 export const rot = (angle, aX, aY, bX, bY) => {
   let c = cos(angle);
   let s = sin(angle);
@@ -89,4 +95,18 @@ export const rot = (angle, aX, aY, bX, bY) => {
   let outX = c * (bX - aX) - s * (bY - aY) + aX;
   let outY = s * (bX - aX) + c * (bY - aY) + aY;
   return [outX, outY];
+};
+
+// get the positive angle from the origin to x/y
+export const ang = (y, x) => {
+  const rawAngle = (Math.atan2(y, x) * 180) / Math.PI;
+  const correctedAngle = (rawAngle + 360) % 360;
+  return parseInt(correctedAngle);
+};
+
+export const rand = (min, max, int = true) => {
+  min = int ? Math.ceil(min) : min;
+  max = int ? Math.floor(max) : max;
+  let rng = Math.random() * (max - min);
+  return (int ? Math.floor(rng) : rng) + min;
 };

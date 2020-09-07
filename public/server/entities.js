@@ -26,6 +26,10 @@ import {
   ITEM_ARMOR_HEIGHT,
   ITEM_ARMOR_WIDTH,
   rot,
+  PATH_ACCURACY,
+  ang,
+  rand,
+  WANDER_MAX,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -143,7 +147,11 @@ export class Player extends Entity {
     this.level = 1;
     this.health = 10;
     this.items = {};
+    // start bot specific props
     this.bot = false;
+    this.path = [];
+    this.target = false;
+    // end bot specific props
     this.skin = 0;
     this.powerups = {};
     this.mouseAngleDegrees = 0;
@@ -153,6 +161,47 @@ export class Player extends Entity {
   }
 
   update(deltaTime) {
+    // update direction before movement if we're a bot
+    if (this.bot && !this.frozen) {
+      // try to update the path
+      if ([false, undefined, null].includes(this.target)) {
+        error(`bot player has no target and is not frozen: ${this.username}|${this.id}`);
+        // this.target = this.path.length > this.target ? this.path[this.target] : this.path[0];
+      }
+      // random wandering
+      else if (this.target instanceof Point) {
+        let pt = this.target;
+        let playerBB = new Rectangle(this.x, this.y, this.height, this.height);
+        let targetBB = new Rectangle(pt.x, pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
+
+        // new random point
+        if (playerBB.intersects(targetBB)) {
+          this.target = new Point(
+            this.x + rand(-WANDER_MAX, WANDER_MAX, false),
+            this.y + rand(-WANDER_MAX, WANDER_MAX, false)
+          );
+        }
+
+        // update the mouseAngleDegrees
+        this.mouseAngleDegrees = (ang(this.y - pt.y, this.x - pt.x) + 180) % 360;
+      }
+      // target is on and we have a valid index
+      else if (typeof this.target === 'number' && this.path.length > this.target) {
+        let pt = this.path[this.target];
+        let playerBB = new Rectangle(this.x, this.y, this.height, this.height);
+        let targetBB = new Rectangle(pt.x, pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
+
+        // move the index
+        if (playerBB.intersects(targetBB)) {
+          this.target = (this.target + 1) % this.path.length;
+        }
+
+        // update the mouseAngleDegrees
+        this.mouseAngleDegrees = (ang(this.y - pt.y, this.x - pt.x) + 180) % 360;
+      }
+    }
+
+    // perform movement based on player/mouseAngleDegrees
     if (!this.frozen) {
       // TODO: Determine if "world wrapping" will be a nightmare for bots.
       const intendedXOffset = Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
@@ -236,6 +285,8 @@ export class Player extends Entity {
       mouseAngleDegrees,
       speed,
       frozen,
+      path,
+      target,
     } = this;
     return {
       ...super.getPojo(),
@@ -249,6 +300,8 @@ export class Player extends Entity {
       health,
       items,
       bot,
+      path,
+      target,
       skin,
       powerups,
       mouseAngleDegrees,
@@ -780,7 +833,11 @@ export class Rectangle {
   // aabb
   intersects(rect) {
     return (
-      this.x < rect.x + rect.w && this.x + this.w > rect.x && this.y < rect.y + rect.height && this.y + this.h > rect.y
+      this.x - this.w < rect.x + rect.w &&
+      this.x + this.w > rect.x - rect.w &&
+      this.y - this.h < rect.y + rect.h &&
+      this.y + this.h > rect.y - rect.h
+      // this.x < rect.x + rect.w && this.x + this.w > rect.x && this.y < rect.y + rect.height && this.y + this.h > rect.y
     );
   }
 
@@ -868,7 +925,7 @@ export class Quadtree {
       out = this.points;
 
       if (this.divided) {
-        out = out.push(
+        out.push(
           ...this.northWest.query(boundry),
           ...this.northEast.query(boundry),
           ...this.southWest.query(boundry),

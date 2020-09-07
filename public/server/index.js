@@ -1,5 +1,5 @@
 import state from './state';
-import { Game, Grid, Player, Life, Sword, Armor, Helm } from './entities';
+import { Game, Grid, Player, Life, Sword, Armor, Helm, Point } from './entities';
 import {
   all,
   debug,
@@ -12,6 +12,9 @@ import {
   WORLD_WIDTH,
   ITEM_LIFE_HEIGHT,
   ITEM_LIFE_WIDTH,
+  rand,
+  WANDER_MAX,
+  WANDER_MIN,
 } from '../shared/variables';
 
 /**
@@ -31,6 +34,7 @@ combatBot.username = 'smashmaster69x420';
 combatBot.health = 69;
 game.addComponent(combatBot);
 
+// add random life pick ups
 let lifeCount = 5;
 let lifeSpace = 20;
 for (let x = 0; x < lifeCount; x++) {
@@ -44,9 +48,42 @@ for (let x = 0; x < lifeCount; x++) {
   }
 }
 
+// add random items
 game.addComponent(new Sword(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2));
 game.addComponent(new Helm(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2 + 100));
 game.addComponent(new Armor(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2 + 200));
+
+// add patrol bot
+const halfW = WORLD_WIDTH / 2;
+const halfH = WORLD_HEIGHT / 2;
+let patrolBot = new Player({ id: 'bot2' });
+patrolBot.x = halfW;
+patrolBot.y = halfH;
+patrolBot.bot = true;
+patrolBot.username = 'x patrolbot x';
+patrolBot.health = 69;
+patrolBot.path = [
+  new Point(halfW + 400, halfH - 400),
+  new Point(halfW + 400, halfH + 400),
+  new Point(halfW - 400, halfH + 400),
+  new Point(halfW - 400, halfH - 400),
+];
+patrolBot.target = 0;
+game.addComponent(patrolBot);
+
+// wander bot
+let wanderBot = new Player({ id: 'bot3' });
+wanderBot.x = halfW;
+wanderBot.y = halfH;
+wanderBot.bot = true;
+wanderBot.username = 'cartographer';
+wanderBot.health = 69;
+wanderBot.target = new Point(
+  halfW + rand(-WANDER_MIN, WANDER_MAX, false),
+  halfH + rand(-WANDER_MIN, WANDER_MAX, false)
+);
+game.addComponent(wanderBot);
+
 // end testing code
 
 /**
@@ -54,6 +91,7 @@ game.addComponent(new Armor(WORLD_WIDTH / 2 + 50, WORLD_HEIGHT / 2 + 200));
  */
 io.on('connection', (socket) => {
   const player = new Player(socket);
+  player.frozen = true;
 
   socket.on('disconnect', () => {
     debug('Disconnected', socket.id);
