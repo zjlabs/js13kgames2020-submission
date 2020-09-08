@@ -8,10 +8,12 @@
   "scripts": {
     "start": "node index.js",
     "start:dev": "concurrently 'nodemon' 'npm:build:dev'",
+    "start:dbg": "concurrently 'nodemon' 'npm:build:dev' 'npm:dbg'",
     "test": "mocha test",
     "format": "prettier --write public/",
     "build": "rollup -c --compact",
-    "build:dev": "rollup -c -w --compact"
+    "build:dev": "rollup -c -w --compact",
+    "dbg": "nodemon --inspect"
   },
   "keywords": [
     "js13kgames",

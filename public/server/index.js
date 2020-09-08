@@ -89,6 +89,8 @@ game.addComponent(wanderBot);
  */
 io.on('connection', (socket) => {
   const player = new Player(socket);
+  player.frozen = true;
+  player.x -= 200;
 
   socket.on('disconnect', () => {
     debug('Disconnected', socket.id);

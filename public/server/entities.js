@@ -128,7 +128,7 @@ export class Entity extends Component {
     return [];
   }
 
-  onCollision(other, action) {}
+  onCollision(collider, other) {}
 }
 
 export class Player extends Entity {
@@ -262,10 +262,11 @@ export class Player extends Entity {
     return [new Rectangle(this.x, this.y, this.height, this.height, this, 'damage'), ...this.getWeaponColliderCoords()];
   }
 
-  onCollision(other, action) {
-    if (other instanceof Tile) {
-    } else if (other instanceof Player) {
-    }
+  onCollision(collider, other) {
+    if (!collider.data || !other.data) return;
+    if (collider.data.id == other.data.id) return;
+
+    console.log(`collision! [${collider.action}, ${collider.data.id}] => [${other.action}, ${other.data.id}]`);
   }
 
   getPojo() {
@@ -395,7 +396,7 @@ export class Tile extends Entity {
     ];
   }
 
-  onCollision(other, action) {}
+  onCollision(collider, other) {}
 
   getPojo() {
     let { x, y, height, width, walk } = this;
@@ -639,7 +640,7 @@ export class Game extends Component {
 
     this.quadTree = new Quadtree(this.world);
     collidables.forEach((component) => {
-      component.getColliders().forEach((collider) => {
+      component.getColliders().forEach((collider, index, all) => {
         this.quadTree.insert(collider);
       });
     });
@@ -647,8 +648,8 @@ export class Game extends Component {
 
   getCollidables() {
     if (!this._colliderCache) {
-      this._colliderCache = this.getComponents(true).filter(
-        (component) => component instanceof Player && component.active && component.hasColliders()
+      this._colliderCache = this.getComponents(false).filter(
+        (component) => component.active && component.hasColliders()
       );
     }
 
@@ -673,9 +674,7 @@ export class Game extends Component {
       entity.getColliders().forEach((collider) => {
         this.quadTree
           .query(collider)
-          .forEach(
-            (collision) => entity.data && collision.data && entity.data.onCollision(collision.data, collision.active)
-          );
+          .forEach((collision) => entity.data && collision.data && entity.data.onCollision(collider, collision));
       });
     });
 
