@@ -96,6 +96,8 @@ export class Entity extends Component {
     if (this.hasOwnProperty(key)) {
       this[key] = val;
     }
+
+    this.updateState();
   }
 
   get(key) {
@@ -262,12 +264,8 @@ export class Player extends Entity {
 
   onCollision(collider, other) {
     if (collider.action == 'damage' && other.action == 'life') {
-      this.health += 1;
-      other.data.active = false;
-      console.log(collider, other);
-      console.log('=============================');
-      collider.data.updateState();
-      other.data.updateState();
+      collider.data.set('health', this.health + 1);
+      other.data.set('active', false);
     }
   }
 
@@ -357,19 +355,11 @@ export class Life extends Item {
   constructor(x, y) {
     super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, 'life');
   }
-
-  updateState() {
-    super.updateState();
-  }
 }
 
 export class Sword extends Item {
   constructor(x, y) {
     super(x, y, ITEM_SWORD_WIDTH, ITEM_SWORD_HEIGHT, 'sword');
-  }
-
-  updateState() {
-    super.updateState();
   }
 }
 
@@ -377,17 +367,11 @@ export class Helm extends Item {
   constructor(x, y) {
     super(x, y, ITEM_HELM_WIDTH, ITEM_HELM_HEIGHT, 'helm');
   }
-  updateState() {
-    super.updateState();
-  }
 }
 
 export class Armor extends Item {
   constructor(x, y) {
     super(x, y, ITEM_ARMOR_WIDTH, ITEM_ARMOR_HEIGHT, 'armor');
-  }
-  updateState() {
-    super.updateState();
   }
 }
 

@@ -15,6 +15,7 @@ import {
   rand,
   WANDER_MAX,
   WANDER_MIN,
+  info,
 } from '../shared/variables';
 
 /**
@@ -81,24 +82,25 @@ wanderBot.target = new Point(
   halfH + rand(-WANDER_MIN, WANDER_MAX, false)
 );
 game.addComponent(wanderBot);
-
 // end testing code
 
 /**
  * Handle incoming connections.
  */
 io.on('connection', (socket) => {
+  info('socket [connection]', socket.id);
   const player = new Player(socket);
   // player.frozen = true;
   // player.x -= 200;
 
   socket.on('disconnect', () => {
-    debug('Disconnected', socket.id);
+    info('socket [disconnect]', socket.id);
     player.active = false;
+    state.player.set(player);
   });
 
   socket.on('data', (obj) => {
-    debug('Data', socket.id, obj);
+    debug('socket [data]', socket.id, obj);
     // TODO: add field edit limitations
     Object.keys(obj).forEach((key) => {
       player.set(key, obj[key]);
@@ -107,17 +109,17 @@ io.on('connection', (socket) => {
   });
 
   socket.on('play', (obj) => {
-    debug('Play', socket.id, obj);
+    info('socket [play]', socket.id);
     // TODO: add field edit limitations
     Object.keys(obj).forEach((key) => {
       player.set(key, obj[key]);
     });
-    state.player.set(player);
     state.sync(socket.id, player);
+    state.player.set(player);
   });
 
-  debug('Connected', socket.id);
   game.addComponent(player);
+  state.player.set(player);
 });
 
 // Start the game loop

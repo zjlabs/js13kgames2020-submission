@@ -1,4 +1,5 @@
 export interface Item {
+  active: boolean;
   x: number;
   y: number;
   width: number;
