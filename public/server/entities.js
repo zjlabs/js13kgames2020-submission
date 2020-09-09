@@ -301,6 +301,33 @@ export class Player extends Entity {
         cang(other.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
       );
     }
+    if (collider.action == 'damage' && other.action == 'sword') {
+      if (!collider.data.items.sword) {
+        collider.data.set('items', {
+          ...collider.data.items,
+          ...{ sword: 1 },
+        });
+        other.data.set('active', false);
+      }
+    }
+    if (collider.action == 'damage' && other.action == 'helm') {
+      if (!collider.data.items.helm) {
+        collider.data.set('items', {
+          ...collider.data.items,
+          ...{ helm: 1 },
+        });
+        other.data.set('active', false);
+      }
+    }
+    if (collider.action == 'damage' && other.action == 'armor') {
+      if (!collider.data.items.armor) {
+        collider.data.set('items', {
+          ...collider.data.items,
+          ...{ armor: 1 },
+        });
+        other.data.set('active', false);
+      }
+    }
   }
 
   updateState() {
