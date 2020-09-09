@@ -30,6 +30,12 @@ import {
   ang,
   rand,
   WANDER_MAX,
+  WEAPON_DAMAGE,
+  ITEM_LIFE_VALUE,
+  PLAYER_REVERSE_DIST,
+  cang,
+  PLAYER_REVERSE_SPREAD,
+  PLAYER_REVERSE_VELOCITY,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -161,6 +167,7 @@ export class Player extends Entity {
     this.mouseAngleDegrees = 0;
     this.speed = 500;
     this.frozen = false;
+    this.reverse = false;
     state.player.set(this);
   }
 
@@ -207,9 +214,19 @@ export class Player extends Entity {
 
     // perform movement based on player/mouseAngleDegrees
     if (!this.frozen) {
+      const dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
+
       // TODO: Determine if "world wrapping" will be a nightmare for bots.
-      const intendedXOffset = Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
-      const intendedYOffset = Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
+      const intendedXOffset =
+        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * dir || 0;
+      const intendedYOffset =
+        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * dir || 0;
+      if (this.reverse != false) {
+        const hyp = sqrt(intendedXOffset ** 2 + intendedYOffset ** 2);
+        this.reverse -= hyp;
+        if (this.reverse < 0) this.reverse = false;
+      }
+
       const intendedXDestination = this.x + intendedXOffset;
       const intendedYDestination = this.y + intendedYOffset;
 
@@ -264,13 +281,25 @@ export class Player extends Entity {
 
   onCollision(collider, other) {
     if (collider.action == 'damage' && other.action == 'life') {
-      collider.data.set('health', this.health + 1);
+      collider.data.set('health', this.health + ITEM_LIFE_VALUE);
       other.data.set('active', false);
     }
     if (collider.action == 'damage' && other.action == 'weapon') {
-      let newHealth = max(this.health - 10, 0);
+      let newHealth = max(this.health - WEAPON_DAMAGE, 0);
       collider.data.set('health', newHealth);
       if (!newHealth) collider.data.set('active', false);
+    }
+    if (collider.action == 'weapon' && other.action == 'weapon') {
+      collider.data.set('reverse', PLAYER_REVERSE_DIST);
+      collider.data.set(
+        'mouseAngleDegrees',
+        cang(collider.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
+      );
+      other.data.set('reverse', PLAYER_REVERSE_DIST);
+      other.data.set(
+        'mouseAngleDegrees',
+        cang(other.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
+      );
     }
   }
 

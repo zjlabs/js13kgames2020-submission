@@ -49,11 +49,16 @@ export const WORLD_HEIGHT = 30000;
 export const WORLD_WIDTH = 30000;
 export const PLAYER_HEIGHT = 60;
 export const PLAYER_WIDTH = 100;
+export const PLAYER_REVERSE_VELOCITY = 2;
+export const PLAYER_REVERSE_DIST = 100;
+export const PLAYER_REVERSE_SPREAD = 15;
 export const WEAPON_HEIGHT = 200;
 export const WEAPON_WIDTH = 5;
 export const WEAPON_RESOLUTION = 5;
 export const WEAPON_Y_OFFSET = (3 / 4) * (PLAYER_WIDTH / 2);
 export const WEAPON_X_OFFSET = 0;
+export const WEAPON_DAMAGE = 1;
+
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
 
@@ -69,6 +74,7 @@ export const ITEM_TYPES = {
 };
 export const ITEM_LIFE_HEIGHT = 10;
 export const ITEM_LIFE_WIDTH = 10;
+export const ITEM_LIFE_VALUE = 10;
 export const ITEM_SWORD_HEIGHT = 20;
 export const ITEM_SWORD_WIDTH = 20;
 export const ITEM_HELM_HEIGHT = 20;
@@ -100,9 +106,11 @@ export const rot = (angle, aX, aY, bX, bY) => {
 // get the positive angle from the origin to x/y
 export const ang = (y, x) => {
   const rawAngle = (Math.atan2(y, x) * 180) / Math.PI;
-  const correctedAngle = (rawAngle + 360) % 360;
-  return parseInt(correctedAngle);
+  return cang(rawAngle + 360);
 };
+
+// get the capped angle
+export const cang = (ang) => parseInt(ang % 360);
 
 export const rand = (min, max, int = true) => {
   min = int ? Math.ceil(min) : min;
