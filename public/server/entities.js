@@ -116,17 +116,19 @@ export class Entity extends Component {
     let out = getDiff(this._prevState, pojo);
     this._prevState = pojo;
 
-    if (Object.keys(out) == 0) return false;
+    if (!out || Object.keys(out) == 0) return false;
     return out;
   }
 
   hasColliders() {
-    return false;
+    return this.getColliders().length > 0;
   }
 
   getColliders() {
     return [];
   }
+
+  updateState() {}
 
   onCollision(collider, other) {}
 }
@@ -230,10 +232,6 @@ export class Player extends Entity {
     this.components.forEach((component) => component.update(deltaTime));
   }
 
-  hasColliders() {
-    return true;
-  }
-
   // Drawn center origin
   // starting at 0 deg
   // rotate b around a, mouseAngleDegrees degrees
@@ -263,10 +261,18 @@ export class Player extends Entity {
   }
 
   onCollision(collider, other) {
-    if (!collider.data || !other.data) return;
-    if (collider.data.id == other.data.id) return;
+    if (collider.action == 'damage' && other.action == 'life') {
+      this.health += 1;
+      other.data.active = false;
+      console.log(collider, other);
+      console.log('=============================');
+      collider.data.updateState();
+      other.data.updateState();
+    }
+  }
 
-    console.log(`collision! [${collider.action}, ${collider.data.id}] => [${other.action}, ${other.data.id}]`);
+  updateState() {
+    state.player.set(this);
   }
 
   getPojo() {
@@ -325,10 +331,6 @@ export class Item extends Entity {
     state.items.set(this);
   }
 
-  hasColliders() {
-    return true;
-  }
-
   getColliders() {
     return [new Rectangle(this.x, this.y, this.scale * this.width, this.scale * this.height, this, this.type)];
   }
@@ -345,29 +347,47 @@ export class Item extends Entity {
       scale,
     };
   }
+
+  updateState() {
+    state.items.set(this);
+  }
 }
 
 export class Life extends Item {
   constructor(x, y) {
-    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, ITEM_TYPES['life']);
+    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, 'life');
+  }
+
+  updateState() {
+    super.updateState();
   }
 }
 
 export class Sword extends Item {
   constructor(x, y) {
-    super(x, y, ITEM_SWORD_WIDTH, ITEM_SWORD_HEIGHT, ITEM_TYPES['sword']);
+    super(x, y, ITEM_SWORD_WIDTH, ITEM_SWORD_HEIGHT, 'sword');
+  }
+
+  updateState() {
+    super.updateState();
   }
 }
 
 export class Helm extends Item {
   constructor(x, y) {
-    super(x, y, ITEM_HELM_WIDTH, ITEM_HELM_HEIGHT, ITEM_TYPES['helm']);
+    super(x, y, ITEM_HELM_WIDTH, ITEM_HELM_HEIGHT, 'helm');
+  }
+  updateState() {
+    super.updateState();
   }
 }
 
 export class Armor extends Item {
   constructor(x, y) {
-    super(x, y, ITEM_ARMOR_WIDTH, ITEM_ARMOR_HEIGHT, ITEM_TYPES['armor']);
+    super(x, y, ITEM_ARMOR_WIDTH, ITEM_ARMOR_HEIGHT, 'armor');
+  }
+  updateState() {
+    super.updateState();
   }
 }
 
@@ -386,17 +406,20 @@ export class Tile extends Entity {
     return `${this.x},${this.y}`;
   }
 
-  hasColliders() {
-    return !this.walk;
-  }
-
   getColliders() {
-    return [
-      new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this, 'tile'),
-    ];
+    return !this.walk
+      ? [
+          new Rectangle(
+            this.x + this.width / 2,
+            this.y + this.height / 2,
+            this.width / 2,
+            this.height / 2,
+            this,
+            'tile'
+          ),
+        ]
+      : [];
   }
-
-  onCollision(collider, other) {}
 
   getPojo() {
     let { x, y, height, width, walk } = this;
@@ -628,32 +651,24 @@ export class Game extends Component {
     const w = WORLD_WIDTH / 2;
     const h = WORLD_HEIGHT / 2;
     this.world = new Rectangle(w, h, w, h);
-
-    // get the frame quadtree
-    this.buildQuadtree();
   }
 
-  buildQuadtree(collidables) {
-    if (!collidables) {
-      collidables = this.getCollidables();
-    }
+  checkCollisions() {
+    this.components.forEach((component) => {
+      if (!component.active || !component.hasColliders()) return;
+      component.getColliders().forEach((collider) => {
+        if (!collider.data || !collider.action) return;
+        this.quadTree.query(collider).forEach((collision) => {
+          if (component.id == collision.data.id) return;
+          if (!collision.data.active) return;
 
-    this.quadTree = new Quadtree(this.world);
-    collidables.forEach((component) => {
-      component.getColliders().forEach((collider, index, all) => {
-        this.quadTree.insert(collider);
+          if (collider.intersects(collision)) {
+            debug('collision!', collider, collision);
+            component.onCollision(collider, collision);
+          }
+        });
       });
     });
-  }
-
-  getCollidables() {
-    if (!this._colliderCache) {
-      this._colliderCache = this.getComponents(false).filter(
-        (component) => component.active && component.hasColliders()
-      );
-    }
-
-    return this._colliderCache;
   }
 
   update(deltaTime) {
@@ -661,28 +676,20 @@ export class Game extends Component {
 
     // Update every component before applying primary control logic
     this.components.forEach((component) => {
+      if (!component.active) return;
       component.update(deltaTime);
-
-      if (component instanceof Player) {
-        state.player.set(component);
-      }
+      component.getColliders().forEach((c) => this.quadTree.insert(c));
+      component.updateState();
     });
 
     // check all collisions
-    this.buildQuadtree();
-    this.getCollidables().forEach((entity) => {
-      entity.getColliders().forEach((collider) => {
-        this.quadTree
-          .query(collider)
-          .forEach((collision) => entity.data && collision.data && entity.data.onCollision(collider, collision));
-      });
-    });
+    this.checkCollisions();
 
     state.delta();
   }
 
   clearFrameMemory() {
-    this._colliderCache = undefined;
+    this.quadTree = new Quadtree(this.world);
   }
 }
 
@@ -827,7 +834,6 @@ export class Rectangle {
       this.x + this.w > rect.x - rect.w &&
       this.y - this.h < rect.y + rect.h &&
       this.y + this.h > rect.y - rect.h
-      // this.x < rect.x + rect.w && this.x + this.w > rect.x && this.y < rect.y + rect.height && this.y + this.h > rect.y
     );
   }
 
@@ -886,10 +892,10 @@ export class Quadtree {
     let w = this.boundry.w;
     let h = this.boundry.h;
 
-    this.northWest = new Quadtree(new Rectangle(x - w / 2, y + h / 2, w / 2, h / 2), this.capacity);
-    this.northEast = new Quadtree(new Rectangle(x + w / 2, y + h / 2, w / 2, h / 2), this.capacity);
-    this.southWest = new Quadtree(new Rectangle(x - w / 2, y - h / 2, w / 2, h / 2), this.capacity);
-    this.southEast = new Quadtree(new Rectangle(x + w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+    this.northWest = new Quadtree(new Rectangle(x - w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+    this.northEast = new Quadtree(new Rectangle(x + w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+    this.southWest = new Quadtree(new Rectangle(x - w / 2, y + h / 2, w / 2, h / 2), this.capacity);
+    this.southEast = new Quadtree(new Rectangle(x + w / 2, y + h / 2, w / 2, h / 2), this.capacity);
   }
 
   insert(point) {

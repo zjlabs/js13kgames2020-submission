@@ -18,7 +18,7 @@ export const STATS = true;
  * 1 = debug = debug()
  * 0 = all   = all()
  */
-export const LOG_LEVEL = 1;
+export const LOG_LEVEL = 2;
 export const exit = (...message) => LOG_LEVEL <= 4 && console.log('fatal', ...message);
 export const error = (...message) => LOG_LEVEL <= 3 && console.log('error', ...message);
 export const info = (...message) => LOG_LEVEL <= 2 && console.log('info', ...message);
