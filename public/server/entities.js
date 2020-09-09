@@ -280,7 +280,7 @@ export class Player extends Entity {
   }
 
   onCollision(collider, other) {
-    if (collider.action == 'damage' && other.action == 'life') {
+    if (collider.action == 'damage' && other.action == ITEM_TYPES['life']) {
       collider.data.set('health', this.health + ITEM_LIFE_VALUE);
       other.data.set('active', false);
     }
@@ -301,7 +301,7 @@ export class Player extends Entity {
         cang(other.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
       );
     }
-    if (collider.action == 'damage' && other.action == 'sword') {
+    if (collider.action == 'damage' && other.action == ITEM_TYPES['sword']) {
       if (!collider.data.items.sword) {
         collider.data.set('items', {
           ...collider.data.items,
@@ -310,7 +310,7 @@ export class Player extends Entity {
         other.data.set('active', false);
       }
     }
-    if (collider.action == 'damage' && other.action == 'helm') {
+    if (collider.action == 'damage' && other.action == ITEM_TYPES['helm']) {
       if (!collider.data.items.helm) {
         collider.data.set('items', {
           ...collider.data.items,
@@ -319,7 +319,7 @@ export class Player extends Entity {
         other.data.set('active', false);
       }
     }
-    if (collider.action == 'damage' && other.action == 'armor') {
+    if (collider.action == 'damage' && other.action == ITEM_TYPES['armor']) {
       if (!collider.data.items.armor) {
         collider.data.set('items', {
           ...collider.data.items,
@@ -385,7 +385,7 @@ export class Item extends Entity {
     this.y = y;
     this.width = width;
     this.height = height;
-    this.type = type;
+    this.type = typeof type == 'string' ? ITEM_TYPES[type] : type;
     this.scale = scale;
     state.items.set(this);
   }
