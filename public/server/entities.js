@@ -267,6 +267,11 @@ export class Player extends Entity {
       collider.data.set('health', this.health + 1);
       other.data.set('active', false);
     }
+    if (collider.action == 'damage' && other.action == 'weapon') {
+      let newHealth = max(this.health - 10, 0);
+      collider.data.set('health', newHealth);
+      if (!newHealth) collider.data.set('active', false);
+    }
   }
 
   updateState() {
