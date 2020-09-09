@@ -1,4 +1,4 @@
-import { SHOW_BOUNDING_BOXES, SHOW_GRID, SHOW_PERFORMANCE_METRICS, rad } from '../../shared/variables';
+import { ITEM_TYPES, rad, SHOW_BOUNDING_BOXES, SHOW_GRID, SHOW_PERFORMANCE_METRICS } from '../../shared/variables';
 import { getPlayerState, getState } from '../state';
 import { renderPlayer } from './player';
 import { clearCanvas } from './render-utilities';
@@ -9,7 +9,7 @@ import { renderMap } from './map';
 import { renderGrid } from './grid';
 import { renderColliders } from './colliders';
 import { Item } from '../models/items';
-import { renderItem } from './item';
+import { renderArmor, renderHealth, renderHelm, renderItem, renderSword } from './item';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -46,6 +46,47 @@ export function renderGame() {
 
   const screenCoordinate0X = x - width / 2;
   const screenCoordinate0Y = y - height / 2;
+
+  // Render items.
+  Object.keys(state.items)
+    .map((key: string) => {
+      return state.items[key];
+    })
+    // TODO: Use Zack's dank math machine to make this more efficient.
+    .filter((item: Item) => {
+      return (
+        item.x > screenCoordinate0X &&
+        item.x < screenCoordinate0X + width &&
+        item.y > screenCoordinate0Y &&
+        item.y < screenCoordinate0Y + height
+      );
+    })
+    .forEach((item: Item) => {
+      const relativeCoordinateX = item.x - screenCoordinate0X;
+      const relativeCoordinateY = item.y - screenCoordinate0Y;
+
+      if (item.type === ITEM_TYPES['armor']) {
+        renderArmor(ctx, relativeCoordinateX, relativeCoordinateY, item.width, item.height);
+        return;
+      }
+
+      if (item.type === ITEM_TYPES['helm']) {
+        renderHelm(ctx, relativeCoordinateX, relativeCoordinateY, item.width, item.height);
+        return;
+      }
+
+      if (item.type === ITEM_TYPES['life']) {
+        renderHealth(ctx, relativeCoordinateX, relativeCoordinateY, item.width, item.height);
+        return;
+      }
+
+      if (item.type === ITEM_TYPES['sword']) {
+        renderSword(ctx, relativeCoordinateX, relativeCoordinateY, item.width, item.height);
+        return;
+      }
+
+      renderItem(ctx, relativeCoordinateX, relativeCoordinateY, item.height);
+    });
 
   // Render players.
   Object.keys(state.players)
@@ -84,27 +125,6 @@ export function renderGame() {
       if (SHOW_BOUNDING_BOXES) {
         renderColliders(ctx, player.colliders, screenCoordinate0X, screenCoordinate0Y);
       }
-    });
-
-  // Render items.
-  Object.keys(state.items)
-    .map((key: string) => {
-      return state.items[key];
-    })
-    // TODO: Use Zack's dank math machine to make this more efficient.
-    .filter((item: Item) => {
-      return (
-        item.x > screenCoordinate0X &&
-        item.x < screenCoordinate0X + width &&
-        item.y > screenCoordinate0Y &&
-        item.y < screenCoordinate0Y + height
-      );
-    })
-    .forEach((item: Item) => {
-      const relativeCoordinateX = item.x - screenCoordinate0X;
-      const relativeCoordinateY = item.y - screenCoordinate0Y;
-
-      renderItem(ctx, relativeCoordinateX, relativeCoordinateY, item.height);
     });
 
   // Render map.
