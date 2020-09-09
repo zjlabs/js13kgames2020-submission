@@ -55,6 +55,7 @@ export function renderGame() {
     // TODO: Use Zack's dank math machine to make this more efficient.
     .filter((item: Item) => {
       return (
+        item.active &&
         item.x > screenCoordinate0X &&
         item.x < screenCoordinate0X + width &&
         item.y > screenCoordinate0Y &&
