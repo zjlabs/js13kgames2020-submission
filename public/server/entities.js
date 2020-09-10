@@ -293,11 +293,13 @@ export class Player extends Entity {
       collider.data.set('xp', newXp);
       collider.data.set('level', newLevel);
       other.data.set('active', false);
+      return true;
     }
     if (collider.action == 'damage' && other.action == 'weapon') {
       let newHealth = max(this.health - WEAPON_DAMAGE, 0);
       collider.data.set('health', newHealth);
       if (!newHealth) collider.data.set('active', false);
+      return true;
     }
     if (collider.action == 'weapon' && other.action == 'weapon') {
       collider.data.set('reverse', PLAYER_REVERSE_DIST);
@@ -310,6 +312,7 @@ export class Player extends Entity {
         'mouseAngleDegrees',
         cang(other.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
       );
+      return true;
     }
     if (collider.action == 'damage' && other.action == ITEM_TYPES['sword']) {
       if (!collider.data.items.sword) {
@@ -318,6 +321,7 @@ export class Player extends Entity {
           ...{ sword: 1 },
         });
         other.data.set('active', false);
+        return true;
       }
     }
     if (collider.action == 'damage' && other.action == ITEM_TYPES['helm']) {
@@ -327,6 +331,7 @@ export class Player extends Entity {
           ...{ helm: 1 },
         });
         other.data.set('active', false);
+        return true;
       }
     }
     if (collider.action == 'damage' && other.action == ITEM_TYPES['armor']) {
@@ -336,6 +341,7 @@ export class Player extends Entity {
           ...{ armor: 1 },
         });
         other.data.set('active', false);
+        return true;
       }
     }
   }
@@ -709,6 +715,8 @@ export class Game extends Component {
   }
 
   checkCollisions() {
+    let cmap = {};
+
     this.components.forEach((component) => {
       if (!component.active || !component.hasColliders()) return;
       component.getColliders().forEach((collider) => {
@@ -716,10 +724,15 @@ export class Game extends Component {
         this.quadTree.query(collider).forEach((collision) => {
           if (component.id == collision.data.id) return;
           if (!collision.data.active) return;
+          if (cmap[collider.data.id] && cmap[collider.data.id][collision.data.id]) return;
 
           if (collider.intersects(collision)) {
             debug('collision!', collider, collision);
-            component.onCollision(collider, collision);
+            // if this was a collision, make sure the parent cant collide with this again
+            if (component.onCollision(collider, collision)) {
+              cmap[collider.data.id] = cmap[collider.data.id] || {};
+              cmap[collider.data.id][collision.data.id] = true;
+            }
           }
         });
       });
