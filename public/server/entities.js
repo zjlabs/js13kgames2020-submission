@@ -36,6 +36,8 @@ import {
   cang,
   PLAYER_REVERSE_SPREAD,
   PLAYER_REVERSE_VELOCITY,
+  PLAYER_MAX_HEALTH,
+  PLAYER_XP_LEVEL,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -281,7 +283,15 @@ export class Player extends Entity {
 
   onCollision(collider, other) {
     if (collider.action == 'damage' && other.action == ITEM_TYPES['life']) {
-      collider.data.set('health', this.health + ITEM_LIFE_VALUE);
+      let health = this.health + ITEM_LIFE_VALUE;
+      let newHealth = health > PLAYER_MAX_HEALTH ? PLAYER_MAX_HEALTH : health;
+      let xp = health > PLAYER_MAX_HEALTH ? health % PLAYER_MAX_HEALTH : 0;
+      let newXp = this.xp + xp;
+      let newLevel = 1 + parseInt(newXp / PLAYER_XP_LEVEL);
+
+      collider.data.set('health', newHealth);
+      collider.data.set('xp', newXp);
+      collider.data.set('level', newLevel);
       other.data.set('active', false);
     }
     if (collider.action == 'damage' && other.action == 'weapon') {
