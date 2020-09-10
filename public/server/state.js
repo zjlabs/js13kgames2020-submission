@@ -18,7 +18,7 @@ class EntityState {
       ...diff,
     };
 
-    if (!diff.active) {
+    if (diff && !diff.active) {
       this._prune = true;
     }
   }

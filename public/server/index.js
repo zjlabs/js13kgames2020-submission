@@ -136,7 +136,12 @@ const tick = () => {
   /**
    * GAME LOGIC
    */
-  game.update(delta);
+  game.update(delta, {
+    addComponent: (c) => {
+      console.log('called', c);
+      game.addComponent(c);
+    },
+  });
 
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;

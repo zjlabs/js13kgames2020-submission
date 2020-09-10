@@ -38,6 +38,8 @@ import {
   PLAYER_REVERSE_VELOCITY,
   PLAYER_MAX_HEALTH,
   PLAYER_XP_LEVEL,
+  PLAYER_LIFE_SPAWN_RATE,
+  ITEM_LIFE_VALUE_MAX,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -78,8 +80,8 @@ export class Component {
     return [...this.components, ...this.components.map((c) => c.getComponents(deep).flat())];
   }
 
-  update(deltaTime) {
-    this.component.forEach((component) => component.update(deltaTime));
+  update(deltaTime, gameRef) {
+    this.component.forEach((component) => component.update(deltaTime, gameRef));
   }
 
   getPojo() {
@@ -98,7 +100,7 @@ export class Entity extends Component {
     this._prevState = {};
   }
 
-  update(delta) {}
+  update(delta, gameRef) {}
 
   set(key, val) {
     if (this.hasOwnProperty(key)) {
@@ -170,10 +172,11 @@ export class Player extends Entity {
     this.speed = 500;
     this.frozen = false;
     this.reverse = false;
+    this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
     state.player.set(this);
   }
 
-  update(deltaTime) {
+  update(deltaTime, gameRef) {
     // update direction before movement if we're a bot
     if (this.bot && !this.frozen) {
       // try to update the path
@@ -229,6 +232,14 @@ export class Player extends Entity {
         if (this.reverse < 0) this.reverse = false;
       }
 
+      // check if we need to spawn a new life orb
+      this.lastLifeSpawn -= deltaTime;
+      if (this.lastLifeSpawn <= 0) {
+        this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
+        let l = new Life(this.x, this.y);
+        gameRef.addComponent(l);
+      }
+
       const intendedXDestination = this.x + intendedXOffset;
       const intendedYDestination = this.y + intendedYOffset;
 
@@ -250,7 +261,7 @@ export class Player extends Entity {
     }
 
     // update all the children components
-    this.components.forEach((component) => component.update(deltaTime));
+    this.components.forEach((component) => component.update(deltaTime, gameRef));
   }
 
   // Drawn center origin
@@ -283,7 +294,7 @@ export class Player extends Entity {
 
   onCollision(collider, other) {
     if (collider.action == 'damage' && other.action == ITEM_TYPES['life']) {
-      let health = this.health + ITEM_LIFE_VALUE;
+      let health = this.health + other.data.value;
       let newHealth = health > PLAYER_MAX_HEALTH ? PLAYER_MAX_HEALTH : health;
       let xp = health > PLAYER_MAX_HEALTH ? health % PLAYER_MAX_HEALTH : 0;
       let newXp = this.xp + xp;
@@ -362,13 +373,15 @@ export class Player extends Entity {
       health,
       items,
       bot,
+      path,
+      target,
       skin,
       powerups,
       mouseAngleDegrees,
       speed,
       frozen,
-      path,
-      target,
+      reverse,
+      lastLifeSpawn,
     } = this;
     return {
       ...super.getPojo(),
@@ -389,19 +402,22 @@ export class Player extends Entity {
       mouseAngleDegrees,
       speed,
       frozen,
+      reverse,
+      lastLifeSpawn,
       colliders: this.getColliders().map((c) => c.pure()),
     };
   }
 }
 
 export class Item extends Entity {
-  constructor(x, y, width, height, type = '', scale = 1) {
+  constructor(x, y, width, height, type = '', value, scale = 1) {
     super();
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.type = typeof type == 'string' ? ITEM_TYPES[type] : type;
+    this.value = value;
     this.scale = scale;
     state.items.set(this);
   }
@@ -411,7 +427,7 @@ export class Item extends Entity {
   }
 
   getPojo() {
-    const { x, y, width, height, type, scale } = this;
+    const { x, y, width, height, type, value, scale } = this;
     return {
       ...super.getPojo(),
       x,
@@ -419,6 +435,7 @@ export class Item extends Entity {
       width,
       height,
       type,
+      value,
       scale,
     };
   }
@@ -429,8 +446,8 @@ export class Item extends Entity {
 }
 
 export class Life extends Item {
-  constructor(x, y) {
-    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, 'life');
+  constructor(x, y, value = ITEM_LIFE_VALUE) {
+    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, 'life', value);
   }
 }
 
@@ -513,8 +530,8 @@ export class Grid extends Component {
     }
   }
 
-  update(deltaTime) {
-    this.tiles.forEach((tile) => tile.update(deltaTime));
+  update(deltaTime, gameRef) {
+    this.tiles.forEach((tile) => tile.update(deltaTime, gameRef));
   }
 
   /**
@@ -739,13 +756,13 @@ export class Game extends Component {
     });
   }
 
-  update(deltaTime) {
+  update(deltaTime, gameRef) {
     this.clearFrameMemory();
 
     // Update every component before applying primary control logic
     this.components.forEach((component) => {
       if (!component.active) return;
-      component.update(deltaTime);
+      component.update(deltaTime, gameRef);
       component.getColliders().forEach((c) => this.quadTree.insert(c));
       component.updateState();
     });
