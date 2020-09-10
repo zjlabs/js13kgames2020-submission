@@ -30,6 +30,14 @@ import {
   ang,
   rand,
   WANDER_MAX,
+  WEAPON_DAMAGE,
+  ITEM_LIFE_VALUE,
+  PLAYER_REVERSE_DIST,
+  cang,
+  PLAYER_REVERSE_SPREAD,
+  PLAYER_REVERSE_VELOCITY,
+  PLAYER_MAX_HEALTH,
+  PLAYER_XP_LEVEL,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 import { getDiff } from '../client/object-utilities.ts';
@@ -96,6 +104,8 @@ export class Entity extends Component {
     if (this.hasOwnProperty(key)) {
       this[key] = val;
     }
+
+    this.updateState();
   }
 
   get(key) {
@@ -116,19 +126,21 @@ export class Entity extends Component {
     let out = getDiff(this._prevState, pojo);
     this._prevState = pojo;
 
-    if (Object.keys(out) == 0) return false;
+    if (!out || Object.keys(out) == 0) return false;
     return out;
   }
 
   hasColliders() {
-    return false;
+    return this.getColliders().length > 0;
   }
 
   getColliders() {
     return [];
   }
 
-  onCollision(other, action) {}
+  updateState() {}
+
+  onCollision(collider, other) {}
 }
 
 export class Player extends Entity {
@@ -157,6 +169,7 @@ export class Player extends Entity {
     this.mouseAngleDegrees = 0;
     this.speed = 500;
     this.frozen = false;
+    this.reverse = false;
     state.player.set(this);
   }
 
@@ -203,9 +216,19 @@ export class Player extends Entity {
 
     // perform movement based on player/mouseAngleDegrees
     if (!this.frozen) {
+      const dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
+
       // TODO: Determine if "world wrapping" will be a nightmare for bots.
-      const intendedXOffset = Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
-      const intendedYOffset = Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed || 0;
+      const intendedXOffset =
+        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * dir || 0;
+      const intendedYOffset =
+        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * dir || 0;
+      if (this.reverse != false) {
+        const hyp = sqrt(intendedXOffset ** 2 + intendedYOffset ** 2);
+        this.reverse -= hyp;
+        if (this.reverse < 0) this.reverse = false;
+      }
+
       const intendedXDestination = this.x + intendedXOffset;
       const intendedYDestination = this.y + intendedYOffset;
 
@@ -228,10 +251,6 @@ export class Player extends Entity {
 
     // update all the children components
     this.components.forEach((component) => component.update(deltaTime));
-  }
-
-  hasColliders() {
-    return true;
   }
 
   // Drawn center origin
@@ -262,10 +281,73 @@ export class Player extends Entity {
     return [new Rectangle(this.x, this.y, this.height, this.height, this, 'damage'), ...this.getWeaponColliderCoords()];
   }
 
-  onCollision(other, action) {
-    if (other instanceof Tile) {
-    } else if (other instanceof Player) {
+  onCollision(collider, other) {
+    if (collider.action == 'damage' && other.action == ITEM_TYPES['life']) {
+      let health = this.health + ITEM_LIFE_VALUE;
+      let newHealth = health > PLAYER_MAX_HEALTH ? PLAYER_MAX_HEALTH : health;
+      let xp = health > PLAYER_MAX_HEALTH ? health % PLAYER_MAX_HEALTH : 0;
+      let newXp = this.xp + xp;
+      let newLevel = 1 + parseInt(newXp / PLAYER_XP_LEVEL);
+
+      collider.data.set('health', newHealth);
+      collider.data.set('xp', newXp);
+      collider.data.set('level', newLevel);
+      other.data.set('active', false);
+      return true;
     }
+    if (collider.action == 'damage' && other.action == 'weapon') {
+      let newHealth = max(this.health - WEAPON_DAMAGE, 0);
+      collider.data.set('health', newHealth);
+      if (!newHealth) collider.data.set('active', false);
+      return true;
+    }
+    if (collider.action == 'weapon' && other.action == 'weapon') {
+      collider.data.set('reverse', PLAYER_REVERSE_DIST);
+      collider.data.set(
+        'mouseAngleDegrees',
+        cang(collider.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
+      );
+      other.data.set('reverse', PLAYER_REVERSE_DIST);
+      other.data.set(
+        'mouseAngleDegrees',
+        cang(other.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
+      );
+      return true;
+    }
+    if (collider.action == 'damage' && other.action == ITEM_TYPES['sword']) {
+      if (!collider.data.items.sword) {
+        collider.data.set('items', {
+          ...collider.data.items,
+          ...{ sword: 1 },
+        });
+        other.data.set('active', false);
+        return true;
+      }
+    }
+    if (collider.action == 'damage' && other.action == ITEM_TYPES['helm']) {
+      if (!collider.data.items.helm) {
+        collider.data.set('items', {
+          ...collider.data.items,
+          ...{ helm: 1 },
+        });
+        other.data.set('active', false);
+        return true;
+      }
+    }
+    if (collider.action == 'damage' && other.action == ITEM_TYPES['armor']) {
+      if (!collider.data.items.armor) {
+        collider.data.set('items', {
+          ...collider.data.items,
+          ...{ armor: 1 },
+        });
+        other.data.set('active', false);
+        return true;
+      }
+    }
+  }
+
+  updateState() {
+    state.player.set(this);
   }
 
   getPojo() {
@@ -319,13 +401,9 @@ export class Item extends Entity {
     this.y = y;
     this.width = width;
     this.height = height;
-    this.type = type;
+    this.type = typeof type == 'string' ? ITEM_TYPES[type] : type;
     this.scale = scale;
     state.items.set(this);
-  }
-
-  hasColliders() {
-    return true;
   }
 
   getColliders() {
@@ -344,29 +422,33 @@ export class Item extends Entity {
       scale,
     };
   }
+
+  updateState() {
+    state.items.set(this);
+  }
 }
 
 export class Life extends Item {
   constructor(x, y) {
-    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, ITEM_TYPES['life']);
+    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, 'life');
   }
 }
 
 export class Sword extends Item {
   constructor(x, y) {
-    super(x, y, ITEM_SWORD_WIDTH, ITEM_SWORD_HEIGHT, ITEM_TYPES['sword']);
+    super(x, y, ITEM_SWORD_WIDTH, ITEM_SWORD_HEIGHT, 'sword');
   }
 }
 
 export class Helm extends Item {
   constructor(x, y) {
-    super(x, y, ITEM_HELM_WIDTH, ITEM_HELM_HEIGHT, ITEM_TYPES['helm']);
+    super(x, y, ITEM_HELM_WIDTH, ITEM_HELM_HEIGHT, 'helm');
   }
 }
 
 export class Armor extends Item {
   constructor(x, y) {
-    super(x, y, ITEM_ARMOR_WIDTH, ITEM_ARMOR_HEIGHT, ITEM_TYPES['armor']);
+    super(x, y, ITEM_ARMOR_WIDTH, ITEM_ARMOR_HEIGHT, 'armor');
   }
 }
 
@@ -385,17 +467,20 @@ export class Tile extends Entity {
     return `${this.x},${this.y}`;
   }
 
-  hasColliders() {
-    return !this.walk;
-  }
-
   getColliders() {
-    return [
-      new Rectangle(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, this, 'tile'),
-    ];
+    return !this.walk
+      ? [
+          new Rectangle(
+            this.x + this.width / 2,
+            this.y + this.height / 2,
+            this.width / 2,
+            this.height / 2,
+            this,
+            'tile'
+          ),
+        ]
+      : [];
   }
-
-  onCollision(other, action) {}
 
   getPojo() {
     let { x, y, height, width, walk } = this;
@@ -627,32 +712,31 @@ export class Game extends Component {
     const w = WORLD_WIDTH / 2;
     const h = WORLD_HEIGHT / 2;
     this.world = new Rectangle(w, h, w, h);
-
-    // get the frame quadtree
-    this.buildQuadtree();
   }
 
-  buildQuadtree(collidables) {
-    if (!collidables) {
-      collidables = this.getCollidables();
-    }
+  checkCollisions() {
+    let cmap = {};
 
-    this.quadTree = new Quadtree(this.world);
-    collidables.forEach((component) => {
+    this.components.forEach((component) => {
+      if (!component.active || !component.hasColliders()) return;
       component.getColliders().forEach((collider) => {
-        this.quadTree.insert(collider);
+        if (!collider.data || !collider.action) return;
+        this.quadTree.query(collider).forEach((collision) => {
+          if (component.id == collision.data.id) return;
+          if (!collision.data.active) return;
+          if (cmap[collider.data.id] && cmap[collider.data.id][collision.data.id]) return;
+
+          if (collider.intersects(collision)) {
+            debug('collision!', collider, collision);
+            // if this was a collision, make sure the parent cant collide with this again
+            if (component.onCollision(collider, collision)) {
+              cmap[collider.data.id] = cmap[collider.data.id] || {};
+              cmap[collider.data.id][collision.data.id] = true;
+            }
+          }
+        });
       });
     });
-  }
-
-  getCollidables() {
-    if (!this._colliderCache) {
-      this._colliderCache = this.getComponents(true).filter(
-        (component) => component instanceof Player && component.active && component.hasColliders()
-      );
-    }
-
-    return this._colliderCache;
   }
 
   update(deltaTime) {
@@ -660,30 +744,20 @@ export class Game extends Component {
 
     // Update every component before applying primary control logic
     this.components.forEach((component) => {
+      if (!component.active) return;
       component.update(deltaTime);
-
-      if (component instanceof Player) {
-        state.player.set(component);
-      }
+      component.getColliders().forEach((c) => this.quadTree.insert(c));
+      component.updateState();
     });
 
     // check all collisions
-    this.buildQuadtree();
-    this.getCollidables().forEach((entity) => {
-      entity.getColliders().forEach((collider) => {
-        this.quadTree
-          .query(collider)
-          .forEach(
-            (collision) => entity.data && collision.data && entity.data.onCollision(collision.data, collision.active)
-          );
-      });
-    });
+    this.checkCollisions();
 
     state.delta();
   }
 
   clearFrameMemory() {
-    this._colliderCache = undefined;
+    this.quadTree = new Quadtree(this.world);
   }
 }
 
@@ -828,7 +902,6 @@ export class Rectangle {
       this.x + this.w > rect.x - rect.w &&
       this.y - this.h < rect.y + rect.h &&
       this.y + this.h > rect.y - rect.h
-      // this.x < rect.x + rect.w && this.x + this.w > rect.x && this.y < rect.y + rect.height && this.y + this.h > rect.y
     );
   }
 
@@ -887,10 +960,10 @@ export class Quadtree {
     let w = this.boundry.w;
     let h = this.boundry.h;
 
-    this.northWest = new Quadtree(new Rectangle(x - w / 2, y + h / 2, w / 2, h / 2), this.capacity);
-    this.northEast = new Quadtree(new Rectangle(x + w / 2, y + h / 2, w / 2, h / 2), this.capacity);
-    this.southWest = new Quadtree(new Rectangle(x - w / 2, y - h / 2, w / 2, h / 2), this.capacity);
-    this.southEast = new Quadtree(new Rectangle(x + w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+    this.northWest = new Quadtree(new Rectangle(x - w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+    this.northEast = new Quadtree(new Rectangle(x + w / 2, y - h / 2, w / 2, h / 2), this.capacity);
+    this.southWest = new Quadtree(new Rectangle(x - w / 2, y + h / 2, w / 2, h / 2), this.capacity);
+    this.southEast = new Quadtree(new Rectangle(x + w / 2, y + h / 2, w / 2, h / 2), this.capacity);
   }
 
   insert(point) {
