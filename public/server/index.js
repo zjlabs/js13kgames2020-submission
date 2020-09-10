@@ -25,7 +25,7 @@ const game = new Game();
 
 // start testing code
 let combatBot = new Player({ id: 'bot1' });
-combatBot.x = WORLD_WIDTH / 2;
+combatBot.x = WORLD_WIDTH / 2 + 300;
 combatBot.y = WORLD_HEIGHT / 2;
 combatBot.frozen = true;
 combatBot.bot = true;
