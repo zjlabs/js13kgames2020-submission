@@ -138,7 +138,6 @@ const tick = () => {
    */
   game.update(delta, {
     addComponent: (c) => {
-      console.log('called', c);
       game.addComponent(c);
     },
   });

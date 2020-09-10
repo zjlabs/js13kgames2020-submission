@@ -40,9 +40,9 @@ import {
   PLAYER_XP_LEVEL,
   PLAYER_LIFE_SPAWN_RATE,
   ITEM_LIFE_VALUE_MAX,
+  diff,
 } from '../shared/variables';
 import { getId } from '../shared/id';
-import { getDiff } from '../client/object-utilities.ts';
 const { min, max, abs, sqrt } = Math;
 
 export class Component {
@@ -125,10 +125,8 @@ export class Entity extends Component {
 
   getDiff() {
     const pojo = this.getPojo();
-    let out = getDiff(this._prevState, pojo);
+    let out = diff(this._prevState, pojo);
     this._prevState = pojo;
-
-    if (!out || Object.keys(out) == 0) return false;
     return out;
   }
 
@@ -173,6 +171,8 @@ export class Player extends Entity {
     this.frozen = false;
     this.reverse = false;
     this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
+    this._lastX = 0;
+    this._lastY = 0;
     state.player.set(this);
   }
 
@@ -234,12 +234,8 @@ export class Player extends Entity {
 
       // check if we need to spawn a new life orb
       this.lastLifeSpawn -= deltaTime;
-      if (this.lastLifeSpawn <= 0) {
-        this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
-        let l = new Life(this.x, this.y);
-        gameRef.addComponent(l);
-      }
-
+      this._lastX = this.x;
+      this._lastY = this.y;
       const intendedXDestination = this.x + intendedXOffset;
       const intendedYDestination = this.y + intendedYOffset;
 
@@ -257,6 +253,11 @@ export class Player extends Entity {
         this.y = WORLD_HEIGHT + intendedYDestination;
       } else {
         this.y += intendedYOffset;
+      }
+
+      if (this.lastLifeSpawn <= 0) {
+        this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
+        gameRef.addComponent(new Life(this._lastX, this._lastX));
       }
     }
 

@@ -122,3 +122,31 @@ export const rand = (min, max, int = true) => {
   let rng = Math.random() * (max - min);
   return (int ? Math.floor(rng) : rng) + min;
 };
+
+// compare two objects recursively
+// returns base with compare differences
+// undefined values are not returned
+export const diff = (base, compare) => {
+  if (['string', 'number', 'boolean'].includes(typeof compare)) {
+    return compare === base ? undefined : compare;
+  }
+
+  if (compare instanceof Array) {
+    return compare;
+  }
+
+  let temp, out;
+  if (typeof compare == 'object') {
+    Object.keys(compare).forEach((key) => {
+      temp = base !== undefined ? diff(base[key], compare[key]) : compare[key];
+      if (temp != undefined) {
+        out = {
+          ...out,
+          [key]: temp,
+        };
+      }
+    });
+  }
+
+  return out;
+};
