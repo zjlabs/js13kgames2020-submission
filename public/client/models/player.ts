@@ -1,5 +1,4 @@
 import { Collider } from './collider';
-import { Item } from './items';
 
 export interface Player {
   active: boolean;
@@ -9,7 +8,11 @@ export interface Player {
   health: number;
   height: number;
   id: number | string;
-  items: Item[];
+  items: {
+    sword: 0 | 1;
+    helm: 0 | 1;
+    armor: 0 | 1;
+  };
   level: number;
   mouseAngleDegrees: number;
   powerups: unknown;
