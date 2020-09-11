@@ -11,6 +11,11 @@ document.addEventListener('mousemove', (event) => {
   mouseY = event.clientY;
 });
 
+document.addEventListener('touchmove', (event) => {
+  mouseX = event.targetTouches[0].clientX;
+  mouseY = event.targetTouches[0].clientY;
+});
+
 window.addEventListener('resize', () => {
   centerX = rootEl.offsetWidth / 2;
   centerY = rootEl.offsetHeight / 2;

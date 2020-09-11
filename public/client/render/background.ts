@@ -53,13 +53,13 @@ function getMovementOffset(angleRadians: number) {
 export function renderBackground(ctx, width, height, angleRadians = 0) {
   const { x, y } = getMovementOffset(angleRadians);
 
-  ctx.drawImage(backgroundCanvas, (width / 2) * -1 + x, (height / 2) * -1 + y);
+  ctx.drawImage(backgroundCanvas, ((width * 4) / 2) * -1 + x, ((height * 4) / 2) * -1 + y);
 }
 
 export function getBackgroundImageCanvas(width, height) {
   const offscreenCanvas = document.createElement('canvas');
-  const offscreenCanvasWidth = width * 2;
-  const offscreenCanvasHeight = height * 2;
+  const offscreenCanvasWidth = width * 4;
+  const offscreenCanvasHeight = height * 4;
   offscreenCanvas.width = offscreenCanvasWidth;
   offscreenCanvas.height = offscreenCanvasHeight;
 
