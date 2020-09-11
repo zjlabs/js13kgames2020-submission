@@ -33,6 +33,12 @@ export const SHOW_BOUNDING_BOXES = true;
 export const SHOW_GRID = false;
 
 /**
+ * client fps settings
+ */
+export const FPS_SAMPLES = 10;
+export const FPS_SAMPLE_RATE = 500;
+
+/**
  * The server tick rate info
  */
 export const TICK_RATE = 120;
