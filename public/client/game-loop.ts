@@ -5,6 +5,7 @@ import { renderGame } from './render/render';
 import { getPlayerState } from './state';
 import { sendDataAction } from './socket/actions';
 import { getSocket } from './socket/socket';
+import { renderClientStats } from './render/stats';
 
 // MS per game tick.
 const statsFpsEl = document.getElementById('stats--fps');
@@ -31,6 +32,7 @@ export function tick() {
   }
 
   // Wait until the next tick.
+  renderClientStats(Date.now(), 0, Date.now() - tickStart, 0, configuration.gameLoopTickMs - (Date.now() - tickStart));
   setTimeout(tick, Math.max(0, configuration.gameLoopTickMs - (Date.now() - tickStart)));
 }
 

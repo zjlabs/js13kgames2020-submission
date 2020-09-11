@@ -32,7 +32,7 @@ export function renderServerStats({ current, delta, elapsed, last, sleep }: Serv
   sleepElementS.innerHTML = `S Sleep: ${Math.round(sleep)}`;
 }
 
-export function renderClientStats({ current, delta, elapsed, last, sleep }: ClientStats) {
+export function renderClientStats(current, delta, elapsed, last, sleep) {
   currentElementC.innerHTML = `C Current: ${Math.round(current)}`;
   deltaElementC.innerHTML = `C Delta: ${Math.round(delta)}`;
   elapsedElementC.innerHTML = `C Elapsed: ${Math.round(elapsed)}`;
