@@ -10,6 +10,8 @@ import { renderGrid } from './grid';
 import { renderColliders } from './colliders';
 import { Item } from '../models/items';
 import { renderArmor, renderHealth, renderHelm, renderItem, renderSword } from './item';
+import { Quadtree, Rectangle } from '../../server/entities';
+import { start } from 'repl';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -19,13 +21,11 @@ export function renderGame() {
   }
 
   const state = getState();
-
   if (state == null) {
     return;
   }
 
   const playerState = getPlayerState();
-
   if (playerState == null) {
     return;
   }
@@ -48,85 +48,78 @@ export function renderGame() {
   const screenCoordinate0Y = y - height / 2;
 
   // Render items.
-  Object.keys(state.items)
-    .map((key: string) => {
-      return state.items[key];
-    })
-    // TODO: Use Zack's dank math machine to make this more efficient.
-    .filter((item: Item) => {
-      return (
-        item.active &&
-        item.x > screenCoordinate0X &&
-        item.x < screenCoordinate0X + width &&
-        item.y > screenCoordinate0Y &&
-        item.y < screenCoordinate0Y + height
-      );
-    })
-    .forEach((item: Item) => {
-      const relativeCoordinateX = item.x - screenCoordinate0X;
-      const relativeCoordinateY = item.y - screenCoordinate0Y;
+  let itree = new Quadtree();
+  Object.keys(state.items).forEach((key: string) =>
+    itree.insert(
+      new Rectangle(state.items[key].x, state.items[key].y, state.items[key].w, state.items[key].h, state.items[key])
+    )
+  );
 
-      if (item.type === ITEM_TYPES['armor']) {
-        renderArmor(ctx, relativeCoordinateX, relativeCoordinateY, item.width, item.height);
+  itree
+    .query(new Rectangle(screenCoordinate0X + width / 2, screenCoordinate0Y + height / 2, width / 2, height / 2))
+    .forEach((point) => {
+      const relativeCoordinateX = point.data.x - screenCoordinate0X;
+      const relativeCoordinateY = point.data.y - screenCoordinate0Y;
+
+      if (point.data.type === ITEM_TYPES['armor']) {
+        renderArmor(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
         return;
       }
 
-      if (item.type === ITEM_TYPES['helm']) {
-        renderHelm(ctx, relativeCoordinateX, relativeCoordinateY, item.width, item.height);
+      if (point.data.type === ITEM_TYPES['helm']) {
+        renderHelm(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
         return;
       }
 
-      if (item.type === ITEM_TYPES['life']) {
-        renderHealth(ctx, relativeCoordinateX, relativeCoordinateY, item.width, item.height);
+      if (point.data.type === ITEM_TYPES['life']) {
+        renderHealth(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
         return;
       }
 
-      if (item.type === ITEM_TYPES['sword']) {
-        renderSword(ctx, relativeCoordinateX, relativeCoordinateY, item.width, item.height);
+      if (point.data.type === ITEM_TYPES['sword']) {
+        renderSword(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
         return;
       }
 
-      renderItem(ctx, relativeCoordinateX, relativeCoordinateY, item.height);
+      renderItem(ctx, relativeCoordinateX, relativeCoordinateY, point.data.height);
     });
 
   // Render players.
-  Object.keys(state.players)
-    // Map the id to the player object.
-    .map((key) => {
-      return state.players[key];
-    })
-    // Filter out players outside of the screen view.
-    // TODO: Use Zack's dank math machine to make this more efficient.
-    .filter((player) => {
-      return (
-        player.active &&
-        player.x > screenCoordinate0X &&
-        player.x < screenCoordinate0X + width &&
-        player.y > screenCoordinate0Y &&
-        player.y < screenCoordinate0Y + height
-      );
-    })
-    // Render the foe relative to the player.
-    .forEach((player) => {
-      const relativeCoordinateX = player.x - screenCoordinate0X;
-      const relativeCoordinateY = player.y - screenCoordinate0Y;
+  let ptree = new Quadtree();
+  Object.keys(state.players).forEach((key: any) =>
+    ptree.insert(
+      new Rectangle(
+        state.players[key].x,
+        state.players[key].y,
+        state.players[key].width,
+        state.players[key].height,
+        state.players[key]
+      )
+    )
+  );
+
+  ptree
+    .query(new Rectangle(screenCoordinate0X + width / 2, screenCoordinate0Y + height / 2, width / 2, height / 2))
+    .forEach((point: any) => {
+      const relativeCoordinateX = point.data.x - screenCoordinate0X;
+      const relativeCoordinateY = point.data.y - screenCoordinate0Y;
 
       renderPlayer(
         ctx,
         relativeCoordinateX,
         relativeCoordinateY,
-        player.width,
-        player.height,
-        rad(player.mouseAngleDegrees),
-        player.username,
-        player.health,
-        player.id === id ? '#0F9BF2' : '#F25C05',
+        point.data.width,
+        point.data.height,
+        rad(point.data.mouseAngleDegrees),
+        point.data.username,
+        point.data.health,
+        point.data.id === id ? '#0F9BF2' : '#F25C05',
         'black',
-        player.items
+        point.data.items
       );
 
       if (SHOW_BOUNDING_BOXES) {
-        renderColliders(ctx, player.colliders, screenCoordinate0X, screenCoordinate0Y);
+        renderColliders(ctx, point.data.colliders, screenCoordinate0X, screenCoordinate0Y);
       }
     });
 
@@ -152,5 +145,3 @@ export function renderGame() {
     renderPlayerMouseAngleStats(mouseAngleDegrees);
   }
 }
-
-let renderStatsThrottleBuffer = 0;

@@ -22,6 +22,7 @@ import {
  * Init game
  */
 const game = new Game();
+info('game start');
 
 // start testing code
 let combatBot = new Player({ id: 'bot1' });
@@ -136,7 +137,11 @@ const tick = () => {
   /**
    * GAME LOGIC
    */
-  game.update(delta);
+  game.update(delta, {
+    addComponent: (c) => {
+      game.addComponent(c);
+    },
+  });
 
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;

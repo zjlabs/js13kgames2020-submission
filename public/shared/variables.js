@@ -45,6 +45,7 @@ export const TICK_TIME = 1000 / TICK_RATE;
  * - width and height are 100% of the full rendered width
  * - everything has its origin x,y in the center (1/2 w and 1/2 h)
  */
+export const QUADTREE_CAP = 100;
 export const WORLD_HEIGHT = 30000;
 export const WORLD_WIDTH = 30000;
 export const PLAYER_HEIGHT = 60;
@@ -54,6 +55,8 @@ export const PLAYER_REVERSE_DIST = 100;
 export const PLAYER_REVERSE_SPREAD = 20;
 export const PLAYER_MAX_HEALTH = 100;
 export const PLAYER_XP_LEVEL = 1000;
+export const PLAYER_LIFE_SPAWN_RATE = 1000;
+export const PLAYER_LOC_MEM = 2 * parseInt(TICK_TIME);
 export const WEAPON_HEIGHT = 200;
 export const WEAPON_WIDTH = 5;
 export const WEAPON_RESOLUTION = 5;
@@ -77,6 +80,7 @@ export const ITEM_TYPES = {
 export const ITEM_LIFE_HEIGHT = 10;
 export const ITEM_LIFE_WIDTH = 10;
 export const ITEM_LIFE_VALUE = 10;
+export const ITEM_LIFE_VALUE_MAX = 20;
 export const ITEM_SWORD_HEIGHT = 20;
 export const ITEM_SWORD_WIDTH = 20;
 export const ITEM_HELM_HEIGHT = 20;
@@ -119,4 +123,36 @@ export const rand = (min, max, int = true) => {
   max = int ? Math.floor(max) : max;
   let rng = Math.random() * (max - min);
   return (int ? Math.floor(rng) : rng) + min;
+};
+
+// compare two objects recursively
+// returns base with compare differences
+// undefined values are not returned
+export const diff = (base, compare) => {
+  if (['string', 'number', 'boolean'].includes(typeof compare)) {
+    return compare === base ? undefined : compare;
+  }
+
+  if (compare instanceof Array) {
+    if (base && base.length == 0 && compare.length == 0) {
+      return undefined;
+    }
+
+    return compare;
+  }
+
+  let temp, out;
+  if (typeof compare == 'object') {
+    Object.keys(compare).forEach((key) => {
+      temp = base !== undefined ? diff(base[key], compare[key]) : compare[key];
+      if (temp != undefined) {
+        out = {
+          ...out,
+          [key]: temp,
+        };
+      }
+    });
+  }
+
+  return out;
 };

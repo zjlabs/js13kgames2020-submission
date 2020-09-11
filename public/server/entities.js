@@ -38,9 +38,13 @@ import {
   PLAYER_REVERSE_VELOCITY,
   PLAYER_MAX_HEALTH,
   PLAYER_XP_LEVEL,
+  PLAYER_LIFE_SPAWN_RATE,
+  ITEM_LIFE_VALUE_MAX,
+  diff,
+  PLAYER_LOC_MEM,
+  QUADTREE_CAP,
 } from '../shared/variables';
 import { getId } from '../shared/id';
-import { getDiff } from '../client/object-utilities.ts';
 const { min, max, abs, sqrt } = Math;
 
 export class Component {
@@ -78,8 +82,8 @@ export class Component {
     return [...this.components, ...this.components.map((c) => c.getComponents(deep).flat())];
   }
 
-  update(deltaTime) {
-    this.component.forEach((component) => component.update(deltaTime));
+  update(deltaTime, gameRef) {
+    this.component.forEach((component) => component.update(deltaTime, gameRef));
   }
 
   getPojo() {
@@ -98,7 +102,7 @@ export class Entity extends Component {
     this._prevState = {};
   }
 
-  update(delta) {}
+  update(delta, gameRef) {}
 
   set(key, val) {
     if (this.hasOwnProperty(key)) {
@@ -123,10 +127,8 @@ export class Entity extends Component {
 
   getDiff() {
     const pojo = this.getPojo();
-    let out = getDiff(this._prevState, pojo);
+    let out = diff(this._prevState, pojo);
     this._prevState = pojo;
-
-    if (!out || Object.keys(out) == 0) return false;
     return out;
   }
 
@@ -170,10 +172,19 @@ export class Player extends Entity {
     this.speed = 500;
     this.frozen = false;
     this.reverse = false;
+    this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
+    this.locMem = [];
     state.player.set(this);
   }
 
-  update(deltaTime) {
+  addLocMem(loc) {
+    this.locMem.push(loc);
+    if (this.locMem.length > PLAYER_LOC_MEM) {
+      this.locMem.shift();
+    }
+  }
+
+  update(deltaTime, gameRef) {
     // update direction before movement if we're a bot
     if (this.bot && !this.frozen) {
       // try to update the path
@@ -216,6 +227,11 @@ export class Player extends Entity {
 
     // perform movement based on player/mouseAngleDegrees
     if (!this.frozen) {
+      // check if we need to spawn a new life orb
+      this.lastLifeSpawn -= deltaTime;
+      this.addLocMem({ x: this.x, y: this.y });
+
+      // check if we need to reverse dir
       const dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
 
       // TODO: Determine if "world wrapping" will be a nightmare for bots.
@@ -231,7 +247,6 @@ export class Player extends Entity {
 
       const intendedXDestination = this.x + intendedXOffset;
       const intendedYDestination = this.y + intendedYOffset;
-
       if (intendedXDestination > WORLD_WIDTH) {
         this.x = intendedXDestination - WORLD_WIDTH;
       } else if (intendedXDestination < 0) {
@@ -247,10 +262,16 @@ export class Player extends Entity {
       } else {
         this.y += intendedYOffset;
       }
+
+      // spawn orbs in the last loc if its time
+      if (this.lastLifeSpawn <= 0 && this.locMem.length == PLAYER_LOC_MEM) {
+        this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
+        gameRef.addComponent(new Life(this.locMem[0].x, this.locMem[0].y));
+      }
     }
 
     // update all the children components
-    this.components.forEach((component) => component.update(deltaTime));
+    this.components.forEach((component) => component.update(deltaTime, gameRef));
   }
 
   // Drawn center origin
@@ -283,7 +304,7 @@ export class Player extends Entity {
 
   onCollision(collider, other) {
     if (collider.action == 'damage' && other.action == ITEM_TYPES['life']) {
-      let health = this.health + ITEM_LIFE_VALUE;
+      let health = this.health + other.data.value;
       let newHealth = health > PLAYER_MAX_HEALTH ? PLAYER_MAX_HEALTH : health;
       let xp = health > PLAYER_MAX_HEALTH ? health % PLAYER_MAX_HEALTH : 0;
       let newXp = this.xp + xp;
@@ -362,13 +383,16 @@ export class Player extends Entity {
       health,
       items,
       bot,
+      path,
+      target,
       skin,
       powerups,
       mouseAngleDegrees,
       speed,
       frozen,
-      path,
-      target,
+      reverse,
+      lastLifeSpawn,
+      locMem,
     } = this;
     return {
       ...super.getPojo(),
@@ -389,19 +413,23 @@ export class Player extends Entity {
       mouseAngleDegrees,
       speed,
       frozen,
+      reverse,
+      lastLifeSpawn,
+      locMem,
       colliders: this.getColliders().map((c) => c.pure()),
     };
   }
 }
 
 export class Item extends Entity {
-  constructor(x, y, width, height, type = '', scale = 1) {
+  constructor(x, y, width, height, type = '', value, scale = 1) {
     super();
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.type = typeof type == 'string' ? ITEM_TYPES[type] : type;
+    this.value = value;
     this.scale = scale;
     state.items.set(this);
   }
@@ -411,7 +439,7 @@ export class Item extends Entity {
   }
 
   getPojo() {
-    const { x, y, width, height, type, scale } = this;
+    const { x, y, width, height, type, value, scale } = this;
     return {
       ...super.getPojo(),
       x,
@@ -419,6 +447,7 @@ export class Item extends Entity {
       width,
       height,
       type,
+      value,
       scale,
     };
   }
@@ -429,8 +458,8 @@ export class Item extends Entity {
 }
 
 export class Life extends Item {
-  constructor(x, y) {
-    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, 'life');
+  constructor(x, y, value = ITEM_LIFE_VALUE) {
+    super(x, y, ITEM_LIFE_WIDTH, ITEM_LIFE_HEIGHT, 'life', value);
   }
 }
 
@@ -513,8 +542,8 @@ export class Grid extends Component {
     }
   }
 
-  update(deltaTime) {
-    this.tiles.forEach((tile) => tile.update(deltaTime));
+  update(deltaTime, gameRef) {
+    this.tiles.forEach((tile) => tile.update(deltaTime, gameRef));
   }
 
   /**
@@ -739,13 +768,13 @@ export class Game extends Component {
     });
   }
 
-  update(deltaTime) {
+  update(deltaTime, gameRef) {
     this.clearFrameMemory();
 
     // Update every component before applying primary control logic
     this.components.forEach((component) => {
       if (!component.active) return;
-      component.update(deltaTime);
+      component.update(deltaTime, gameRef);
       component.getColliders().forEach((c) => this.quadTree.insert(c));
       component.updateState();
     });
@@ -945,8 +974,10 @@ export class Rectangle {
 // Quadtree entity
 // should be middle centered with half-width dimensions
 export class Quadtree {
-  // 400x400
-  constructor(boundry = new Rectangle(200, 200, 200, 200), capacity = 10) {
+  constructor(
+    boundry = new Rectangle(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
+    capacity = QUADTREE_CAP
+  ) {
     this.boundry = boundry;
     this.capacity = capacity;
     this.points = [];
@@ -968,6 +999,9 @@ export class Quadtree {
 
   insert(point) {
     if (!this.boundry.contains(point)) return false;
+    if (this.points.length > this.capacity) {
+      error('quadtree size exceeded!!');
+    }
     if (this.points.length < this.capacity) {
       this.points.push(point);
       return true;
