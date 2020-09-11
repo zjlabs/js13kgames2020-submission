@@ -29,7 +29,6 @@ import {
   PATH_ACCURACY,
   ang,
   rand,
-  WANDER_MAX,
   WEAPON_DAMAGE,
   ITEM_LIFE_VALUE,
   PLAYER_REVERSE_DIST,
@@ -43,6 +42,8 @@ import {
   diff,
   PLAYER_LOC_MEM,
   QUADTREE_CAP,
+  WANDER_MIN,
+  WANDER_MAX,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 const { min, max, abs, sqrt } = Math;
@@ -189,8 +190,10 @@ export class Player extends Entity {
     if (this.bot && !this.frozen) {
       // try to update the path
       if ([false, undefined, null].includes(this.target)) {
-        error(`bot player has no target and is not frozen: ${this.username}|${this.id}`);
-        // this.target = this.path.length > this.target ? this.path[this.target] : this.path[0];
+        this.target = new Point(
+          this.x + rand(-WANDER_MIN, WANDER_MAX, false),
+          this.y + rand(-WANDER_MIN, WANDER_MAX, false)
+        );
       }
       // random wandering
       else if (this.target instanceof Point) {
@@ -1033,5 +1036,41 @@ export class Quadtree {
     }
 
     return out;
+  }
+}
+
+export class Spawner extends Component {
+  constructor(max, respawn, entityFn) {
+    super();
+    this.max = max;
+    this.lastTime = respawn;
+    this.respawn = respawn;
+    this.entityFn = entityFn;
+    this.trackedEntities = [];
+  }
+
+  update(delta, gameRef) {
+    this.lastTime -= delta;
+    if (this.lastTime < 0) {
+      this.lastTime = this.respawn;
+
+      // search the player data to prune our dead bots
+      let valid = [];
+      this.trackedEntities.forEach((id) => {
+        if (state.player.data[id] && state.player.data[id].active) {
+          valid.push(id);
+        }
+      });
+
+      this.trackedEntities = valid;
+      if (this.trackedEntities.length < this.max) {
+        let temp;
+        for (let i = 0; i < this.max - this.trackedEntities.length; i++) {
+          temp = this.entityFn();
+          this.trackedEntities.push(temp.id);
+          gameRef.addComponent(temp);
+        }
+      }
+    }
   }
 }

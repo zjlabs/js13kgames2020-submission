@@ -1,5 +1,5 @@
 import state from './state';
-import { Game, Grid, Player, Life, Sword, Armor, Helm, Point } from './entities';
+import { Game, Grid, Player, Life, Sword, Armor, Helm, Point, Spawner } from './entities';
 import {
   all,
   debug,
@@ -16,6 +16,8 @@ import {
   WANDER_MAX,
   WANDER_MIN,
   info,
+  BOT_COUNT_MAX,
+  BOT_RESPAWN_RATE,
 } from '../shared/variables';
 
 /**
@@ -78,11 +80,18 @@ wanderBot.y = halfH;
 wanderBot.bot = true;
 wanderBot.username = 'cartographer';
 wanderBot.health = 69;
-wanderBot.target = new Point(
-  halfW + rand(-WANDER_MIN, WANDER_MAX, false),
-  halfH + rand(-WANDER_MIN, WANDER_MAX, false)
-);
 game.addComponent(wanderBot);
+
+game.addComponent(
+  new Spawner(BOT_COUNT_MAX, BOT_RESPAWN_RATE, () => {
+    let p = new Player({ id: `bot${Date.now()}` });
+    p.x = rand(0, WORLD_WIDTH);
+    p.y = rand(0, WORLD_HEIGHT);
+    p.bot = true;
+
+    return p;
+  })
+);
 // end testing code
 
 /**
