@@ -86,6 +86,10 @@ export default {
   _data(data = {}) {
     return {
       ...data,
+      game: {
+        players: Object.keys(_players.data).length,
+        items: Object.keys(_items.data).length,
+      },
       players: _players.data,
       items: _items.data,
     };
