@@ -36,6 +36,7 @@ export const SHOW_GRID = false;
  * client fps settings
  */
 export const FPS_SAMPLES = 10;
+export const FPS_SAMPLE_RATE = 500;
 
 /**
  * The server tick rate info

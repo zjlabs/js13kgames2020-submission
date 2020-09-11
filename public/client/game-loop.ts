@@ -1,5 +1,4 @@
-import { SHOW_PERFORMANCE_METRICS, diff, FPS_SAMPLES, TICK_TIME } from '../shared/variables';
-import configuration from './configuration';
+import { SHOW_PERFORMANCE_METRICS, diff, FPS_SAMPLES, TICK_TIME, FPS_SAMPLE_RATE } from '../shared/variables';
 import { getMouseAngle } from './input';
 import { renderGame } from './render/render';
 import { getPlayerState } from './state';
@@ -47,9 +46,9 @@ export function tick() {
   setTimeout(tick, sleep);
 }
 
-let lastRenderStartMs = 1;
+let lastRenderStartMs = Date.now();
 let renderTimes = [];
-
+let lastRenderCalc = FPS_SAMPLE_RATE;
 export function render() {
   const renderStartMs = Date.now();
   const renderMs = renderStartMs - lastRenderStartMs;
@@ -58,8 +57,13 @@ export function render() {
   if (SHOW_PERFORMANCE_METRICS) {
     if (renderTimes.length > FPS_SAMPLES) renderTimes.shift();
     renderTimes.push(renderMs);
-    const averageRenderTime = renderTimes.reduce((total, item) => total + item, 0) / renderTimes.length;
-    statsFpsEl.innerHTML = `${Math.round(1000 / averageRenderTime)} fps`;
+
+    lastRenderCalc -= renderMs;
+    if (lastRenderCalc <= 0) {
+      const averageRenderTime = renderTimes.reduce((total, item) => total + item, 0) / renderTimes.length;
+      statsFpsEl.innerHTML = `${Math.round(1000 / averageRenderTime)} fps`;
+      lastRenderCalc = FPS_SAMPLE_RATE;
+    }
   }
 
   renderGame();
