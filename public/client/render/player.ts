@@ -80,7 +80,7 @@ export function renderPlayer(
   ctx.closePath();
 
   // Render items.
-  if (items.armor === 1) {
+  if (items && items.armor === 1) {
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
@@ -89,7 +89,7 @@ export function renderPlayer(
     ctx.closePath();
   }
 
-  if (items.helm === 1) {
+  if (items && items.helm === 1) {
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
@@ -98,7 +98,7 @@ export function renderPlayer(
     ctx.closePath();
   }
 
-  if (items.sword === 1) {
+  if (items && items.sword === 1) {
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
