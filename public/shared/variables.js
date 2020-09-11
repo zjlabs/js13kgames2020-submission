@@ -134,6 +134,10 @@ export const diff = (base, compare) => {
   }
 
   if (compare instanceof Array) {
+    if (base && base.length == 0 && compare.length == 0) {
+      return undefined;
+    }
+
     return compare;
   }
 
