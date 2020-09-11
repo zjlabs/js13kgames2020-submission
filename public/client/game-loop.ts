@@ -19,6 +19,12 @@ export function tick() {
     // setPlayerStateItem('mouseAngleDegrees', getMouseAngle());
     // const updatedPlayerState = getPlayerState();
 
+    // Game over screen.
+    if (!currentPlayerState.active) {
+      document.querySelector('#game-over').setAttribute('style', 'display: flex');
+      return;
+    }
+
     const updatedPlayerState = {
       ...currentPlayerState,
       mouseAngleDegrees: getMouseAngle(),
