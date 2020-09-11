@@ -1,6 +1,8 @@
 import { renderFilledRectangle, renderFilledTriangle, renderStrokedEllipse } from './primitive-shapes';
 import { SHOW_BOUNDING_BOXES, WEAPON_HEIGHT, WEAPON_WIDTH } from '../../shared/variables';
 import { renderBoundingBox } from './grid';
+import { Player } from '../models/player';
+import { renderArmor, renderHelm, renderSword } from './item';
 
 export function renderPlayer(
   ctx,
@@ -12,7 +14,8 @@ export function renderPlayer(
   username: string,
   healthPercent: number,
   primaryColor,
-  secondaryColor
+  secondaryColor,
+  items: Player['items']
 ) {
   // Render body.
   ctx.beginPath();
@@ -58,23 +61,51 @@ export function renderPlayer(
   ctx.fillStyle = '#FFFFFFDD';
   ctx.font = '24px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(username, 0, height + 20);
+  ctx.fillText(username, 0, height + 30);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
   // Render health bar base.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
-  renderFilledRectangle(ctx, width / -2, height + 30, width, 10, '#F07F5C');
+  renderFilledRectangle(ctx, width / -2, height + 40, width, 10, '#F07F5C');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
   // Render health bar value.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
-  renderFilledRectangle(ctx, width / -2, height + 30, (width * healthPercent) / 100, 10, '#89F026');
+  renderFilledRectangle(ctx, width / -2, height + 40, (width * healthPercent) / 100, 10, '#89F026');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
+
+  // Render items.
+  if (items.armor === 1) {
+    // Render health bar value.
+    ctx.beginPath();
+    ctx.translate(xPosition, yPosition);
+    renderArmor(ctx, -30, height + 70, 12, 12);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.closePath();
+  }
+
+  if (items.helm === 1) {
+    // Render health bar value.
+    ctx.beginPath();
+    ctx.translate(xPosition, yPosition);
+    renderHelm(ctx, 0, height + 70, 12, 12);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.closePath();
+  }
+
+  if (items.sword === 1) {
+    // Render health bar value.
+    ctx.beginPath();
+    ctx.translate(xPosition, yPosition);
+    renderSword(ctx, 30, height + 70, 12, 12);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.closePath();
+  }
 
   if (SHOW_BOUNDING_BOXES) {
     // Render player bounding box.

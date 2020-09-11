@@ -121,7 +121,8 @@ export function renderGame() {
         player.username,
         player.health,
         player.id === id ? '#0F9BF2' : '#F25C05',
-        'black'
+        'black',
+        player.items
       );
 
       if (SHOW_BOUNDING_BOXES) {
