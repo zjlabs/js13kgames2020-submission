@@ -974,8 +974,10 @@ export class Rectangle {
 // Quadtree entity
 // should be middle centered with half-width dimensions
 export class Quadtree {
-  // 400x400
-  constructor(boundry = new Rectangle(200, 200, 200, 200), capacity = QUADTREE_CAP) {
+  constructor(
+    boundry = new Rectangle(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
+    capacity = QUADTREE_CAP
+  ) {
     this.boundry = boundry;
     this.capacity = capacity;
     this.points = [];

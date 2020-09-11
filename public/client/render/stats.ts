@@ -18,7 +18,7 @@ export function renderPlayerMouseAngleStats(mouseAngleDegrees: number) {
   mouseAngleElement.innerHTML = `M∠: ${mouseAngleDegrees}°`;
 }
 
-export function renderServerStats({ current, delta, elapsed, last, sleep}: ServerStats) {
+export function renderServerStats({ current, delta, elapsed, last, sleep }: ServerStats) {
   currentElement.innerHTML = `Current: ${Math.round(current)}`;
   deltaElement.innerHTML = `Delta: ${Math.round(delta)}`;
   elapsedElement.innerHTML = `Elapsed: ${Math.round(elapsed)}`;
