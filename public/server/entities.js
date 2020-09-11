@@ -41,6 +41,7 @@ import {
   PLAYER_LIFE_SPAWN_RATE,
   ITEM_LIFE_VALUE_MAX,
   diff,
+  PLAYER_LOC_MEM,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 const { min, max, abs, sqrt } = Math;
@@ -171,9 +172,15 @@ export class Player extends Entity {
     this.frozen = false;
     this.reverse = false;
     this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
-    this._lastX = 0;
-    this._lastY = 0;
+    this.locMem = [];
     state.player.set(this);
+  }
+
+  addLocMem(loc) {
+    this.locMem.push(loc);
+    if (this.locMem.length > PLAYER_LOC_MEM) {
+      this.locMem.shift();
+    }
   }
 
   update(deltaTime, gameRef) {
@@ -219,6 +226,11 @@ export class Player extends Entity {
 
     // perform movement based on player/mouseAngleDegrees
     if (!this.frozen) {
+      // check if we need to spawn a new life orb
+      this.lastLifeSpawn -= deltaTime;
+      this.addLocMem({ x: this.x, y: this.y });
+
+      // check if we need to reverse dir
       const dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
 
       // TODO: Determine if "world wrapping" will be a nightmare for bots.
@@ -232,13 +244,8 @@ export class Player extends Entity {
         if (this.reverse < 0) this.reverse = false;
       }
 
-      // check if we need to spawn a new life orb
-      this.lastLifeSpawn -= deltaTime;
-      this._lastX = this.x;
-      this._lastY = this.y;
       const intendedXDestination = this.x + intendedXOffset;
       const intendedYDestination = this.y + intendedYOffset;
-
       if (intendedXDestination > WORLD_WIDTH) {
         this.x = intendedXDestination - WORLD_WIDTH;
       } else if (intendedXDestination < 0) {
@@ -255,9 +262,10 @@ export class Player extends Entity {
         this.y += intendedYOffset;
       }
 
-      if (this.lastLifeSpawn <= 0) {
+      // spawn orbs in the last loc if its time
+      if (this.lastLifeSpawn <= 0 && this.locMem.length == PLAYER_LOC_MEM) {
         this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
-        gameRef.addComponent(new Life(this._lastX, this._lastX));
+        gameRef.addComponent(new Life(this.locMem[0].x, this.locMem[0].y));
       }
     }
 
@@ -383,6 +391,7 @@ export class Player extends Entity {
       frozen,
       reverse,
       lastLifeSpawn,
+      locMem,
     } = this;
     return {
       ...super.getPojo(),
@@ -405,6 +414,7 @@ export class Player extends Entity {
       frozen,
       reverse,
       lastLifeSpawn,
+      locMem,
       colliders: this.getColliders().map((c) => c.pure()),
     };
   }
@@ -986,6 +996,9 @@ export class Quadtree {
 
   insert(point) {
     if (!this.boundry.contains(point)) return false;
+    if (this.points.length > this.capacity) {
+      error('quadtree size exceeded!!');
+    }
     if (this.points.length < this.capacity) {
       this.points.push(point);
       return true;

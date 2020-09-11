@@ -55,6 +55,7 @@ export const PLAYER_REVERSE_SPREAD = 20;
 export const PLAYER_MAX_HEALTH = 100;
 export const PLAYER_XP_LEVEL = 1000;
 export const PLAYER_LIFE_SPAWN_RATE = 1000;
+export const PLAYER_LOC_MEM = 2 * parseInt(TICK_TIME);
 export const WEAPON_HEIGHT = 200;
 export const WEAPON_WIDTH = 5;
 export const WEAPON_RESOLUTION = 5;
