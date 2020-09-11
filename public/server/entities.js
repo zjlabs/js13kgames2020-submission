@@ -394,8 +394,6 @@ export class Player extends Entity {
       speed,
       frozen,
       reverse,
-      lastLifeSpawn,
-      locMem,
     } = this;
     return {
       ...super.getPojo(),
@@ -417,8 +415,6 @@ export class Player extends Entity {
       speed,
       frozen,
       reverse,
-      lastLifeSpawn,
-      locMem,
       colliders: this.getColliders().map((c) => c.pure()),
     };
   }
