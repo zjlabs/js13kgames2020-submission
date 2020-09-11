@@ -42,6 +42,7 @@ import {
   ITEM_LIFE_VALUE_MAX,
   diff,
   PLAYER_LOC_MEM,
+  QUADTREE_CAP,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 const { min, max, abs, sqrt } = Math;
@@ -974,7 +975,7 @@ export class Rectangle {
 // should be middle centered with half-width dimensions
 export class Quadtree {
   // 400x400
-  constructor(boundry = new Rectangle(200, 200, 200, 200), capacity = 10) {
+  constructor(boundry = new Rectangle(200, 200, 200, 200), capacity = QUADTREE_CAP) {
     this.boundry = boundry;
     this.capacity = capacity;
     this.points = [];

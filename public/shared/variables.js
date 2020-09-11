@@ -45,6 +45,7 @@ export const TICK_TIME = 1000 / TICK_RATE;
  * - width and height are 100% of the full rendered width
  * - everything has its origin x,y in the center (1/2 w and 1/2 h)
  */
+export const QUADTREE_CAP = 100;
 export const WORLD_HEIGHT = 30000;
 export const WORLD_WIDTH = 30000;
 export const PLAYER_HEIGHT = 60;
