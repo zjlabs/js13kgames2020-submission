@@ -21,6 +21,43 @@ html, body {
   display: block;
 }
 
+#game-over {
+  color: red;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: black;
+  z-index: 666;
+
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: sans-serif;
+}
+
+#game-over h1 {
+  font-size: 6rem;
+  margin-bottom: 4rem;
+}
+
+#game-over h2 {
+  font-size: 4rem;
+  margin-bottom: 8rem;
+}
+
+#game-over button {
+  background: red;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 1rem;
+  border-radius: .5rem;
+}
+
 .sign-in-form {
   color: #FFFFFF;
   font-family: sans-serif;
