@@ -58,13 +58,16 @@ export function setPlayerStateItem(key: string, value) {
 
 function deepMerge(stateObj = {}, obj: any) {
   return Object.keys(obj).reduce((acc, key) => {
-    const primitives = ['number', 'string', 'boolean'];
-
-    if (primitives.includes(typeof obj[key])) {
+    if (['number', 'string', 'boolean'].includes(typeof obj[key])) {
       return {
         ...acc,
         [key]: obj[key],
       };
+    }
+
+    if (obj[key].hasOwnProperty('active') && obj[key].active == false) {
+      delete acc[key];
+      return acc;
     }
 
     return {
