@@ -119,10 +119,10 @@ export class Entity extends Component {
   }
 
   getDiff() {
-    const pojo = this.getPojo();
-    let out = diff(this._prevState, pojo);
-    this._prevState = pojo;
-    return out;
+    this.pojo = this.getPojo();
+    this.temp = diff(this._prevState, this.pojo);
+    this._prevState = this.pojo;
+    return this.temp;
   }
 
   hasColliders() {
@@ -189,12 +189,12 @@ export class Player extends Entity {
       }
       // random wandering
       else if (this.target instanceof Point) {
-        let pt = this.target;
-        let playerBB = new Rectangle(this.x, this.y, this.height, this.height);
-        let targetBB = new Rectangle(pt.x, pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
+        this.pt = this.target;
+        this.playerBB = new Rectangle(this.x, this.y, this.height, this.height);
+        this.targetBB = new Rectangle(this.pt.x, this.pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
 
         // new random point
-        if (playerBB.intersects(targetBB)) {
+        if (this.playerBB.intersects(this.targetBB)) {
           this.target = new Point(
             this.x + rand(-WANDER_MAX, WANDER_MAX, false),
             this.y + rand(-WANDER_MAX, WANDER_MAX, false)
@@ -202,21 +202,21 @@ export class Player extends Entity {
         }
 
         // update the mouseAngleDegrees
-        this.mouseAngleDegrees = (ang(this.y - pt.y, this.x - pt.x) + 180) % 360;
+        this.mouseAngleDegrees = (ang(this.y - this.pt.y, this.x - this.pt.x) + 180) % 360;
       }
       // target is on and we have a valid index
       else if (typeof this.target === 'number' && this.path.length > this.target) {
-        let pt = this.path[this.target];
-        let playerBB = new Rectangle(this.x, this.y, this.height, this.height);
-        let targetBB = new Rectangle(pt.x, pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
+        this.pt = this.path[this.target];
+        this.playerBB = new Rectangle(this.x, this.y, this.height, this.height);
+        this.targetBB = new Rectangle(this.pt.x, this.pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
 
         // move the index
-        if (playerBB.intersects(targetBB)) {
+        if (this.playerBB.intersects(this.targetBB)) {
           this.target = (this.target + 1) % this.path.length;
         }
 
         // update the mouseAngleDegrees
-        this.mouseAngleDegrees = (ang(this.y - pt.y, this.x - pt.x) + 180) % 360;
+        this.mouseAngleDegrees = (ang(this.y - this.pt.y, this.x - this.pt.x) + 180) % 360;
       }
     }
 
@@ -227,35 +227,35 @@ export class Player extends Entity {
       this.addLocMem({ x: this.x, y: this.y });
 
       // check if we need to reverse dir
-      const dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
+      this.dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
 
       // TODO: Determine if "world wrapping" will be a nightmare for bots.
-      const intendedXOffset =
-        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * dir || 0;
-      const intendedYOffset =
-        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * dir || 0;
+      this.intendedXOffset =
+        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * this.dir || 0;
+      this.intendedYOffset =
+        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * this.dir || 0;
       if (this.reverse != false) {
-        const hyp = sqrt(intendedXOffset ** 2 + intendedYOffset ** 2);
-        this.reverse -= hyp;
+        this.hyp = sqrt(this.intendedXOffset ** 2 + this.intendedYOffset ** 2);
+        this.reverse -= this.hyp;
         if (this.reverse < 0) this.reverse = false;
       }
 
-      const intendedXDestination = this.x + intendedXOffset;
-      const intendedYDestination = this.y + intendedYOffset;
-      if (intendedXDestination > WORLD_WIDTH) {
-        this.x = intendedXDestination - WORLD_WIDTH;
-      } else if (intendedXDestination < 0) {
-        this.x = WORLD_WIDTH + intendedXDestination;
+      this.intendedXDestination = this.x + this.intendedXOffset;
+      this.intendedYDestination = this.y + this.intendedYOffset;
+      if (this.intendedXDestination > WORLD_WIDTH) {
+        this.x = this.intendedXDestination - WORLD_WIDTH;
+      } else if (this.intendedXDestination < 0) {
+        this.x = WORLD_WIDTH + this.intendedXDestination;
       } else {
-        this.x += intendedXOffset;
+        this.x += this.intendedXOffset;
       }
 
-      if (intendedYDestination > WORLD_HEIGHT) {
-        this.y = intendedYDestination - WORLD_HEIGHT;
-      } else if (intendedYDestination < 0) {
-        this.y = WORLD_HEIGHT + intendedYDestination;
+      if (this.intendedYDestination > WORLD_HEIGHT) {
+        this.y = this.intendedYDestination - WORLD_HEIGHT;
+      } else if (this.intendedYDestination < 0) {
+        this.y = WORLD_HEIGHT + this.intendedYDestination;
       } else {
-        this.y += intendedYOffset;
+        this.y += this.intendedYOffset;
       }
 
       // spawn orbs in the last loc if its time
@@ -984,7 +984,7 @@ export class Quadtree {
     let out = [];
 
     if (this.boundry.intersects(boundry)) {
-      out = [].concat(this.points);
+      out = this.points.slice();
 
       if (this.divided) {
         out.push(
@@ -1018,11 +1018,10 @@ export class Spawner extends Component {
       // search the player data to prune our dead bots
       this.trackedEntities.filter((id) => state.player.data[id] && state.player.data[id].active);
       if (this.trackedEntities.length < this.max) {
-        let temp;
         for (let i = 0; i < this.max - this.trackedEntities.length; i++) {
-          temp = this.entityFn();
-          this.trackedEntities.push(temp.id);
-          gameRef.addComponent(temp);
+          this.temp = this.entityFn();
+          this.trackedEntities.push(this.temp.id);
+          gameRef.addComponent(this.temp);
         }
       }
     }

@@ -41,7 +41,7 @@ export const FPS_SAMPLE_RATE = 500;
 /**
  * The server tick rate info
  */
-export const TICK_RATE = 120;
+export const TICK_RATE = 60;
 export const TICK_TIME = 1000 / TICK_RATE;
 
 /**
@@ -102,10 +102,9 @@ export const BOT_COUNT_MAX = 50;
 export const BOT_RESPAWN_RATE = 20000;
 
 // math utils
-export const PRECISION = 10;
 export const rad = (d) => (d * Math.PI) / 180;
-export const sin = (d) => parseFloat(Math.sin(rad(d)).toFixed(PRECISION));
-export const cos = (d) => parseFloat(Math.cos(rad(d)).toFixed(PRECISION));
+export const sin = (d) => Math.sin(rad(d));
+export const cos = (d) => Math.cos(rad(d));
 
 // rotate bX/bY around aX/aY, angle degrees
 export const rot = (angle, aX, aY, bX, bY) => {
