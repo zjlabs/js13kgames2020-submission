@@ -149,7 +149,7 @@ export function renderGame() {
   );
 
   // Render leaderboard.
-  renderLeaderboard(ctx, width, height, state.players, playerState.id);
+  renderLeaderboard(ctx, width, height, state.leaderboard, playerState.id);
 
   // Render stats.
   if (SHOW_PERFORMANCE_METRICS) {
