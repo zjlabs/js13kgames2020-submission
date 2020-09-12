@@ -6,6 +6,12 @@ export function renderItem(ctx, x, y, radius) {
   ctx.closePath();
 }
 
+export function renderBlood(ctx, x, y, width, height) {
+  ctx.beginPath();
+  renderStrokedEllipse(ctx, x, y, width, height, '#E384DD', '#E384DD99');
+  ctx.closePath();
+}
+
 export function renderArmor(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number): void {
   const bodyWidth = width * 2 * 0.6;
   const beltHeight = bodyWidth / 5;

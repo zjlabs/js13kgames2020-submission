@@ -3,10 +3,11 @@ import {
   BOOST_FACTOR,
   cang,
   debug,
-  diff,
   error,
   ITEM_ARMOR_HEIGHT,
   ITEM_ARMOR_WIDTH,
+  ITEM_BLOOD_HEIGHT,
+  ITEM_BLOOD_WIDTH,
   ITEM_HELM_HEIGHT,
   ITEM_HELM_WIDTH,
   ITEM_LIFE_HEIGHT,
@@ -18,6 +19,11 @@ import {
   PATH_ACCURACY,
   PLAYER_BOOST_MAX_VAL,
   PLAYER_BOOST_REGEN_VAL,
+  PLAYER_DEATH_BLOOD_SPAWN,
+  PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MAX,
+  PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MIN,
+  PLAYER_DEATH_HEALTH_ORB_SPAWN,
+  PLAYER_DEATH_HEALTH_ORB_SPAWN_OFFSET,
   PLAYER_HEIGHT,
   PLAYER_LIFE_SPAWN_RATE,
   PLAYER_LOC_MEM,
@@ -28,13 +34,13 @@ import {
   PLAYER_WIDTH,
   PLAYER_XP_LEVEL,
   QUADTREE_CAP,
-  SHOW_BOUNDING_BOXES,
   rand,
   rot,
+  SHOW_BOUNDING_BOXES,
   TILE_HEIGHT,
   TILE_WIDTH,
-  WANDER_MIN,
   WANDER_MAX,
+  WANDER_MIN,
   WEAPON_DAMAGE,
   WEAPON_HEIGHT,
   WEAPON_RESOLUTION,
@@ -42,9 +48,9 @@ import {
   WEAPON_X_OFFSET,
   WEAPON_Y_OFFSET,
   WORLD_HEIGHT,
-  WORLD_WIDTH,
-  WORLD_QUERY_WIDTH,
   WORLD_QUERY_HEIGHT,
+  WORLD_QUERY_WIDTH,
+  WORLD_WIDTH,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 
@@ -113,7 +119,7 @@ export class Entity extends Component {
     return [];
   }
 
-  onCollision(collider, other) {}
+  onCollision(collider, other, gameRef) {}
 }
 
 export class Player extends Entity {
@@ -289,7 +295,7 @@ export class Player extends Entity {
     return [new Rectangle(this.x, this.y, this.height, this.height, this, 'damage'), ...this.getWeaponColliderCoords()];
   }
 
-  onCollision(collider, other) {
+  onCollision(collider, other, gameRef) {
     if (collider.action == 'damage' && other.action == ITEM_TYPES['life']) {
       let health = this.health + other.data.value;
       let newHealth = health > PLAYER_MAX_HEALTH ? PLAYER_MAX_HEALTH : health;
@@ -306,7 +312,64 @@ export class Player extends Entity {
     if (collider.action == 'damage' && other.action == 'weapon') {
       let newHealth = max(this.health - WEAPON_DAMAGE, 0);
       collider.data.health = newHealth;
-      if (!newHealth) collider.data.active = false;
+
+      // On death.
+      if (!newHealth) {
+        collider.data.active = false;
+
+        // Drop blood.
+        for (let i = 0; i < PLAYER_DEATH_BLOOD_SPAWN; i++) {
+          const xLeft = rand(
+            this.x - PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MIN,
+            this.x - PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MAX
+          );
+          const xRight = rand(
+            this.x + PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MIN,
+            this.x + PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MAX
+          );
+          const resolvedX = rand(0, 2) === 1 ? xLeft : xRight;
+
+          const yLeft = rand(
+            this.y - PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MIN,
+            this.y - PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MAX
+          );
+          const yRight = rand(
+            this.y + PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MIN,
+            this.y + PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MAX
+          );
+          const resolvedY = rand(0, 2) === 1 ? yLeft : yRight;
+
+          gameRef.addComponent(new Blood(resolvedX, resolvedY));
+        }
+
+        // Drop health and items.
+        const itemsArray = Object.keys(this.items).filter((itemKey) => this.items[itemKey] === 1);
+        const healthArray = Array(PLAYER_DEATH_HEALTH_ORB_SPAWN).fill('health');
+        const mergedArray = [...itemsArray, ...healthArray];
+
+        mergedArray.forEach((item, index) => {
+          const x = this.x + PLAYER_DEATH_HEALTH_ORB_SPAWN_OFFSET;
+          const y = this.y;
+
+          const [rotatedX, rotatedY] = rot((360 / mergedArray.length) * index, this.x, this.y, x, y);
+
+          switch (item) {
+            case 'health':
+              gameRef.addComponent(new Life(rotatedX, rotatedY));
+              break;
+            case 'armor':
+              gameRef.addComponent(new Armor(rotatedX, rotatedY));
+              break;
+            case 'helm':
+              gameRef.addComponent(new Helm(rotatedX, rotatedY));
+              break;
+            case 'sword':
+              gameRef.addComponent(new Sword(rotatedX, rotatedY));
+              break;
+          }
+        });
+      }
+
       return true;
     }
     if (collider.action == 'weapon' && other.action == 'weapon') {
@@ -403,6 +466,22 @@ export class Item extends Entity {
       SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {}
     );
   }
+}
+
+export class Blood extends Item {
+  constructor(x, y) {
+    super(x, y, ITEM_BLOOD_WIDTH, ITEM_BLOOD_HEIGHT, 'blood');
+  }
+
+  hasColliders() {
+    return this.getColliders().length > 0;
+  }
+
+  getColliders() {
+    return [];
+  }
+
+  onCollision(collider, other, gameRef) {}
 }
 
 export class Life extends Item {
@@ -692,7 +771,7 @@ export class Game extends Component {
     this.world = new Rectangle(w, h, w, h);
   }
 
-  checkCollisions() {
+  checkCollisions(gameRef) {
     let cmap = {};
 
     this.components.forEach((component) => {
@@ -707,7 +786,7 @@ export class Game extends Component {
           if (collider.intersects(collision)) {
             debug('collision!', collider, collision);
             // if this was a collision, make sure the parent cant collide with this again
-            if (component.onCollision(collider, collision)) {
+            if (component.onCollision(collider, collision, gameRef)) {
               cmap[collider.data.id] = cmap[collider.data.id] || {};
               cmap[collider.data.id][collision.data.id] = true;
             }
@@ -733,7 +812,7 @@ export class Game extends Component {
     });
 
     // check all collisions
-    this.checkCollisions();
+    this.checkCollisions(gameRef);
 
     // sync data for all players
     players.forEach((player) => {
