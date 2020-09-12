@@ -1,21 +1,24 @@
 const usernameInput = document.getElementById('username-input');
-const usernameInputLabel = document.getElementById('username-input-label');
 const root = document.getElementById('root');
 const startButton = document.getElementById('start-button');
+const registrationForm = document.getElementById('sign-in-form');
 
 export function subscribeToRegistrationForm(registeredCallback: (username: string) => void) {
   startButton.addEventListener('click', () => {
     const username = (usernameInput as HTMLInputElement).value;
 
-    if (username == null) {
+    if (username == null || username === '') {
+      alert('Please enter a username.');
       return;
     }
 
-    registeredCallback(username);
-
-    usernameInput.remove();
-    usernameInputLabel.remove();
-    startButton.remove();
+    registrationForm.remove();
+    document.documentElement.style.cssText = 'overflow: hidden';
+    document.body.style.cssText = 'overflow: hidden';
     root.classList.add('active');
+
+    setTimeout(() => {
+      registeredCallback(username);
+    }, 100);
   });
 }
