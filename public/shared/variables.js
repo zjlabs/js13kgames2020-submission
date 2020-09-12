@@ -77,6 +77,11 @@ export const WEAPON_DAMAGE = 1;
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
 
+// Leaderboard vars
+export const LEADERBOARD_UPDATE_TIME = 5000;
+export const LEADERBOARD_COUNT = 10;
+export const LEADERBOARD_PROPS = ['id', 'username', 'xp', 'level'];
+
 // Item vars
 export const ITEM_TYPES = {
   life: 0,

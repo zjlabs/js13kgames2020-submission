@@ -163,6 +163,7 @@ setTimeout(tick, TICK_TIME);
 module.exports = Object.assign(
   {
     // Debug endpoint for server state
+    // TODO: Search for inactive components
     state: (req, res, next) => {
       const _components = game.getComponents();
       let types = {};
