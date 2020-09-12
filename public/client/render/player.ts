@@ -15,6 +15,8 @@ export function renderPlayer(
   healthPercent: number,
   primaryColor,
   secondaryColor,
+  level: number,
+  xp: number,
   items: Player['items']
 ) {
   const barWidth = width * 2;
@@ -67,11 +69,23 @@ export function renderPlayer(
   ctx.fillStyle = '#FFFFFFDD';
   ctx.font = '24px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(username, 0, height + usernameTopOffset);
+  ctx.fillText('username', 0, height + usernameTopOffset);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
-  const healthBarTopOffset = 50;
+  const xpTopOffset = usernameTopOffset + 20;
+
+  // Render XP.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.fillStyle = '#FFFFFFDD';
+  ctx.font = '16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Lv.${level} - ${xp}xp`, 0, height + xpTopOffset);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
+  const healthBarTopOffset = xpTopOffset + 10;
 
   // Render health bar base.
   ctx.beginPath();
@@ -118,7 +132,7 @@ export function renderPlayer(
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
-  const boostBarTopOffset = 80;
+  const boostBarTopOffset = healthBarTopOffset + 25;
 
   // Render boost bar base.
   ctx.beginPath();
@@ -165,14 +179,14 @@ export function renderPlayer(
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
-  const itemTopOffset = 120;
+  const itemTopOffset = boostBarTopOffset + 35;
 
   // Render items.
   if (items && items.armor === 1) {
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
-    renderArmor(ctx, -30, height + itemTopOffset, 12, 12);
+    renderArmor(ctx, -35, height + itemTopOffset, 12, 12);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.closePath();
   }
@@ -190,7 +204,7 @@ export function renderPlayer(
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
-    renderSword(ctx, 30, height + itemTopOffset, 12, 12);
+    renderSword(ctx, 35, height + itemTopOffset, 12, 12);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.closePath();
   }
