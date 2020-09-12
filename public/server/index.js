@@ -167,15 +167,20 @@ module.exports = Object.assign(
     state: (req, res, next) => {
       const _components = game.getComponents();
       let types = {};
+      let inactive = {};
       _components.forEach((c) => {
         types[c.constructor.name] = types[c.constructor.name] || 0;
-        types[c.constructor.name] += 1;
+        inactive[c.constructor.name] = inactive[c.constructor.name] || 0;
+
+        if (c.active) types[c.constructor.name] += 1;
+        else inactive[c.constructor.name] += 1;
       });
       return res.send(
         `<pre>${JSON.stringify(
           {
             components: _components.length,
             types,
+            inactive,
           },
           null,
           2
