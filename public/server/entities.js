@@ -1,6 +1,7 @@
 import state from './state';
 import {
   ang,
+  BOOST_FACTOR,
   cang,
   debug,
   diff,
@@ -232,7 +233,7 @@ export class Player extends Entity {
       // check if we need to reverse dir
       const dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
 
-      const boostedSpeed = this.isBoosting ? this.speed * 2 : this.speed;
+      const boostedSpeed = this.isBoosting ? this.speed * BOOST_FACTOR : this.speed;
 
       const intendedXOffset =
         Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * boostedSpeed * dir || 0;

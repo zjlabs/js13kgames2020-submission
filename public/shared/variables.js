@@ -93,7 +93,7 @@ export const ITEM_HELM_HEIGHT = 20;
 export const ITEM_HELM_WIDTH = 20;
 export const ITEM_ARMOR_HEIGHT = 20;
 export const ITEM_ARMOR_WIDTH = 20;
-export const BOOST_FACTOR = 2;
+export const BOOST_FACTOR = 1.5;
 
 // bot utils
 export const PATH_ACCURACY = 0.25;
