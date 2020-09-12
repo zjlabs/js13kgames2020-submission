@@ -12,7 +12,8 @@ import {
   rand,
   info,
   BOT_COUNT_MAX,
-  BOT_RESPAWN_RATE,, VALID_PLAYER_PROPS
+  BOT_RESPAWN_RATE,
+  VALID_PLAYER_PROPS,
 } from '../shared/variables';
 
 /**
@@ -103,7 +104,7 @@ io.on('connection', (socket) => {
   socket.on('data', (obj) => {
     debug('socket [data]', socket.id, obj);
     Object.keys(obj).forEach((key) => {
-      if (VALID_PLAYER_PROPS.includes(key)){
+      if (VALID_PLAYER_PROPS.includes(key)) {
         player[key] = obj[key];
       }
     });
@@ -112,7 +113,7 @@ io.on('connection', (socket) => {
   socket.on('play', (obj) => {
     info('socket [play]', socket.id);
     Object.keys(obj).forEach((key) => {
-      if (VALID_PLAYER_PROPS.includes(key)){
+      if (VALID_PLAYER_PROPS.includes(key)) {
         player[key] = obj[key];
       }
     });
