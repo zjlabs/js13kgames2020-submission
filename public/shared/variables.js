@@ -54,8 +54,8 @@ export const TICK_TIME = 1000 / TICK_RATE;
 export const QUADTREE_CAP = 10;
 export const WORLD_HEIGHT = 30000;
 export const WORLD_WIDTH = 30000;
-export const WORLD_QUERY_HEIGHT = 200;
-export const WORLD_QUERY_WIDTH = 200;
+export const WORLD_QUERY_HEIGHT = 400;
+export const WORLD_QUERY_WIDTH = 400;
 
 export const PLAYER_HEIGHT = 60;
 export const PLAYER_WIDTH = 100;
