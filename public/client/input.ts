@@ -19,11 +19,9 @@ document.addEventListener('touchmove', (event) => {
 });
 
 document.addEventListener('mousedown', () => {
-  console.log('boos');
-
   // Don't respond to this event on mobile.
   // TODO: These magic numbers are just begging to break. Find a better way to do this.
-  if (navigator.maxTouchPoints != 1 && navigator.maxTouchPoints != 256) {
+  if (navigator.maxTouchPoints != 0 && navigator.maxTouchPoints != 1 && navigator.maxTouchPoints != 256) {
     return;
   }
 
@@ -32,7 +30,7 @@ document.addEventListener('mousedown', () => {
 
 document.addEventListener('mouseup', () => {
   // Don't respond to this event on mobile.
-  if (navigator.maxTouchPoints != 1 && navigator.maxTouchPoints != 256) {
+  if (navigator.maxTouchPoints != 0 && navigator.maxTouchPoints != 1 && navigator.maxTouchPoints != 256) {
     return;
   }
 
@@ -43,7 +41,7 @@ let tappedTwice = false;
 
 document.addEventListener('touchstart', (event) => {
   // Don't respond to this event on desktop.
-  if (navigator.maxTouchPoints === 1 || navigator.maxTouchPoints === 256) {
+  if (navigator.maxTouchPoints === 0 || navigator.maxTouchPoints === 1 || navigator.maxTouchPoints === 256) {
     return;
   }
 
@@ -60,7 +58,7 @@ document.addEventListener('touchstart', (event) => {
 
 document.addEventListener('touchend', (event) => {
   // Don't respond to this event on desktop.
-  if (navigator.maxTouchPoints === 1 || navigator.maxTouchPoints === 256) {
+  if (navigator.maxTouchPoints === 0 || navigator.maxTouchPoints === 1 || navigator.maxTouchPoints === 256) {
     return;
   }
 
