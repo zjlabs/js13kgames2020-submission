@@ -12,7 +12,6 @@ export function registerEventHandlers(socket) {
 
   // Sent 1 time after initial play command is sent.
   socket.on('sync', (obj) => {
-    applyState(obj);
     setPlayerId(obj.currentPlayer.id);
   });
 

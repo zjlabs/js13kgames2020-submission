@@ -1,21 +1,19 @@
-import state from './state';
-import { Game, Grid, Player, Life, Sword, Armor, Helm, Point } from './entities';
+import { Game, Grid, Player, Life, Sword, Armor, Helm, Point, Spawner } from './entities';
 import {
   all,
   debug,
   STATS,
   TEST,
   TICK_TIME,
-  TILE_HEIGHT,
-  TILE_WIDTH,
   WORLD_HEIGHT,
   WORLD_WIDTH,
   ITEM_LIFE_HEIGHT,
   ITEM_LIFE_WIDTH,
   rand,
-  WANDER_MAX,
-  WANDER_MIN,
   info,
+  BOT_COUNT_MAX,
+  BOT_RESPAWN_RATE,
+  VALID_PLAYER_PROPS,
 } from '../shared/variables';
 
 /**
@@ -78,11 +76,17 @@ wanderBot.y = halfH;
 wanderBot.bot = true;
 wanderBot.username = 'cartographer';
 wanderBot.health = 69;
-wanderBot.target = new Point(
-  halfW + rand(-WANDER_MIN, WANDER_MAX, false),
-  halfH + rand(-WANDER_MIN, WANDER_MAX, false)
-);
 game.addComponent(wanderBot);
+
+game.addComponent(
+  new Spawner(BOT_COUNT_MAX, BOT_RESPAWN_RATE, () => {
+    let p = new Player({ id: `bot${Date.now()}` });
+    p.x = rand(0, WORLD_WIDTH);
+    p.y = rand(0, WORLD_HEIGHT);
+    p.bot = true;
+    return p;
+  })
+);
 // end testing code
 
 /**
@@ -91,36 +95,32 @@ game.addComponent(wanderBot);
 io.on('connection', (socket) => {
   info('socket [connection]', socket.id);
   const player = new Player(socket);
-  // player.frozen = true;
-  // player.x -= 200;
 
   socket.on('disconnect', () => {
     info('socket [disconnect]', socket.id);
     player.active = false;
-    state.player.set(player);
   });
 
   socket.on('data', (obj) => {
     debug('socket [data]', socket.id, obj);
-    // TODO: add field edit limitations
     Object.keys(obj).forEach((key) => {
-      player.set(key, obj[key]);
+      if (VALID_PLAYER_PROPS.includes(key)) {
+        player[key] = obj[key];
+      }
     });
-    state.player.set(player);
   });
 
   socket.on('play', (obj) => {
     info('socket [play]', socket.id);
-    // TODO: add field edit limitations
     Object.keys(obj).forEach((key) => {
-      player.set(key, obj[key]);
+      if (VALID_PLAYER_PROPS.includes(key)) {
+        player[key] = obj[key];
+      }
     });
-    state.sync(socket.id, player);
-    state.player.set(player);
+    io.to(socket.id).emit('sync', { currentPlayer: { id: player.id } });
   });
 
   game.addComponent(player);
-  state.player.set(player);
 });
 
 // Start the game loop
@@ -137,11 +137,7 @@ const tick = () => {
   /**
    * GAME LOGIC
    */
-  game.update(delta, {
-    addComponent: (c) => {
-      game.addComponent(c);
-    },
-  });
+  game.update(delta, game);
 
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
@@ -168,11 +164,22 @@ module.exports = Object.assign(
   {
     // Debug endpoint for server state
     state: (req, res, next) => {
-      return res.send(`<pre>${JSON.stringify(state._data(), null, 2)}</pre>`);
-    },
-    // Debug endpoint for server delta
-    delta: (req, res, next) => {
-      return res.send(`<pre>${JSON.stringify(state._delta(), null, 2)}</pre>`);
+      const _components = game.getComponents();
+      let types = {};
+      _components.forEach((c) => {
+        types[c.constructor.name] = types[c.constructor.name] || 0;
+        types[c.constructor.name] += 1;
+      });
+      return res.send(
+        `<pre>${JSON.stringify(
+          {
+            components: _components.length,
+            types,
+          },
+          null,
+          2
+        )}</pre>`
+      );
     },
   },
   TEST && {

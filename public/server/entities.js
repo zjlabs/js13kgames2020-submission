@@ -1,4 +1,3 @@
-import state from './state';
 import {
   ang,
   BOOST_FACTOR,
@@ -29,10 +28,12 @@ import {
   PLAYER_WIDTH,
   PLAYER_XP_LEVEL,
   QUADTREE_CAP,
+  SHOW_BOUNDING_BOXES,
   rand,
   rot,
   TILE_HEIGHT,
   TILE_WIDTH,
+  WANDER_MIN,
   WANDER_MAX,
   WEAPON_DAMAGE,
   WEAPON_HEIGHT,
@@ -42,6 +43,8 @@ import {
   WEAPON_Y_OFFSET,
   WORLD_HEIGHT,
   WORLD_WIDTH,
+  WORLD_QUERY_WIDTH,
+  WORLD_QUERY_HEIGHT,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 
@@ -50,6 +53,7 @@ const { min, max, abs, sqrt } = Math;
 export class Component {
   constructor() {
     this.id = getId();
+    this.active = true;
     this.components = [];
   }
 
@@ -82,15 +86,14 @@ export class Component {
     return [...this.components, ...this.components.map((c) => c.getComponents(deep).flat())];
   }
 
-  update(deltaTime, gameRef) {
-    this.component.forEach((component) => component.update(deltaTime, gameRef));
+  update(deltaTime, gameRef, players) {
+    this.component.forEach((component) => component.update(deltaTime, gameRef, players));
   }
 
   getPojo() {
-    let { id, components } = this;
     return {
-      id,
-      components,
+      id: this.id,
+      active: this.active,
     };
   }
 }
@@ -98,39 +101,9 @@ export class Component {
 export class Entity extends Component {
   constructor() {
     super();
-    this.active = true;
-    this._prevState = {};
   }
 
-  update(delta, gameRef) {}
-
-  set(key, val) {
-    if (this.hasOwnProperty(key)) {
-      this[key] = val;
-    }
-
-    this.updateState();
-  }
-
-  get(key) {
-    if (this.hasOwnProperty(key)) return this[key];
-
-    return undefined;
-  }
-
-  getPojo() {
-    return {
-      ...super.getPojo(),
-      active: this.active,
-    };
-  }
-
-  getDiff() {
-    const pojo = this.getPojo();
-    let out = diff(this._prevState, pojo);
-    this._prevState = pojo;
-    return out;
-  }
+  update(delta, gameRef, players) {}
 
   hasColliders() {
     return this.getColliders().length > 0;
@@ -140,8 +113,6 @@ export class Entity extends Component {
     return [];
   }
 
-  updateState() {}
-
   onCollision(collider, other) {}
 }
 
@@ -149,9 +120,10 @@ export class Player extends Entity {
   /**
    * @param {Socket} socket
    */
-  constructor(socket) {
+  constructor(socket = {}) {
     super();
     this.socket = socket;
+    this.socketId = socket.id;
     this.username = '';
     this.x = WORLD_WIDTH / 2;
     this.y = WORLD_HEIGHT / 2;
@@ -176,7 +148,6 @@ export class Player extends Entity {
     this.reverse = false;
     this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
     this.locMem = [];
-    state.player.set(this);
   }
 
   addLocMem(loc) {
@@ -186,22 +157,24 @@ export class Player extends Entity {
     }
   }
 
-  update(deltaTime, gameRef) {
+  update(deltaTime, gameRef, players) {
     // update direction before movement if we're a bot
     if (this.bot && !this.frozen) {
       // try to update the path
       if ([false, undefined, null].includes(this.target)) {
-        error(`bot player has no target and is not frozen: ${this.username}|${this.id}`);
-        // this.target = this.path.length > this.target ? this.path[this.target] : this.path[0];
+        this.target = new Point(
+          this.x + rand(-WANDER_MIN, WANDER_MAX, false),
+          this.y + rand(-WANDER_MIN, WANDER_MAX, false)
+        );
       }
       // random wandering
       else if (this.target instanceof Point) {
-        let pt = this.target;
-        let playerBB = new Rectangle(this.x, this.y, this.height, this.height);
-        let targetBB = new Rectangle(pt.x, pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
+        this.pt = this.target;
+        this.playerBB = new Rectangle(this.x, this.y, this.height, this.height);
+        this.targetBB = new Rectangle(this.pt.x, this.pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
 
         // new random point
-        if (playerBB.intersects(targetBB)) {
+        if (this.playerBB.intersects(this.targetBB)) {
           this.target = new Point(
             this.x + rand(-WANDER_MAX, WANDER_MAX, false),
             this.y + rand(-WANDER_MAX, WANDER_MAX, false)
@@ -209,21 +182,21 @@ export class Player extends Entity {
         }
 
         // update the mouseAngleDegrees
-        this.mouseAngleDegrees = (ang(this.y - pt.y, this.x - pt.x) + 180) % 360;
+        this.mouseAngleDegrees = (ang(this.y - this.pt.y, this.x - this.pt.x) + 180) % 360;
       }
       // target is on and we have a valid index
       else if (typeof this.target === 'number' && this.path.length > this.target) {
-        let pt = this.path[this.target];
-        let playerBB = new Rectangle(this.x, this.y, this.height, this.height);
-        let targetBB = new Rectangle(pt.x, pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
+        this.pt = this.path[this.target];
+        this.playerBB = new Rectangle(this.x, this.y, this.height, this.height);
+        this.targetBB = new Rectangle(this.pt.x, this.pt.y, this.height * PATH_ACCURACY, this.height * PATH_ACCURACY);
 
         // move the index
-        if (playerBB.intersects(targetBB)) {
+        if (this.playerBB.intersects(this.targetBB)) {
           this.target = (this.target + 1) % this.path.length;
         }
 
         // update the mouseAngleDegrees
-        this.mouseAngleDegrees = (ang(this.y - pt.y, this.x - pt.x) + 180) % 360;
+        this.mouseAngleDegrees = (ang(this.y - this.pt.y, this.x - this.pt.x) + 180) % 360;
       }
     }
 
@@ -247,36 +220,34 @@ export class Player extends Entity {
       }
 
       // check if we need to reverse dir
-      const dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
-
+      this.dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
       const boostedSpeed = this.isBoosting ? this.speed * BOOST_FACTOR : this.speed;
-
-      const intendedXOffset =
-        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * boostedSpeed * dir || 0;
-      const intendedYOffset =
-        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * boostedSpeed * dir || 0;
+      this.intendedXOffset =
+        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * boostedSpeed * this.dir || 0;
+      this.intendedYOffset =
+        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * boostedSpeed * this.dir || 0;
       if (this.reverse != false) {
-        const hyp = sqrt(intendedXOffset ** 2 + intendedYOffset ** 2);
-        this.reverse -= hyp;
+        this.hyp = sqrt(this.intendedXOffset ** 2 + this.intendedYOffset ** 2);
+        this.reverse -= this.hyp;
         if (this.reverse < 0) this.reverse = false;
       }
 
-      const intendedXDestination = this.x + intendedXOffset;
-      const intendedYDestination = this.y + intendedYOffset;
-      if (intendedXDestination > WORLD_WIDTH) {
-        this.x = intendedXDestination - WORLD_WIDTH;
-      } else if (intendedXDestination < 0) {
-        this.x = WORLD_WIDTH + intendedXDestination;
+      this.intendedXDestination = this.x + this.intendedXOffset;
+      this.intendedYDestination = this.y + this.intendedYOffset;
+      if (this.intendedXDestination > WORLD_WIDTH) {
+        this.x = this.intendedXDestination - WORLD_WIDTH;
+      } else if (this.intendedXDestination < 0) {
+        this.x = WORLD_WIDTH + this.intendedXDestination;
       } else {
-        this.x += intendedXOffset;
+        this.x += this.intendedXOffset;
       }
 
-      if (intendedYDestination > WORLD_HEIGHT) {
-        this.y = intendedYDestination - WORLD_HEIGHT;
-      } else if (intendedYDestination < 0) {
-        this.y = WORLD_HEIGHT + intendedYDestination;
+      if (this.intendedYDestination > WORLD_HEIGHT) {
+        this.y = this.intendedYDestination - WORLD_HEIGHT;
+      } else if (this.intendedYDestination < 0) {
+        this.y = WORLD_HEIGHT + this.intendedYDestination;
       } else {
-        this.y += intendedYOffset;
+        this.y += this.intendedYOffset;
       }
 
       // spawn orbs in the last loc if its time
@@ -287,7 +258,7 @@ export class Player extends Entity {
     }
 
     // update all the children components
-    this.components.forEach((component) => component.update(deltaTime, gameRef));
+    this.components.forEach((component) => component.update(deltaTime, gameRef, players));
   }
 
   // Drawn center origin
@@ -326,118 +297,78 @@ export class Player extends Entity {
       let newXp = this.xp + xp;
       let newLevel = 1 + parseInt(newXp / PLAYER_XP_LEVEL);
 
-      collider.data.set('health', newHealth);
-      collider.data.set('xp', newXp);
-      collider.data.set('level', newLevel);
-      other.data.set('active', false);
+      collider.data.health = newHealth;
+      collider.data.xp = newXp;
+      collider.data.level = newLevel;
+      other.data.active = false;
       return true;
     }
     if (collider.action == 'damage' && other.action == 'weapon') {
       let newHealth = max(this.health - WEAPON_DAMAGE, 0);
-      collider.data.set('health', newHealth);
-      if (!newHealth) collider.data.set('active', false);
+      collider.data.health = newHealth;
+      if (!newHealth) collider.data.active = false;
       return true;
     }
     if (collider.action == 'weapon' && other.action == 'weapon') {
-      collider.data.set('reverse', PLAYER_REVERSE_DIST);
-      collider.data.set(
-        'mouseAngleDegrees',
-        cang(collider.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
+      collider.data.reverse = PLAYER_REVERSE_DIST;
+      collider.data.mouseAngleDegrees = cang(
+        collider.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true)
       );
-      other.data.set('reverse', PLAYER_REVERSE_DIST);
-      other.data.set(
-        'mouseAngleDegrees',
-        cang(other.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
+      other.data.reverse = PLAYER_REVERSE_DIST;
+      other.data.mouseAngleDegrees = cang(
+        other.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true)
       );
       return true;
     }
     if (collider.action == 'damage' && other.action == ITEM_TYPES['sword']) {
       if (!collider.data.items.sword) {
-        collider.data.set('items', {
-          ...collider.data.items,
-          ...{ sword: 1 },
-        });
-        other.data.set('active', false);
+        collider.data.items = Object.assign(collider.data.items, { sword: 1 });
+        other.data.active = false;
         return true;
       }
     }
     if (collider.action == 'damage' && other.action == ITEM_TYPES['helm']) {
       if (!collider.data.items.helm) {
-        collider.data.set('items', {
-          ...collider.data.items,
-          ...{ helm: 1 },
-        });
-        other.data.set('active', false);
+        collider.data.items = Object.assign(collider.data.items, { helm: 1 });
+        other.data.active = false;
         return true;
       }
     }
     if (collider.action == 'damage' && other.action == ITEM_TYPES['armor']) {
       if (!collider.data.items.armor) {
-        collider.data.set('items', {
-          ...collider.data.items,
-          ...{ armor: 1 },
-        });
-        other.data.set('active', false);
+        collider.data.items = Object.assign(collider.data.items, { armor: 1 });
+        other.data.active = false;
         return true;
       }
     }
   }
 
-  updateState() {
-    state.player.set(this);
-  }
-
   getPojo() {
-    let {
-      username,
-      x,
-      y,
-      width,
-      height,
-      xp,
-      level,
-      health,
-      items,
-      isBoosting,
-      boostValue,
-      bot,
-      path,
-      target,
-      skin,
-      powerups,
-      mouseAngleDegrees,
-      speed,
-      frozen,
-      reverse,
-      lastLifeSpawn,
-      locMem,
-    } = this;
-    return {
-      ...super.getPojo(),
-      username,
-      x,
-      y,
-      width,
-      height,
-      xp,
-      level,
-      health,
-      items,
-      isBoosting,
-      boostValue,
-      bot,
-      path,
-      target,
-      skin,
-      powerups,
-      mouseAngleDegrees,
-      speed,
-      frozen,
-      reverse,
-      lastLifeSpawn,
-      locMem,
-      colliders: this.getColliders().map((c) => c.pure()),
-    };
+    return Object.assign(
+      super.getPojo(),
+      {
+        username: this.username,
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+        xp: this.xp,
+        level: this.level,
+        health: this.health,
+        items: this.items,
+        bot: this.bot,
+        path: this.path,
+        skin: this.skin,
+        powerups: this.powerups,
+        mouseAngleDegrees: this.mouseAngleDegrees,
+        speed: this.speed,
+        frozen: this.frozen,
+        reverse: this.reverse,
+        isBoosting: this.isBoosting,
+        boostValue: this.boostValue,
+      },
+      SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {}
+    );
   }
 }
 
@@ -451,7 +382,6 @@ export class Item extends Entity {
     this.type = typeof type == 'string' ? ITEM_TYPES[type] : type;
     this.value = value;
     this.scale = scale;
-    state.items.set(this);
   }
 
   getColliders() {
@@ -459,21 +389,19 @@ export class Item extends Entity {
   }
 
   getPojo() {
-    const { x, y, width, height, type, value, scale } = this;
-    return {
-      ...super.getPojo(),
-      x,
-      y,
-      width,
-      height,
-      type,
-      value,
-      scale,
-    };
-  }
-
-  updateState() {
-    state.items.set(this);
+    return Object.assign(
+      super.getPojo(),
+      {
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+        type: this.type,
+        value: this.value,
+        scale: this.scale,
+      },
+      SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {}
+    );
   }
 }
 
@@ -532,17 +460,18 @@ export class Tile extends Entity {
   }
 
   getPojo() {
-    let { x, y, height, width, walk } = this;
-    return {
-      ...super.getPojo(),
-      x,
-      y,
-      height,
-      width,
-      walk,
-      tid: this.tid,
-      colliders: this.getColliders().map((c) => c.pure()),
-    };
+    return Object.assign(
+      super.getPojo(),
+      {
+        x: this.x,
+        y: this.y,
+        height: this.height,
+        width: this.width,
+        walk: this.walk,
+        tid: this.tid,
+      },
+      SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {}
+    );
   }
 }
 
@@ -562,8 +491,8 @@ export class Grid extends Component {
     }
   }
 
-  update(deltaTime, gameRef) {
-    this.tiles.forEach((tile) => tile.update(deltaTime, gameRef));
+  update(deltaTime, gameRef, players) {
+    this.tiles.forEach((tile) => tile.update(deltaTime, gameRef, players));
   }
 
   /**
@@ -767,7 +696,7 @@ export class Game extends Component {
     let cmap = {};
 
     this.components.forEach((component) => {
-      if (!component.active || !component.hasColliders()) return;
+      if (!component.active || !(component instanceof Entity) || !component.hasColliders()) return;
       component.getColliders().forEach((collider) => {
         if (!collider.data || !collider.action) return;
         this.quadTree.query(collider).forEach((collision) => {
@@ -789,24 +718,44 @@ export class Game extends Component {
   }
 
   update(deltaTime, gameRef) {
-    this.clearFrameMemory();
-
     // Update every component before applying primary control logic
-    this.components.forEach((component) => {
+    this.quadTree = new Quadtree(this.world);
+    let players = [];
+    this.getComponents().forEach((component) => {
+      if (component instanceof Player) players.push(component);
+
       if (!component.active) return;
-      component.update(deltaTime, gameRef);
-      component.getColliders().forEach((c) => this.quadTree.insert(c));
-      component.updateState();
+      component.update(deltaTime, gameRef, players);
+
+      if (component instanceof Entity) {
+        component.getColliders().forEach((c) => this.quadTree.insert(c));
+      }
     });
 
     // check all collisions
     this.checkCollisions();
 
-    state.delta();
-  }
+    // sync data for all players
+    players.forEach((player) => {
+      let _players = {};
+      let _items = {};
+      this.quadTree
+        .query(new Rectangle(player.x, player.y, WORLD_QUERY_WIDTH, WORLD_QUERY_HEIGHT))
+        .forEach((entity) => {
+          if (!entity.data) return;
+          if (entity.data instanceof Item) {
+            _items[entity.data.id] = entity.data.getPojo();
+          }
+          if (entity.data instanceof Player) {
+            _players[entity.data.id] = entity.data.getPojo();
+          }
+        });
 
-  clearFrameMemory() {
-    this.quadTree = new Quadtree(this.world);
+      io.to(player.socketId).emit('delta', {
+        players: _players,
+        items: _items,
+      });
+    });
   }
 }
 
@@ -1019,9 +968,6 @@ export class Quadtree {
 
   insert(point) {
     if (!this.boundry.contains(point)) return false;
-    if (this.points.length > this.capacity) {
-      error('quadtree size exceeded!!');
-    }
     if (this.points.length < this.capacity) {
       this.points.push(point);
       return true;
@@ -1040,7 +986,7 @@ export class Quadtree {
     let out = [];
 
     if (this.boundry.intersects(boundry)) {
-      out = this.points;
+      out = this.points.slice();
 
       if (this.divided) {
         out.push(
@@ -1053,5 +999,33 @@ export class Quadtree {
     }
 
     return out;
+  }
+}
+
+export class Spawner extends Component {
+  constructor(max, respawn, entityFn) {
+    super();
+    this.max = max;
+    this.lastTime = 0;
+    this.respawn = respawn;
+    this.entityFn = entityFn;
+    this.trackedEntities = [];
+  }
+
+  update(delta, gameRef, players = []) {
+    this.lastTime -= delta;
+    if (this.lastTime < 0) {
+      this.lastTime = this.respawn;
+      // search the player data to prune our dead bots
+      let playerMap = players.reduce((acc, cur) => ({ ...acc, ...{ [cur.id]: cur } }), {});
+      this.trackedEntities.filter((id) => playerMap[id] && playerMap[id].active);
+      if (this.trackedEntities.length < this.max) {
+        for (let i = 0; i < this.max - this.trackedEntities.length; i++) {
+          this.temp = this.entityFn();
+          this.trackedEntities.push(this.temp.id);
+          gameRef.addComponent(this.temp);
+        }
+      }
+    }
   }
 }

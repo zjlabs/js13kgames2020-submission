@@ -41,7 +41,7 @@ export const FPS_SAMPLE_RATE = 500;
 /**
  * The server tick rate info
  */
-export const TICK_RATE = 120;
+export const TICK_RATE = 60;
 export const TICK_TIME = 1000 / TICK_RATE;
 
 /**
@@ -51,9 +51,12 @@ export const TICK_TIME = 1000 / TICK_RATE;
  * - width and height are 100% of the full rendered width
  * - everything has its origin x,y in the center (1/2 w and 1/2 h)
  */
-export const QUADTREE_CAP = 100;
+export const QUADTREE_CAP = 10;
 export const WORLD_HEIGHT = 30000;
 export const WORLD_WIDTH = 30000;
+export const WORLD_QUERY_HEIGHT = 400;
+export const WORLD_QUERY_WIDTH = 400;
+
 export const PLAYER_HEIGHT = 60;
 export const PLAYER_WIDTH = 100;
 export const PLAYER_REVERSE_VELOCITY = 2;
@@ -71,10 +74,10 @@ export const WEAPON_RESOLUTION = 5;
 export const WEAPON_Y_OFFSET = (3 / 4) * (PLAYER_WIDTH / 2);
 export const WEAPON_X_OFFSET = 0;
 export const WEAPON_DAMAGE = 1;
-
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
 
+// Item vars
 export const ITEM_TYPES = {
   life: 0,
   0: 'life',
@@ -101,12 +104,16 @@ export const BOOST_FACTOR = 1.5;
 export const PATH_ACCURACY = 0.25;
 export const WANDER_MIN = 400;
 export const WANDER_MAX = 400;
+export const BOT_COUNT_MAX = 50;
+export const BOT_RESPAWN_RATE = 20000;
+
+// input filters
+export const VALID_PLAYER_PROPS = ['mouseAngleDegrees', 'username', 'isBoosting'];
 
 // math utils
-export const PRECISION = 10;
 export const rad = (d) => (d * Math.PI) / 180;
-export const sin = (d) => parseFloat(Math.sin(rad(d)).toFixed(PRECISION));
-export const cos = (d) => parseFloat(Math.cos(rad(d)).toFixed(PRECISION));
+export const sin = (d) => Math.sin(rad(d));
+export const cos = (d) => Math.cos(rad(d));
 
 // rotate bX/bY around aX/aY, angle degrees
 export const rot = (angle, aX, aY, bX, bY) => {

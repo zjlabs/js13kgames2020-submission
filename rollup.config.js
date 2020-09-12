@@ -29,6 +29,8 @@ export default [
       file: 'public/server.js',
       format: 'umd',
     },
-    // plugins: [terser()],
+    plugins: [
+      // terser()
+    ],
   },
 ];

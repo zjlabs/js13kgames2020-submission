@@ -17,11 +17,8 @@ let state: State = {
 };
 
 export function applyState(serverUpdatedState: any) {
-  state = {
-    ...state,
-    items: deepMerge(state.items || {}, serverUpdatedState.items || {}),
-    players: deepMerge(state.players || {}, serverUpdatedState.players || {}),
-  };
+  state.items = serverUpdatedState.items;
+  state.players = serverUpdatedState.players;
 }
 
 export function getState() {
@@ -54,27 +51,6 @@ export function setPlayerStateItem(key: string, value) {
       },
     },
   };
-}
-
-function deepMerge(stateObj = {}, obj: any) {
-  return Object.keys(obj).reduce((acc, key) => {
-    if (['number', 'string', 'boolean'].includes(typeof obj[key])) {
-      return {
-        ...acc,
-        [key]: obj[key],
-      };
-    }
-
-    if (obj[key].hasOwnProperty('active') && obj[key].active == false) {
-      delete acc[key];
-      return acc;
-    }
-
-    return {
-      ...acc,
-      [key]: deepMerge(stateObj[key], obj[key]),
-    };
-  }, stateObj);
 }
 
 // Debug functionality.

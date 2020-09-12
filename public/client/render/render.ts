@@ -22,7 +22,6 @@ import { renderLeaderboard } from './leaderboard';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
-
   if (width === 0 || height === 0) {
     return;
   }
