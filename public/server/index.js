@@ -84,6 +84,7 @@ game.addComponent(
     p.x = rand(0, WORLD_WIDTH);
     p.y = rand(0, WORLD_HEIGHT);
     p.bot = true;
+    state.player.set(p);
     return p;
   })
 );
@@ -95,8 +96,6 @@ game.addComponent(
 io.on('connection', (socket) => {
   info('socket [connection]', socket.id);
   const player = new Player(socket);
-  // player.frozen = true;
-  // player.x -= 200;
 
   socket.on('disconnect', () => {
     info('socket [disconnect]', socket.id);

@@ -1,4 +1,5 @@
-import { debug } from '../shared/variables';
+import { debug, WORLD_QUERY_WIDTH } from '../shared/variables';
+import { Quadtree, Rectangle } from './entities';
 
 class EntityState {
   constructor() {
@@ -64,13 +65,48 @@ export default {
       })
     );
   },
-  delta() {
-    io.emit('delta', this._delta());
+  tick() {
+    // Build the tick qts
+    let playerQt = new Quadtree();
+    Object.keys(_players.data).forEach((id) => {
+      _players.data[id].colliders.forEach((c) => {
+        if (c.action != 'damage') return;
+        playerQt.insert(new Rectangle(c.x, c.y, c.w, c.h, _players.data[id]));
+      });
+    });
+    let itemQt = new Quadtree();
+    Object.keys(_items.data).forEach((id) => {
+      _items.data[id].colliders.forEach((c) => itemQt.insert(c.x, c.y, c.w, c.h, _items.data[id]));
+    });
+
+    // transmit the tick qt to each player based on their loc
+    Object.keys(_players.data).forEach((id) => {
+      if (!_players.data[id].active || _players.data[id].bot || !_players.data[id].socketId) return;
+      io.to(_players.data[id].socketId).emit('delta', {
+        players: playerQt
+          .query(new Rectangle(_players.data[id].x, _players.data[id].y, WORLD_QUERY_WIDTH, WORLD_QUERY_WIDTH))
+          .map((pt) => {
+            delete pt.data.socketId;
+            return pt.data;
+          }),
+        items: itemQt
+          .query(new Rectangle(_players.data[id].x, _players.data[id].y, WORLD_QUERY_WIDTH, WORLD_QUERY_WIDTH))
+          .map((pt) => pt.data),
+      });
+    });
 
     // reset internal state
+    // console.log('tick', itemQt, playerQt);
     _players.reset();
     _items.reset();
   },
+  // delta() {
+  //   io.emit('delta', this._delta());
+
+  //   // reset internal state
+  //   _players.reset();
+  //   _items.reset();
+  // },
 
   // State objs
   player: _players,

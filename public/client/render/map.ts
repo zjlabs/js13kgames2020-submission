@@ -13,7 +13,6 @@ export function renderMap(
   // Calculate a scale factor so the map takes up a small percentage of the screen;
   const xScaleFactor = (width / WORLD_WIDTH) * 0.2;
   const yScaleFactor = (height / WORLD_HEIGHT) * 0.2;
-
   const squareScaleFactor = xScaleFactor > yScaleFactor ? yScaleFactor : xScaleFactor;
 
   ctx.save();

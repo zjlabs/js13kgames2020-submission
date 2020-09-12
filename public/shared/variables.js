@@ -54,6 +54,9 @@ export const TICK_TIME = 1000 / TICK_RATE;
 export const QUADTREE_CAP = 200;
 export const WORLD_HEIGHT = 30000;
 export const WORLD_WIDTH = 30000;
+export const WORLD_QUERY_HEIGHT = 200;
+export const WORLD_QUERY_WIDTH = 200;
+
 export const PLAYER_HEIGHT = 60;
 export const PLAYER_WIDTH = 100;
 export const PLAYER_REVERSE_VELOCITY = 2;
@@ -69,10 +72,10 @@ export const WEAPON_RESOLUTION = 5;
 export const WEAPON_Y_OFFSET = (3 / 4) * (PLAYER_WIDTH / 2);
 export const WEAPON_X_OFFSET = 0;
 export const WEAPON_DAMAGE = 1;
-
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
 
+// Item vars
 export const ITEM_TYPES = {
   life: 0,
   0: 'life',

@@ -45,6 +45,8 @@ import {
   WANDER_MIN,
   WANDER_MAX,
   SHOW_BOUNDING_BOXES,
+  WORLD_QUERY_WIDTH,
+  WORLD_QUERY_HEIGHT,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 const { min, max, abs, sqrt } = Math;
@@ -109,7 +111,7 @@ export class Entity extends Component {
   set(key, val) {
     if (this.hasOwnProperty(key)) {
       this[key] = val;
-      this.updateState();
+      // this.updateState();
     }
   }
 
@@ -133,7 +135,7 @@ export class Entity extends Component {
     return [];
   }
 
-  updateState() {}
+  // updateState() {}
 
   onCollision(collider, other) {}
 }
@@ -142,9 +144,10 @@ export class Player extends Entity {
   /**
    * @param {Socket} socket
    */
-  constructor(socket) {
+  constructor(socket = {}) {
     super();
     this.socket = socket;
+    this.socketId = socket.id;
     this.username = '';
     this.x = WORLD_WIDTH / 2;
     this.y = WORLD_HEIGHT / 2;
@@ -167,7 +170,7 @@ export class Player extends Entity {
     this.reverse = false;
     this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
     this.locMem = [];
-    state.player.set(this);
+    // state.player.set(this);
   }
 
   addLocMem(loc) {
@@ -362,14 +365,15 @@ export class Player extends Entity {
     }
   }
 
-  updateState() {
-    state.player.set(this);
-  }
+  // updateState() {
+  //   state.player.set(this);
+  // }
 
   getPojo() {
     this._colliders = SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {};
     return {
       ...super.getPojo(),
+      socketId: this.socketId,
       username: this.username,
       x: this.x,
       y: this.y,
@@ -402,7 +406,7 @@ export class Item extends Entity {
     this.type = typeof type == 'string' ? ITEM_TYPES[type] : type;
     this.value = value;
     this.scale = scale;
-    state.items.set(this);
+    // state.items.set(this);
   }
 
   getColliders() {
@@ -410,6 +414,7 @@ export class Item extends Entity {
   }
 
   getPojo() {
+    this._colliders = SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {};
     return {
       ...super.getPojo(),
       x: this.x,
@@ -419,12 +424,13 @@ export class Item extends Entity {
       type: this.type,
       value: this.value,
       scale: this.scale,
+      ...this._colliders,
     };
   }
 
-  updateState() {
-    state.items.set(this);
-  }
+  // updateState() {
+  //   state.items.set(this);
+  // }
 }
 
 export class Life extends Item {
@@ -741,20 +747,45 @@ export class Game extends Component {
   update(deltaTime, gameRef) {
     // Update every component before applying primary control logic
     this.quadTree = new Quadtree(this.world);
-    this.components.forEach((component, i, all) => {
+    let players = [];
+    this.getComponents().forEach((component) => {
+      if (component instanceof Player) players.push(component);
+
       if (!component.active) return;
       component.update(deltaTime, gameRef);
 
       if (component instanceof Entity) {
-        component.getColliders().forEach((c, i, all) => this.quadTree.insert(c));
-        component.updateState();
+        component.getColliders().forEach((c) => this.quadTree.insert(c));
+        // component.updateState();
       }
     });
 
     // check all collisions
     this.checkCollisions();
 
-    state.delta();
+    // sync data for all players
+    players.forEach((player) => {
+      let _players = {};
+      let _items = {};
+      this.quadTree
+        .query(new Rectangle(player.x, player.y, WORLD_QUERY_WIDTH, WORLD_QUERY_HEIGHT))
+        .forEach((entity) => {
+          if (!entity.data) return;
+          if (entity.data instanceof Item) {
+            _items[entity.data.id] = entity.data.getPojo();
+          }
+          if (entity.data instanceof Player) {
+            _players[entity.data.id] = entity.data.getPojo();
+          }
+        });
+
+      io.emit('delta', {
+        players: _players,
+        items: _items,
+      });
+    });
+
+    // state.tick();
   }
 }
 
@@ -1012,19 +1043,18 @@ export class Spawner extends Component {
   }
 
   update(delta, gameRef) {
-    this.lastTime -= delta;
-    if (this.lastTime < 0) {
-      this.lastTime = this.respawn;
-
-      // search the player data to prune our dead bots
-      this.trackedEntities.filter((id) => state.player.data[id] && state.player.data[id].active);
-      if (this.trackedEntities.length < this.max) {
-        for (let i = 0; i < this.max - this.trackedEntities.length; i++) {
-          this.temp = this.entityFn();
-          this.trackedEntities.push(this.temp.id);
-          gameRef.addComponent(this.temp);
-        }
-      }
-    }
+    // this.lastTime -= delta;
+    // if (this.lastTime < 0) {
+    //   this.lastTime = this.respawn;
+    //   // search the player data to prune our dead bots
+    //   this.trackedEntities.filter((id) => state.player.data[id] && state.player.data[id].active);
+    //   if (this.trackedEntities.length < this.max) {
+    //     for (let i = 0; i < this.max - this.trackedEntities.length; i++) {
+    //       this.temp = this.entityFn();
+    //       this.trackedEntities.push(this.temp.id);
+    //       gameRef.addComponent(this.temp);
+    //     }
+    //   }
+    // }
   }
 }

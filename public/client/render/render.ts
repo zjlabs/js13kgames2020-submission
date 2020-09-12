@@ -15,7 +15,6 @@ import { start } from 'repl';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
-
   if (width === 0 || height === 0) {
     return;
   }

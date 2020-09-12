@@ -17,11 +17,13 @@ let state: State = {
 };
 
 export function applyState(serverUpdatedState: any) {
-  state = {
-    ...state,
-    items: deepMerge(state.items || {}, serverUpdatedState.items || {}),
-    players: deepMerge(state.players || {}, serverUpdatedState.players || {}),
-  };
+  state.items = serverUpdatedState.items;
+  state.players = serverUpdatedState.players;
+  // state = {
+  //   ...state,
+  //   // items: deepMerge(state.items || {}, serverUpdatedState.items || {}),
+  //   // players: deepMerge(state.players || {}, serverUpdatedState.players || {}),
+  // };
 }
 
 export function getState() {
