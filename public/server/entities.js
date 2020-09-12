@@ -765,14 +765,13 @@ export class Game extends Component {
 
     // sync leaderboard time
     if (this.leaderTick <= 0) {
-      io.emit(
-        'leaderboard',
-        players
+      io.emit('leaderboard', {
+        leaderboard: players
           .map((p) => LEADERBOARD_PROPS.reduce((acc, prop) => Object.assign(acc, { [prop]: p[prop] }), {}))
           .sort((a, b) => a.xp - b.xp)
           .slice(-LEADERBOARD_COUNT)
-          .reverse()
-      );
+          .reverse(),
+      });
       this.leaderTick = LEADERBOARD_UPDATE_TIME;
     }
   }

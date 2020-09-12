@@ -10,6 +10,7 @@ export interface State {
     [key: string]: Player;
   };
   rooms?: any;
+  leaderboard?: any;
 }
 
 let state: State = {
@@ -19,6 +20,10 @@ let state: State = {
 export function applyState(serverUpdatedState: any) {
   state.items = serverUpdatedState.items;
   state.players = serverUpdatedState.players;
+}
+
+export function applyLeaderboard(serverUpdate: any) {
+  state.leaderboard = serverUpdate.leaderboard;
 }
 
 export function getState() {
