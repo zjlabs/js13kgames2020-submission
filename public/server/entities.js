@@ -722,11 +722,11 @@ export class Game extends Component {
   checkCollisions() {
     let cmap = {};
 
-    this.components.forEach((component, i, all) => {
+    this.components.forEach((component) => {
       if (!component.active || !(component instanceof Entity) || !component.hasColliders()) return;
-      component.getColliders().forEach((collider, i, all) => {
+      component.getColliders().forEach((collider) => {
         if (!collider.data || !collider.action) return;
-        this.quadTree.query(collider).forEach((collision, i, all) => {
+        this.quadTree.query(collider).forEach((collision) => {
           if (component.id == collision.data.id) return;
           if (!collision.data.active) return;
           if (cmap[collider.data.id] && cmap[collider.data.id][collision.data.id]) return;
