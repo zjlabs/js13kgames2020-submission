@@ -1,4 +1,11 @@
-import { ITEM_TYPES, rad, SHOW_BOUNDING_BOXES, SHOW_GRID, SHOW_PERFORMANCE_METRICS } from '../../shared/variables';
+import {
+  ITEM_TYPES,
+  PLAYER_BOOST_MAX_VAL,
+  rad,
+  SHOW_BOUNDING_BOXES,
+  SHOW_GRID,
+  SHOW_PERFORMANCE_METRICS,
+} from '../../shared/variables';
 import { getPlayerState, getState } from '../state';
 import { renderPlayer } from './player';
 import { clearCanvas } from './render-utilities';
@@ -8,10 +15,8 @@ import { renderPlayerCoordinatesStats, renderPlayerMouseAngleStats } from './sta
 import { renderMap } from './map';
 import { renderGrid } from './grid';
 import { renderColliders } from './colliders';
-import { Item } from '../models/items';
 import { renderArmor, renderHealth, renderHelm, renderItem, renderSword } from './item';
 import { Quadtree, Rectangle } from '../../server/entities';
-import { start } from 'repl';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -36,7 +41,7 @@ export function renderGame() {
   clearCanvas(ctx, width, height);
 
   // Render background.
-  renderBackground(ctx, width, height, rad(mouseAngleDegrees));
+  renderBackground(ctx, width, height, rad(mouseAngleDegrees), playerState.isBoosting);
 
   // TODO: This makes me feel like puking. Figure out how to get rid of motion sickness.
   // Render debug grid.
@@ -112,6 +117,7 @@ export function renderGame() {
         point.data.height,
         rad(point.data.mouseAngleDegrees),
         point.data.username,
+        Math.round((point.data.boostValue / PLAYER_BOOST_MAX_VAL) * 100),
         point.data.health,
         point.data.id === id ? '#0F9BF2' : '#F25C05',
         'black',

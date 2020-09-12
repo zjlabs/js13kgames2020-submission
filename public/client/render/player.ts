@@ -11,11 +11,16 @@ export function renderPlayer(
   height,
   angleRadians,
   username: string,
+  boostPercent: number,
   healthPercent: number,
   primaryColor,
   secondaryColor,
   items: Player['items']
 ) {
+  const barWidth = width * 2;
+  const barHeight = 18;
+  const barTextSize = barHeight - 2;
+
   // Render body.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
@@ -54,36 +59,120 @@ export function renderPlayer(
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
+  const usernameTopOffset = 40;
+
   // Render username.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
   ctx.fillStyle = '#FFFFFFDD';
   ctx.font = '24px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(username, 0, height + 30);
+  ctx.fillText(username, 0, height + usernameTopOffset);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
+
+  const healthBarTopOffset = 50;
 
   // Render health bar base.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
-  renderFilledRectangle(ctx, width / -2, height + 40, width, 10, '#F07F5C');
+  renderFilledRectangle(ctx, barWidth / -2, height + healthBarTopOffset, barWidth, barHeight, '#EB0945');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
   // Render health bar value.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
-  renderFilledRectangle(ctx, width / -2, height + 40, (width * healthPercent) / 100, 10, '#89F026');
+  renderFilledRectangle(
+    ctx,
+    barWidth / -2,
+    height + healthBarTopOffset,
+    (barWidth * healthPercent) / 100,
+    barHeight,
+    '#2E9E3D'
+  );
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
+
+  // Render health bar descriptor.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `${barTextSize}px sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText('Health', barWidth / -2 + 2, height + healthBarTopOffset + barTextSize - (barHeight - barTextSize));
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
+  // Render health par percentage descriptor.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `${barTextSize}px sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillText(
+    `${healthPercent}%`,
+    barWidth - (barTextSize * 3 + 4),
+    height + healthBarTopOffset + barTextSize - (barHeight - barTextSize)
+  );
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
+  const boostBarTopOffset = 80;
+
+  // Render boost bar base.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  renderFilledRectangle(ctx, barWidth / -2, height + boostBarTopOffset, barWidth, barHeight, '#FFAF24');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
+  // Render boost bar value.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  renderFilledRectangle(
+    ctx,
+    barWidth / -2,
+    height + boostBarTopOffset,
+    (barWidth * boostPercent) / 100,
+    barHeight,
+    '#004C9E'
+  );
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
+  // Render boost bar descriptor.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `${barTextSize}px sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText('Boost', barWidth / -2 + 2, height + boostBarTopOffset + barTextSize - (barHeight - barTextSize));
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
+  // Render boost par percentage descriptor.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `${barTextSize}px sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillText(
+    `${boostPercent}%`,
+    barWidth - (barTextSize * 3 + 4),
+    height + boostBarTopOffset + barTextSize - (barHeight - barTextSize)
+  );
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.closePath();
+
+  const itemTopOffset = 120;
 
   // Render items.
   if (items && items.armor === 1) {
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
-    renderArmor(ctx, -30, height + 70, 12, 12);
+    renderArmor(ctx, -30, height + itemTopOffset, 12, 12);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.closePath();
   }
@@ -92,7 +181,7 @@ export function renderPlayer(
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
-    renderHelm(ctx, 0, height + 70, 12, 12);
+    renderHelm(ctx, 0, height + itemTopOffset, 12, 12);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.closePath();
   }
@@ -101,7 +190,7 @@ export function renderPlayer(
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
-    renderSword(ctx, 30, height + 70, 12, 12);
+    renderSword(ctx, 30, height + itemTopOffset, 12, 12);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.closePath();
   }
