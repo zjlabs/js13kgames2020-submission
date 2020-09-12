@@ -94,7 +94,7 @@ export class Component {
   getPojo() {
     return {
       id: this.id,
-      components: this.components,
+      // components: this.components,
       active: this.active,
     };
   }
@@ -371,9 +371,9 @@ export class Player extends Entity {
 
   getPojo() {
     this._colliders = SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {};
-    return {
-      ...super.getPojo(),
-      socketId: this.socketId,
+    return Object.assign(super.getPojo(), {
+      // ...super.getPojo(),
+      // socketId: this.socketId,
       username: this.username,
       x: this.x,
       y: this.y,
@@ -392,7 +392,7 @@ export class Player extends Entity {
       frozen: this.frozen,
       reverse: this.reverse,
       ...this._colliders,
-    };
+    });
   }
 }
 
@@ -415,8 +415,8 @@ export class Item extends Entity {
 
   getPojo() {
     this._colliders = SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {};
-    return {
-      ...super.getPojo(),
+    return Object.assign(super.getPojo(), {
+      // ...super.getPojo(),
       x: this.x,
       y: this.y,
       width: this.width,
@@ -425,7 +425,7 @@ export class Item extends Entity {
       value: this.value,
       scale: this.scale,
       ...this._colliders,
-    };
+    });
   }
 
   // updateState() {
@@ -489,8 +489,8 @@ export class Tile extends Entity {
 
   getPojo() {
     this._colliders = SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {};
-    return {
-      ...super.getPojo(),
+    return Object.assign(super.getPojo(), {
+      // ...super.getPojo(),
       x: this.x,
       y: this.y,
       height: this.height,
@@ -498,7 +498,7 @@ export class Tile extends Entity {
       walk: this.walk,
       tid: this.tid,
       ...this._colliders,
-    };
+    });
   }
 }
 
