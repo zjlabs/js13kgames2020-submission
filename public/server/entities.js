@@ -312,9 +312,13 @@ export class Player extends Entity {
       other.data.active = false;
       return true;
     }
+
     if (collider.action == 'damage' && other.action == 'weapon') {
       let newHealth = max(this.health - WEAPON_DAMAGE, 0);
       collider.data.health = newHealth;
+
+      // Drop blood.
+      gameRef.addComponent(new Blood(this.x, this.y));
 
       // On death.
       if (!newHealth) {
