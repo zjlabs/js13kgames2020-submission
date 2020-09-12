@@ -40,7 +40,13 @@
     "sqlite3": "^5.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "@babel/plugin-transform-destructuring": "^7.10.4",
+    "@babel/preset-env": "^7.11.5",
+    "@rollup/plugin-babel": "^5.2.1",
+    "@rollup/plugin-node-resolve": "^9.0.0",
     "@types/socket.io-client": "^1.4.33",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "concurrently": "^5.3.0",
     "mocha": "^8.1.1",
     "nodemon": "^2.0.4",
