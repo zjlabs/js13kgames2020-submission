@@ -28,6 +28,7 @@ import {
   PLAYER_DEATH_HEALTH_ORB_SPAWN,
   PLAYER_DEATH_HEALTH_ORB_SPAWN_OFFSET,
   PLAYER_HEIGHT,
+  PLAYER_HIT_BLOOD_DROP_CHANCE_PERCENT_INVERSE,
   PLAYER_LIFE_SPAWN_RATE,
   PLAYER_LOC_MEM,
   PLAYER_MAX_HEALTH,
@@ -317,8 +318,10 @@ export class Player extends Entity {
       let newHealth = max(this.health - WEAPON_DAMAGE, 0);
       collider.data.health = newHealth;
 
-      // Drop blood.
-      gameRef.addComponent(new Blood(this.x, this.y));
+      // Drop blood (n% chance).
+      if (rand(0, PLAYER_HIT_BLOOD_DROP_CHANCE_PERCENT_INVERSE) === 1) {
+        gameRef.addComponent(new Blood(this.x, this.y));
+      }
 
       // On death.
       if (!newHealth) {
