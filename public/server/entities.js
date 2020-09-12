@@ -1,50 +1,47 @@
 import state from './state';
 import {
+  ang,
+  cang,
   debug,
+  diff,
   error,
+  ITEM_ARMOR_HEIGHT,
+  ITEM_ARMOR_WIDTH,
+  ITEM_HELM_HEIGHT,
+  ITEM_HELM_WIDTH,
+  ITEM_LIFE_HEIGHT,
+  ITEM_LIFE_VALUE,
+  ITEM_LIFE_WIDTH,
+  ITEM_SWORD_HEIGHT,
+  ITEM_SWORD_WIDTH,
+  ITEM_TYPES,
+  PATH_ACCURACY,
   PLAYER_HEIGHT,
+  PLAYER_LIFE_SPAWN_RATE,
+  PLAYER_LOC_MEM,
+  PLAYER_MAX_HEALTH,
+  PLAYER_REVERSE_DIST,
+  PLAYER_REVERSE_SPREAD,
+  PLAYER_REVERSE_VELOCITY,
   PLAYER_WIDTH,
+  PLAYER_XP_LEVEL,
+  QUADTREE_CAP,
+  rand,
+  rot,
   TILE_HEIGHT,
   TILE_WIDTH,
-  WORLD_HEIGHT,
-  WORLD_WIDTH,
+  WANDER_MAX,
+  WEAPON_DAMAGE,
   WEAPON_HEIGHT,
   WEAPON_RESOLUTION,
   WEAPON_WIDTH,
   WEAPON_X_OFFSET,
   WEAPON_Y_OFFSET,
-  rad,
-  sin,
-  cos,
-  ITEM_TYPES,
-  ITEM_LIFE_HEIGHT,
-  ITEM_LIFE_WIDTH,
-  ITEM_SWORD_HEIGHT,
-  ITEM_SWORD_WIDTH,
-  ITEM_HELM_HEIGHT,
-  ITEM_HELM_WIDTH,
-  ITEM_ARMOR_HEIGHT,
-  ITEM_ARMOR_WIDTH,
-  rot,
-  PATH_ACCURACY,
-  ang,
-  rand,
-  WANDER_MAX,
-  WEAPON_DAMAGE,
-  ITEM_LIFE_VALUE,
-  PLAYER_REVERSE_DIST,
-  cang,
-  PLAYER_REVERSE_SPREAD,
-  PLAYER_REVERSE_VELOCITY,
-  PLAYER_MAX_HEALTH,
-  PLAYER_XP_LEVEL,
-  PLAYER_LIFE_SPAWN_RATE,
-  ITEM_LIFE_VALUE_MAX,
-  diff,
-  PLAYER_LOC_MEM,
-  QUADTREE_CAP,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
 } from '../shared/variables';
 import { getId } from '../shared/id';
+
 const { min, max, abs, sqrt } = Math;
 
 export class Component {
@@ -161,6 +158,7 @@ export class Player extends Entity {
     this.level = 1;
     this.health = 10;
     this.items = {};
+    this.isBoosting = false;
     // start bot specific props
     this.bot = false;
     this.path = [];
@@ -234,11 +232,12 @@ export class Player extends Entity {
       // check if we need to reverse dir
       const dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
 
-      // TODO: Determine if "world wrapping" will be a nightmare for bots.
+      const boostedSpeed = this.isBoosting ? this.speed * 2 : this.speed;
+
       const intendedXOffset =
-        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * dir || 0;
+        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * boostedSpeed * dir || 0;
       const intendedYOffset =
-        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * dir || 0;
+        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * boostedSpeed * dir || 0;
       if (this.reverse != false) {
         const hyp = sqrt(intendedXOffset ** 2 + intendedYOffset ** 2);
         this.reverse -= hyp;
@@ -382,6 +381,7 @@ export class Player extends Entity {
       level,
       health,
       items,
+      isBoosting,
       bot,
       path,
       target,
@@ -405,6 +405,7 @@ export class Player extends Entity {
       level,
       health,
       items,
+      isBoosting,
       bot,
       path,
       target,

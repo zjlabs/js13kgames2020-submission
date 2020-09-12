@@ -4,6 +4,7 @@ export interface Player {
   active: boolean;
   bot: boolean;
   colliders: Collider[];
+  en;
   frozen: boolean;
   health: number;
   height: number;
@@ -13,6 +14,7 @@ export interface Player {
     helm: 0 | 1;
     armor: 0 | 1;
   };
+  isBoosting: boolean;
   level: number;
   mouseAngleDegrees: number;
   powerups: unknown;

@@ -8,10 +8,8 @@ import { renderPlayerCoordinatesStats, renderPlayerMouseAngleStats } from './sta
 import { renderMap } from './map';
 import { renderGrid } from './grid';
 import { renderColliders } from './colliders';
-import { Item } from '../models/items';
 import { renderArmor, renderHealth, renderHelm, renderItem, renderSword } from './item';
 import { Quadtree, Rectangle } from '../../server/entities';
-import { start } from 'repl';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -36,7 +34,7 @@ export function renderGame() {
   clearCanvas(ctx, width, height);
 
   // Render background.
-  renderBackground(ctx, width, height, rad(mouseAngleDegrees));
+  renderBackground(ctx, width, height, rad(mouseAngleDegrees), playerState.isBoosting);
 
   // TODO: This makes me feel like puking. Figure out how to get rid of motion sickness.
   // Render debug grid.

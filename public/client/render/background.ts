@@ -1,4 +1,5 @@
 import { renderFilledRectangle, renderFilledTriangle } from './primitive-shapes';
+import { BOOST_FACTOR } from '../../shared/variables';
 
 const triangleSidePx = 64;
 const patternPaddingPx = 8;
@@ -24,8 +25,10 @@ function getMovementOffsetVector(angleRadians) {
   };
 }
 
-function getMovementOffset(angleRadians: number) {
+function getMovementOffset(angleRadians: number, isSpeedBoosted: boolean) {
   const { x, y } = getMovementOffsetVector(angleRadians);
+
+  const boostedSpeed = isSpeedBoosted ? movementSpeedPx * BOOST_FACTOR : movementSpeedPx;
 
   movementOffsetPxX += x;
   movementOffsetPxY += y;
@@ -45,13 +48,13 @@ function getMovementOffset(angleRadians: number) {
   }
 
   return {
-    x: movementOffsetPxX * movementSpeedPx * -1,
-    y: movementOffsetPxY * movementSpeedPx * -1,
+    x: movementOffsetPxX * boostedSpeed * -1,
+    y: movementOffsetPxY * boostedSpeed * -1,
   };
 }
 
-export function renderBackground(ctx, width, height, angleRadians = 0) {
-  const { x, y } = getMovementOffset(angleRadians);
+export function renderBackground(ctx, width, height, angleRadians = 0, isSpeedBoosted) {
+  const { x, y } = getMovementOffset(angleRadians, isSpeedBoosted);
 
   ctx.drawImage(backgroundCanvas, ((width * 4) / 2) * -1 + x, ((height * 4) / 2) * -1 + y);
 }
