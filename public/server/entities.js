@@ -44,6 +44,7 @@ import {
   QUADTREE_CAP,
   WANDER_MIN,
   WANDER_MAX,
+  SHOW_BOUNDING_BOXES,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 const { min, max, abs, sqrt } = Math;
@@ -367,6 +368,7 @@ export class Player extends Entity {
   }
 
   getPojo() {
+    this._colliders = SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {};
     return {
       ...super.getPojo(),
       username: this.username,
@@ -380,14 +382,13 @@ export class Player extends Entity {
       items: this.items,
       bot: this.bot,
       path: this.path,
-      target: this.target,
       skin: this.skin,
       powerups: this.powerups,
       mouseAngleDegrees: this.mouseAngleDegrees,
       speed: this.speed,
       frozen: this.frozen,
       reverse: this.reverse,
-      colliders: this.getColliders().map((c) => c.pure()),
+      ...this._colliders,
     };
   }
 }
