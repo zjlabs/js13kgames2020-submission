@@ -89,6 +89,14 @@ export class Component {
     return [...this.components, ...this.components.map((c) => c.getComponents(deep).flat())];
   }
 
+  pruneComponents(deep = false) {
+    this.components = this.components.filter((c) => c.active);
+
+    if (deep) {
+      this.components.forEach((c) => c.pruneComponents(deep));
+    }
+  }
+
   update(deltaTime, gameRef, players) {
     this.component.forEach((component) => component.update(deltaTime, gameRef, players));
   }
@@ -774,6 +782,8 @@ export class Game extends Component {
       });
       this.leaderTick = LEADERBOARD_UPDATE_TIME;
     }
+
+    this.pruneComponents();
   }
 }
 
