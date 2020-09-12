@@ -51,6 +51,7 @@ const { min, max, abs, sqrt } = Math;
 export class Component {
   constructor() {
     this.id = getId();
+    this.active = true;
     this.components = [];
   }
 
@@ -88,10 +89,11 @@ export class Component {
   }
 
   getPojo() {
-    let { id, components } = this;
+    let { id, components, active } = this;
     return {
       id,
       components,
+      active,
     };
   }
 }
@@ -99,7 +101,6 @@ export class Component {
 export class Entity extends Component {
   constructor() {
     super();
-    this.active = true;
     this._prevState = {};
   }
 
@@ -117,13 +118,6 @@ export class Entity extends Component {
     if (this.hasOwnProperty(key)) return this[key];
 
     return undefined;
-  }
-
-  getPojo() {
-    return {
-      ...super.getPojo(),
-      active: this.active,
-    };
   }
 
   getDiff() {
@@ -745,11 +739,11 @@ export class Game extends Component {
   checkCollisions() {
     let cmap = {};
 
-    this.components.forEach((component) => {
-      if (!component.active || !component.hasColliders()) return;
-      component.getColliders().forEach((collider) => {
+    this.components.forEach((component, i, all) => {
+      if (!component.active || !(component instanceof Entity) || !component.hasColliders()) return;
+      component.getColliders().forEach((collider, i, all) => {
         if (!collider.data || !collider.action) return;
-        this.quadTree.query(collider).forEach((collision) => {
+        this.quadTree.query(collider).forEach((collision, i, all) => {
           if (component.id == collision.data.id) return;
           if (!collision.data.active) return;
           if (cmap[collider.data.id] && cmap[collider.data.id][collision.data.id]) return;
@@ -768,24 +762,22 @@ export class Game extends Component {
   }
 
   update(deltaTime, gameRef) {
-    this.clearFrameMemory();
-
     // Update every component before applying primary control logic
-    this.components.forEach((component) => {
+    this.quadTree = new Quadtree(this.world);
+    this.components.forEach((component, i, all) => {
       if (!component.active) return;
       component.update(deltaTime, gameRef);
-      component.getColliders().forEach((c) => this.quadTree.insert(c));
-      component.updateState();
+
+      if (component instanceof Entity) {
+        component.getColliders().forEach((c, i, all) => this.quadTree.insert(c));
+        component.updateState();
+      }
     });
 
     // check all collisions
     this.checkCollisions();
 
     state.delta();
-  }
-
-  clearFrameMemory() {
-    this.quadTree = new Quadtree(this.world);
   }
 }
 
@@ -998,9 +990,6 @@ export class Quadtree {
 
   insert(point) {
     if (!this.boundry.contains(point)) return false;
-    if (this.points.length > this.capacity) {
-      error('quadtree size exceeded!!');
-    }
     if (this.points.length < this.capacity) {
       this.points.push(point);
       return true;
@@ -1019,7 +1008,7 @@ export class Quadtree {
     let out = [];
 
     if (this.boundry.intersects(boundry)) {
-      out = this.points;
+      out = [].concat(this.points);
 
       if (this.divided) {
         out.push(
@@ -1039,7 +1028,7 @@ export class Spawner extends Component {
   constructor(max, respawn, entityFn) {
     super();
     this.max = max;
-    this.lastTime = respawn;
+    this.lastTime = 0;
     this.respawn = respawn;
     this.entityFn = entityFn;
     this.trackedEntities = [];
@@ -1051,14 +1040,7 @@ export class Spawner extends Component {
       this.lastTime = this.respawn;
 
       // search the player data to prune our dead bots
-      let valid = [];
-      this.trackedEntities.forEach((id) => {
-        if (state.player.data[id] && state.player.data[id].active) {
-          valid.push(id);
-        }
-      });
-
-      this.trackedEntities = valid;
+      this.trackedEntities.filter((id) => state.player.data[id] && state.player.data[id].active);
       if (this.trackedEntities.length < this.max) {
         let temp;
         for (let i = 0; i < this.max - this.trackedEntities.length; i++) {

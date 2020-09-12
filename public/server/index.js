@@ -6,15 +6,11 @@ import {
   STATS,
   TEST,
   TICK_TIME,
-  TILE_HEIGHT,
-  TILE_WIDTH,
   WORLD_HEIGHT,
   WORLD_WIDTH,
   ITEM_LIFE_HEIGHT,
   ITEM_LIFE_WIDTH,
   rand,
-  WANDER_MAX,
-  WANDER_MIN,
   info,
   BOT_COUNT_MAX,
   BOT_RESPAWN_RATE,
@@ -88,7 +84,6 @@ game.addComponent(
     p.x = rand(0, WORLD_WIDTH);
     p.y = rand(0, WORLD_HEIGHT);
     p.bot = true;
-
     return p;
   })
 );
@@ -146,11 +141,7 @@ const tick = () => {
   /**
    * GAME LOGIC
    */
-  game.update(delta, {
-    addComponent: (c) => {
-      game.addComponent(c);
-    },
-  });
+  game.update(delta, game);
 
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;

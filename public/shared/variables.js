@@ -98,7 +98,7 @@ export const ITEM_ARMOR_WIDTH = 20;
 export const PATH_ACCURACY = 0.25;
 export const WANDER_MIN = 400;
 export const WANDER_MAX = 400;
-export const BOT_COUNT_MAX = 100;
+export const BOT_COUNT_MAX = 50;
 export const BOT_RESPAWN_RATE = 20000;
 
 // math utils
