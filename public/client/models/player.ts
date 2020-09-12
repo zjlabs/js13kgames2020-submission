@@ -2,6 +2,7 @@ import { Collider } from './collider';
 
 export interface Player {
   active: boolean;
+  boostValue: number;
   bot: boolean;
   colliders: Collider[];
   en;

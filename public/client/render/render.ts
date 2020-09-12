@@ -1,4 +1,11 @@
-import { ITEM_TYPES, rad, SHOW_BOUNDING_BOXES, SHOW_GRID, SHOW_PERFORMANCE_METRICS } from '../../shared/variables';
+import {
+  ITEM_TYPES,
+  PLAYER_BOOST_MAX_VAL,
+  rad,
+  SHOW_BOUNDING_BOXES,
+  SHOW_GRID,
+  SHOW_PERFORMANCE_METRICS,
+} from '../../shared/variables';
 import { getPlayerState, getState } from '../state';
 import { renderPlayer } from './player';
 import { clearCanvas } from './render-utilities';
@@ -110,6 +117,7 @@ export function renderGame() {
         point.data.height,
         rad(point.data.mouseAngleDegrees),
         point.data.username,
+        Math.round((point.data.boostValue / PLAYER_BOOST_MAX_VAL) * 100),
         point.data.health,
         point.data.id === id ? '#0F9BF2' : '#F25C05',
         'black',

@@ -17,6 +17,8 @@ import {
   ITEM_SWORD_WIDTH,
   ITEM_TYPES,
   PATH_ACCURACY,
+  PLAYER_BOOST_MAX_VAL,
+  PLAYER_BOOST_REGEN_VAL,
   PLAYER_HEIGHT,
   PLAYER_LIFE_SPAWN_RATE,
   PLAYER_LOC_MEM,
@@ -159,6 +161,7 @@ export class Player extends Entity {
     this.level = 1;
     this.health = 10;
     this.items = {};
+    this.boostValue = PLAYER_BOOST_MAX_VAL;
     this.isBoosting = false;
     // start bot specific props
     this.bot = false;
@@ -229,6 +232,19 @@ export class Player extends Entity {
       // check if we need to spawn a new life orb
       this.lastLifeSpawn -= deltaTime;
       this.addLocMem({ x: this.x, y: this.y });
+
+      // Check if player is boosting, and if that is valid.
+      if (this.isBoosting) {
+        if (this.boostValue <= 0) {
+          this.isBoosting = false;
+        } else {
+          this.boostValue -= deltaTime;
+        }
+      } else {
+        if (this.boostValue < PLAYER_BOOST_MAX_VAL) {
+          this.boostValue += PLAYER_BOOST_REGEN_VAL;
+        }
+      }
 
       // check if we need to reverse dir
       const dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
@@ -383,6 +399,7 @@ export class Player extends Entity {
       health,
       items,
       isBoosting,
+      boostValue,
       bot,
       path,
       target,
@@ -407,6 +424,7 @@ export class Player extends Entity {
       health,
       items,
       isBoosting,
+      boostValue,
       bot,
       path,
       target,
