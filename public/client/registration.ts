@@ -7,7 +7,7 @@ export function subscribeToRegistrationForm(registeredCallback: (username: strin
   startButton.addEventListener('click', () => {
     const username = (usernameInput as HTMLInputElement).value;
 
-    if (username == null || username === '') {
+    if (username == null || username === '' || username === 'username') {
       alert('Please enter a username.');
       return;
     }

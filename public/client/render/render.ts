@@ -17,6 +17,8 @@ import { renderGrid } from './grid';
 import { renderColliders } from './colliders';
 import { renderArmor, renderHealth, renderHelm, renderItem, renderSword } from './item';
 import { Quadtree, Rectangle } from '../../server/entities';
+import { Player } from '../models/player';
+import { renderLeaderboard } from './leaderboard';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -105,7 +107,7 @@ export function renderGame() {
 
   ptree
     .query(new Rectangle(screenCoordinate0X + width / 2, screenCoordinate0Y + height / 2, width / 2, height / 2))
-    .forEach((point: any) => {
+    .forEach((point: { data: Player }) => {
       const relativeCoordinateX = point.data.x - screenCoordinate0X;
       const relativeCoordinateY = point.data.y - screenCoordinate0Y;
 
@@ -121,6 +123,8 @@ export function renderGame() {
         point.data.health,
         point.data.id === id ? '#0F9BF2' : '#F25C05',
         'black',
+        point.data.level,
+        point.data.xp,
         point.data.items
       );
 
@@ -144,6 +148,9 @@ export function renderGame() {
         return player.id !== id;
       })
   );
+
+  // Render leaderboard.
+  renderLeaderboard(ctx, width, height, state.players, playerState.id);
 
   // Render stats.
   if (SHOW_PERFORMANCE_METRICS) {

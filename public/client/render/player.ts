@@ -15,32 +15,41 @@ export function renderPlayer(
   healthPercent: number,
   primaryColor,
   secondaryColor,
+  level: number,
+  xp: number,
   items: Player['items']
 ) {
   const barWidth = width * 2;
   const barHeight = 18;
   const barTextSize = barHeight - 2;
+  const dataAlpha = 0.6;
 
   // Render body.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
-  renderPlayerBody(ctx, 0, 0, height, primaryColor, secondaryColor);
+  renderPlayerBody(ctx, 0, 0, height, primaryColor, items?.armor === 1 ? '#D0D2D1' : secondaryColor);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
   // Render sword.
-  ctx.beginPath();
   ctx.translate(xPosition, yPosition);
   ctx.rotate(angleRadians);
-  renderPlayerSword(ctx, 0, width * 0.75 - WEAPON_WIDTH / 2, WEAPON_HEIGHT, '#333333');
+  renderPlayerSword(ctx, 0, width * 0.75 - WEAPON_WIDTH / 2, WEAPON_HEIGHT, items?.sword === 1 ? '#D0D2D1' : '#333333');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.closePath();
 
   // Render left pauldron.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
   ctx.rotate(angleRadians);
-  renderPlayerPauldron(ctx, 0, -width / 2, height / 3, width / 2, primaryColor, secondaryColor);
+  renderPlayerPauldron(
+    ctx,
+    0,
+    -width / 2,
+    height / 3,
+    width / 2,
+    primaryColor,
+    items?.armor === 1 ? '#D0D2D1' : secondaryColor
+  );
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
@@ -48,14 +57,22 @@ export function renderPlayer(
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
   ctx.rotate(angleRadians);
-  renderPlayerPauldron(ctx, 0, width / 2, height / 3, width / 2, primaryColor, secondaryColor);
+  renderPlayerPauldron(
+    ctx,
+    0,
+    width / 2,
+    height / 3,
+    width / 2,
+    primaryColor,
+    items?.armor === 1 ? '#D0D2D1' : secondaryColor
+  );
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
   // Render head.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
-  renderPlayerHead(ctx, 0, 0, height / 2, primaryColor, secondaryColor);
+  renderPlayerHead(ctx, 0, 0, height / 2, primaryColor, items?.helm === 1 ? '#D0D2D1' : secondaryColor);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.closePath();
 
@@ -64,25 +81,44 @@ export function renderPlayer(
   // Render username.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
   ctx.fillStyle = '#FFFFFFDD';
   ctx.font = '24px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(username, 0, height + usernameTopOffset);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.closePath();
 
-  const healthBarTopOffset = 50;
+  const xpTopOffset = usernameTopOffset + 20;
+
+  // Render XP.
+  ctx.beginPath();
+  ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
+  ctx.fillStyle = '#FFFFFFDD';
+  ctx.font = '16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Lv.${level} - ${xp}xp`, 0, height + xpTopOffset);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.closePath();
+
+  const healthBarTopOffset = xpTopOffset + 10;
 
   // Render health bar base.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
   renderFilledRectangle(ctx, barWidth / -2, height + healthBarTopOffset, barWidth, barHeight, '#EB0945');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.closePath();
 
   // Render health bar value.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
   renderFilledRectangle(
     ctx,
     barWidth / -2,
@@ -92,21 +128,25 @@ export function renderPlayer(
     '#2E9E3D'
   );
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.closePath();
 
   // Render health bar descriptor.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
   ctx.fillStyle = '#FFFFFF';
   ctx.font = `${barTextSize}px sans-serif`;
   ctx.textAlign = 'left';
   ctx.fillText('Health', barWidth / -2 + 2, height + healthBarTopOffset + barTextSize - (barHeight - barTextSize));
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.closePath();
 
   // Render health par percentage descriptor.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
   ctx.fillStyle = '#FFFFFF';
   ctx.font = `${barTextSize}px sans-serif`;
   ctx.textAlign = 'right';
@@ -116,20 +156,24 @@ export function renderPlayer(
     height + healthBarTopOffset + barTextSize - (barHeight - barTextSize)
   );
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.closePath();
 
-  const boostBarTopOffset = 80;
+  const boostBarTopOffset = healthBarTopOffset + 25;
 
   // Render boost bar base.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
   renderFilledRectangle(ctx, barWidth / -2, height + boostBarTopOffset, barWidth, barHeight, '#FFAF24');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.closePath();
 
   // Render boost bar value.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
   renderFilledRectangle(
     ctx,
     barWidth / -2,
@@ -139,21 +183,25 @@ export function renderPlayer(
     '#004C9E'
   );
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.closePath();
 
   // Render boost bar descriptor.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
   ctx.fillStyle = '#FFFFFF';
   ctx.font = `${barTextSize}px sans-serif`;
   ctx.textAlign = 'left';
   ctx.fillText('Boost', barWidth / -2 + 2, height + boostBarTopOffset + barTextSize - (barHeight - barTextSize));
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.closePath();
 
   // Render boost par percentage descriptor.
   ctx.beginPath();
   ctx.translate(xPosition, yPosition);
+  ctx.globalAlpha = dataAlpha;
   ctx.fillStyle = '#FFFFFF';
   ctx.font = `${barTextSize}px sans-serif`;
   ctx.textAlign = 'right';
@@ -163,17 +211,20 @@ export function renderPlayer(
     height + boostBarTopOffset + barTextSize - (barHeight - barTextSize)
   );
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.closePath();
 
-  const itemTopOffset = 120;
+  const itemTopOffset = boostBarTopOffset + 35;
 
   // Render items.
   if (items && items.armor === 1) {
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
-    renderArmor(ctx, -30, height + itemTopOffset, 12, 12);
+    ctx.globalAlpha = dataAlpha;
+    renderArmor(ctx, -35, height + itemTopOffset, 12, 12);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
     ctx.closePath();
   }
 
@@ -181,8 +232,10 @@ export function renderPlayer(
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
+    ctx.globalAlpha = dataAlpha;
     renderHelm(ctx, 0, height + itemTopOffset, 12, 12);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
     ctx.closePath();
   }
 
@@ -190,8 +243,10 @@ export function renderPlayer(
     // Render health bar value.
     ctx.beginPath();
     ctx.translate(xPosition, yPosition);
-    renderSword(ctx, 30, height + itemTopOffset, 12, 12);
+    ctx.globalAlpha = dataAlpha;
+    renderSword(ctx, 35, height + itemTopOffset, 12, 12);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
     ctx.closePath();
   }
 }
@@ -216,9 +271,12 @@ function renderPlayerSword(ctx, xPosition, yPosition, length, strokeStyle) {
   const pommelRadius = WEAPON_WIDTH;
 
   // Render blade edge.
+  ctx.beginPath();
   renderFilledRectangle(ctx, xPosition, yPosition - WEAPON_WIDTH / 2, edgeLength, WEAPON_WIDTH, strokeStyle);
+  ctx.closePath();
 
   // Render blade point.
+  ctx.beginPath();
   renderFilledTriangle(
     ctx,
     xPosition + edgeLength,
@@ -229,21 +287,27 @@ function renderPlayerSword(ctx, xPosition, yPosition, length, strokeStyle) {
     yPosition + WEAPON_WIDTH / 2,
     strokeStyle
   );
+  ctx.closePath();
 
   // Render blade guard
+  ctx.beginPath();
   renderFilledRectangle(ctx, xPosition + guardWidth, yPosition - guardWidth / 2, WEAPON_WIDTH, guardWidth, strokeStyle);
+  ctx.closePath();
 
   // Render blade grip
+  ctx.beginPath();
   renderFilledRectangle(
     ctx,
     xPosition - gripLength,
     yPosition - WEAPON_WIDTH / 2,
-    gripLength,
+    gripLength * 2,
     WEAPON_WIDTH,
-    strokeStyle
+    '#41270E'
   );
+  ctx.closePath();
 
   // Render blade pommel.
+  ctx.beginPath();
   renderStrokedEllipse(
     ctx,
     xPosition - gripLength - pommelRadius,
@@ -253,4 +317,5 @@ function renderPlayerSword(ctx, xPosition, yPosition, length, strokeStyle) {
     strokeStyle,
     strokeStyle
   );
+  ctx.closePath();
 }

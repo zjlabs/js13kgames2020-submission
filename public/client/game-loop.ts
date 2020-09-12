@@ -53,7 +53,9 @@ export function tick() {
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
   sleep = Math.max(TICK_TIME - elapsed, 0);
-  renderClientStats({ current, delta, elapsed, last, sleep });
+  if (SHOW_PERFORMANCE_METRICS) {
+    renderClientStats({ current, delta, elapsed, last, sleep });
+  }
   setTimeout(tick, sleep);
 }
 
