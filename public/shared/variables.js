@@ -65,6 +65,8 @@ export const PLAYER_REVERSE_SPREAD = 20;
 export const PLAYER_MAX_HEALTH = 100;
 export const PLAYER_XP_LEVEL = 1000;
 export const PLAYER_LIFE_SPAWN_RATE = 1000;
+export const PLAYER_BOOST_MAX_VAL = 3000;
+export const PLAYER_BOOST_REGEN_VAL = 4;
 export const PLAYER_LOC_MEM = 2 * parseInt(TICK_TIME);
 export const WEAPON_HEIGHT = 200;
 export const WEAPON_WIDTH = 5;
@@ -96,6 +98,7 @@ export const ITEM_HELM_HEIGHT = 20;
 export const ITEM_HELM_WIDTH = 20;
 export const ITEM_ARMOR_HEIGHT = 20;
 export const ITEM_ARMOR_WIDTH = 20;
+export const BOOST_FACTOR = 1.5;
 
 // bot utils
 export const PATH_ACCURACY = 0.25;

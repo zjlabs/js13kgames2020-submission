@@ -1,54 +1,54 @@
 // import state from './state';
 import {
+  ang,
+  BOOST_FACTOR,
+  cang,
   debug,
+  diff,
   error,
+  ITEM_ARMOR_HEIGHT,
+  ITEM_ARMOR_WIDTH,
+  ITEM_HELM_HEIGHT,
+  ITEM_HELM_WIDTH,
+  ITEM_LIFE_HEIGHT,
+  ITEM_LIFE_VALUE,
+  ITEM_LIFE_WIDTH,
+  ITEM_SWORD_HEIGHT,
+  ITEM_SWORD_WIDTH,
+  ITEM_TYPES,
+  PATH_ACCURACY,
+  PLAYER_BOOST_MAX_VAL,
+  PLAYER_BOOST_REGEN_VAL,
   PLAYER_HEIGHT,
+  PLAYER_LIFE_SPAWN_RATE,
+  PLAYER_LOC_MEM,
+  PLAYER_MAX_HEALTH,
+  PLAYER_REVERSE_DIST,
+  PLAYER_REVERSE_SPREAD,
+  PLAYER_REVERSE_VELOCITY,
   PLAYER_WIDTH,
+  PLAYER_XP_LEVEL,
+  QUADTREE_CAP,
+  SHOW_BOUNDING_BOXES,
+  rand,
+  rot,
   TILE_HEIGHT,
   TILE_WIDTH,
-  WORLD_HEIGHT,
-  WORLD_WIDTH,
+  WANDER_MIN,
+  WANDER_MAX,
+  WEAPON_DAMAGE,
   WEAPON_HEIGHT,
   WEAPON_RESOLUTION,
   WEAPON_WIDTH,
   WEAPON_X_OFFSET,
   WEAPON_Y_OFFSET,
-  rad,
-  sin,
-  cos,
-  ITEM_TYPES,
-  ITEM_LIFE_HEIGHT,
-  ITEM_LIFE_WIDTH,
-  ITEM_SWORD_HEIGHT,
-  ITEM_SWORD_WIDTH,
-  ITEM_HELM_HEIGHT,
-  ITEM_HELM_WIDTH,
-  ITEM_ARMOR_HEIGHT,
-  ITEM_ARMOR_WIDTH,
-  rot,
-  PATH_ACCURACY,
-  ang,
-  rand,
-  WEAPON_DAMAGE,
-  ITEM_LIFE_VALUE,
-  PLAYER_REVERSE_DIST,
-  cang,
-  PLAYER_REVERSE_SPREAD,
-  PLAYER_REVERSE_VELOCITY,
-  PLAYER_MAX_HEALTH,
-  PLAYER_XP_LEVEL,
-  PLAYER_LIFE_SPAWN_RATE,
-  ITEM_LIFE_VALUE_MAX,
-  diff,
-  PLAYER_LOC_MEM,
-  QUADTREE_CAP,
-  WANDER_MIN,
-  WANDER_MAX,
-  SHOW_BOUNDING_BOXES,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
   WORLD_QUERY_WIDTH,
   WORLD_QUERY_HEIGHT,
 } from '../shared/variables';
 import { getId } from '../shared/id';
+
 const { min, max, abs, sqrt } = Math;
 
 export class Component {
@@ -157,6 +157,8 @@ export class Player extends Entity {
     this.level = 1;
     this.health = 10;
     this.items = {};
+    this.boostValue = PLAYER_BOOST_MAX_VAL;
+    this.isBoosting = false;
     // start bot specific props
     this.bot = false;
     this.path = [];
@@ -229,14 +231,26 @@ export class Player extends Entity {
       this.lastLifeSpawn -= deltaTime;
       this.addLocMem({ x: this.x, y: this.y });
 
+      // Check if player is boosting, and if that is valid.
+      if (this.isBoosting) {
+        if (this.boostValue <= 0) {
+          this.isBoosting = false;
+        } else {
+          this.boostValue -= deltaTime;
+        }
+      } else {
+        if (this.boostValue < PLAYER_BOOST_MAX_VAL) {
+          this.boostValue += PLAYER_BOOST_REGEN_VAL;
+        }
+      }
+
       // check if we need to reverse dir
       this.dir = this.reverse != false ? -PLAYER_REVERSE_VELOCITY : 1;
-
-      // TODO: Determine if "world wrapping" will be a nightmare for bots.
+      const boostedSpeed = this.isBoosting ? this.speed * BOOST_FACTOR : this.speed;
       this.intendedXOffset =
-        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * this.dir || 0;
+        Math.cos((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * boostedSpeed * this.dir || 0;
       this.intendedYOffset =
-        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * this.speed * this.dir || 0;
+        Math.sin((this.mouseAngleDegrees * Math.PI) / 180) * (deltaTime / 1000) * boostedSpeed * this.dir || 0;
       if (this.reverse != false) {
         this.hyp = sqrt(this.intendedXOffset ** 2 + this.intendedYOffset ** 2);
         this.reverse -= this.hyp;
@@ -391,6 +405,8 @@ export class Player extends Entity {
       speed: this.speed,
       frozen: this.frozen,
       reverse: this.reverse,
+      isBoosting: this.isBoosting,
+      boostValue: this.boostValue,
       ...this._colliders,
     };
   }
