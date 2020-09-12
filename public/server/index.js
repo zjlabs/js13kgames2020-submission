@@ -1,19 +1,19 @@
-import { Game, Grid, Player, Life, Sword, Armor, Helm, Point, Spawner } from './entities';
+import { Armor, Blood, Game, Grid, Helm, Life, Player, Point, Spawner, Sword } from './entities';
 import {
   all,
+  BOT_COUNT_MAX,
+  BOT_RESPAWN_RATE,
   debug,
-  STATS,
-  TEST,
-  TICK_TIME,
-  WORLD_HEIGHT,
-  WORLD_WIDTH,
+  info,
   ITEM_LIFE_HEIGHT,
   ITEM_LIFE_WIDTH,
   rand,
-  info,
-  BOT_COUNT_MAX,
-  BOT_RESPAWN_RATE,
+  STATS,
+  TEST,
+  TICK_TIME,
   VALID_PLAYER_PROPS,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
 } from '../shared/variables';
 
 /**
@@ -31,6 +31,7 @@ combatBot.bot = true;
 combatBot.username = 'smashmaster69x420';
 combatBot.health = 69;
 game.addComponent(combatBot);
+game.addComponent(new Blood(WORLD_WIDTH / 2, WORLD_HEIGHT / 2));
 
 // add random life pick ups
 let lifeCount = 5;

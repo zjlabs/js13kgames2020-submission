@@ -15,7 +15,7 @@ import { renderPlayerCoordinatesStats, renderPlayerMouseAngleStats } from './sta
 import { renderMap } from './map';
 import { renderGrid } from './grid';
 import { renderColliders } from './colliders';
-import { renderArmor, renderHealth, renderHelm, renderItem, renderSword } from './item';
+import { renderArmor, renderBlood, renderHealth, renderHelm, renderItem, renderSword } from './item';
 import { Quadtree, Rectangle } from '../../server/entities';
 import { Player } from '../models/player';
 import { renderLeaderboard } from './leaderboard';
@@ -84,6 +84,11 @@ export function renderGame() {
 
       if (point.data.type === ITEM_TYPES['sword']) {
         renderSword(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
+        return;
+      }
+
+      if (point.data.type === ITEM_TYPES['blood']) {
+        renderBlood(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
         return;
       }
 

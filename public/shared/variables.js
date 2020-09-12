@@ -67,6 +67,12 @@ export const PLAYER_XP_LEVEL = 1000;
 export const PLAYER_LIFE_SPAWN_RATE = 1000;
 export const PLAYER_BOOST_MAX_VAL = 3000;
 export const PLAYER_BOOST_REGEN_VAL = 4;
+export const PLAYER_HIT_BLOOD_DROP_CHANCE_PERCENT_INVERSE = 10;
+export const PLAYER_DEATH_HEALTH_ORB_SPAWN = 8;
+export const PLAYER_DEATH_HEALTH_ORB_SPAWN_OFFSET = 150;
+export const PLAYER_DEATH_BLOOD_SPAWN = 10;
+export const PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MIN = 25;
+export const PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MAX = 200;
 export const PLAYER_LOC_MEM = 2 * parseInt(TICK_TIME);
 export const WEAPON_HEIGHT = 200;
 export const WEAPON_WIDTH = 5;
@@ -92,6 +98,8 @@ export const ITEM_TYPES = {
   2: 'helm',
   armor: 3,
   3: 'armor',
+  blood: 4,
+  4: 'blood',
 };
 export const ITEM_LIFE_HEIGHT = 10;
 export const ITEM_LIFE_WIDTH = 10;
@@ -103,13 +111,16 @@ export const ITEM_HELM_HEIGHT = 20;
 export const ITEM_HELM_WIDTH = 20;
 export const ITEM_ARMOR_HEIGHT = 20;
 export const ITEM_ARMOR_WIDTH = 20;
+export const ITEM_BLOOD_WIDTH = 20;
+export const ITEM_BLOOD_HEIGHT = 20;
+
 export const BOOST_FACTOR = 1.5;
 
 // bot utils
 export const PATH_ACCURACY = 0.25;
 export const WANDER_MIN = 400;
 export const WANDER_MAX = 400;
-export const BOT_COUNT_MAX = 50;
+export const BOT_COUNT_MAX = 10;
 export const BOT_RESPAWN_RATE = 20000;
 
 // input filters
