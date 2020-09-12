@@ -101,28 +101,9 @@ export class Component {
 export class Entity extends Component {
   constructor() {
     super();
-    this._prevState = {};
   }
 
   update(delta, gameRef, players) {}
-
-  set(key, val) {
-    if (this.hasOwnProperty(key)) {
-      this[key] = val;
-    }
-  }
-
-  get(key) {
-    if (this.hasOwnProperty(key)) return this[key];
-    return undefined;
-  }
-
-  getDiff() {
-    this.pojo = this.getPojo();
-    this.temp = diff(this._prevState, this.pojo);
-    this._prevState = this.pojo;
-    return this.temp;
-  }
 
   hasColliders() {
     return this.getColliders().length > 0;
@@ -316,58 +297,47 @@ export class Player extends Entity {
       let newXp = this.xp + xp;
       let newLevel = 1 + parseInt(newXp / PLAYER_XP_LEVEL);
 
-      collider.data.set('health', newHealth);
-      collider.data.set('xp', newXp);
-      collider.data.set('level', newLevel);
-      other.data.set('active', false);
+      collider.data.health = newHealth;
+      collider.data.xp = newXp;
+      collider.data.level = newLevel;
+      other.data.active = false;
       return true;
     }
     if (collider.action == 'damage' && other.action == 'weapon') {
       let newHealth = max(this.health - WEAPON_DAMAGE, 0);
-      collider.data.set('health', newHealth);
-      if (!newHealth) collider.data.set('active', false);
+      collider.data.health = newHealth;
+      if (!newHealth) collider.data.active = false;
       return true;
     }
     if (collider.action == 'weapon' && other.action == 'weapon') {
-      collider.data.set('reverse', PLAYER_REVERSE_DIST);
-      collider.data.set(
-        'mouseAngleDegrees',
-        cang(collider.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
+      collider.data.reverse = PLAYER_REVERSE_DIST;
+      collider.data.mouseAngleDegrees = cang(
+        collider.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true)
       );
-      other.data.set('reverse', PLAYER_REVERSE_DIST);
-      other.data.set(
-        'mouseAngleDegrees',
-        cang(other.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true))
+      other.data.reverse = PLAYER_REVERSE_DIST;
+      other.data.mouseAngleDegrees = cang(
+        other.data.mouseAngleDegrees + rand(-PLAYER_REVERSE_SPREAD, PLAYER_REVERSE_SPREAD, true)
       );
       return true;
     }
     if (collider.action == 'damage' && other.action == ITEM_TYPES['sword']) {
       if (!collider.data.items.sword) {
-        collider.data.set('items', {
-          ...collider.data.items,
-          ...{ sword: 1 },
-        });
-        other.data.set('active', false);
+        collider.data.items = Object.assign(collider.data.items, { sword: 1 });
+        other.data.active = false;
         return true;
       }
     }
     if (collider.action == 'damage' && other.action == ITEM_TYPES['helm']) {
       if (!collider.data.items.helm) {
-        collider.data.set('items', {
-          ...collider.data.items,
-          ...{ helm: 1 },
-        });
-        other.data.set('active', false);
+        collider.data.items = Object.assign(collider.data.items, { helm: 1 });
+        other.data.active = false;
         return true;
       }
     }
     if (collider.action == 'damage' && other.action == ITEM_TYPES['armor']) {
       if (!collider.data.items.armor) {
-        collider.data.set('items', {
-          ...collider.data.items,
-          ...{ armor: 1 },
-        });
-        other.data.set('active', false);
+        collider.data.items = Object.assign(collider.data.items, { armor: 1 });
+        other.data.active = false;
         return true;
       }
     }

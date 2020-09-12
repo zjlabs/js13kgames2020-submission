@@ -107,6 +107,9 @@ export const WANDER_MAX = 400;
 export const BOT_COUNT_MAX = 50;
 export const BOT_RESPAWN_RATE = 20000;
 
+// input filters
+export const VALID_PLAYER_PROPS = ['mouseAngleDegrees', 'username', 'isBoosting'];
+
 // math utils
 export const rad = (d) => (d * Math.PI) / 180;
 export const sin = (d) => Math.sin(rad(d));

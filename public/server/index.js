@@ -12,7 +12,7 @@ import {
   rand,
   info,
   BOT_COUNT_MAX,
-  BOT_RESPAWN_RATE,
+  BOT_RESPAWN_RATE,, VALID_PLAYER_PROPS
 } from '../shared/variables';
 
 /**
@@ -102,17 +102,19 @@ io.on('connection', (socket) => {
 
   socket.on('data', (obj) => {
     debug('socket [data]', socket.id, obj);
-    // TODO: add field edit limitations
     Object.keys(obj).forEach((key) => {
-      player.set(key, obj[key]);
+      if (VALID_PLAYER_PROPS.includes(key)){
+        player[key] = obj[key];
+      }
     });
   });
 
   socket.on('play', (obj) => {
     info('socket [play]', socket.id);
-    // TODO: add field edit limitations
     Object.keys(obj).forEach((key) => {
-      player.set(key, obj[key]);
+      if (VALID_PLAYER_PROPS.includes(key)){
+        player[key] = obj[key];
+      }
     });
     io.to(socket.id).emit('sync', { currentPlayer: { id: player.id } });
   });
