@@ -89,11 +89,10 @@ export class Component {
   }
 
   getPojo() {
-    let { id, components, active } = this;
     return {
-      id,
-      components,
-      active,
+      id: this.id,
+      components: this.components,
+      active: this.active,
     };
   }
 }
@@ -116,7 +115,6 @@ export class Entity extends Component {
 
   get(key) {
     if (this.hasOwnProperty(key)) return this[key];
-
     return undefined;
   }
 
@@ -369,46 +367,26 @@ export class Player extends Entity {
   }
 
   getPojo() {
-    let {
-      username,
-      x,
-      y,
-      width,
-      height,
-      xp,
-      level,
-      health,
-      items,
-      bot,
-      path,
-      target,
-      skin,
-      powerups,
-      mouseAngleDegrees,
-      speed,
-      frozen,
-      reverse,
-    } = this;
     return {
       ...super.getPojo(),
-      username,
-      x,
-      y,
-      width,
-      height,
-      xp,
-      level,
-      health,
-      items,
-      bot,
-      path,
-      target,
-      skin,
-      powerups,
-      mouseAngleDegrees,
-      speed,
-      frozen,
-      reverse,
+      username: this.username,
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+      xp: this.xp,
+      level: this.level,
+      health: this.health,
+      items: this.items,
+      bot: this.bot,
+      path: this.path,
+      target: this.target,
+      skin: this.skin,
+      powerups: this.powerups,
+      mouseAngleDegrees: this.mouseAngleDegrees,
+      speed: this.speed,
+      frozen: this.frozen,
+      reverse: this.reverse,
       colliders: this.getColliders().map((c) => c.pure()),
     };
   }
@@ -432,16 +410,15 @@ export class Item extends Entity {
   }
 
   getPojo() {
-    const { x, y, width, height, type, value, scale } = this;
     return {
       ...super.getPojo(),
-      x,
-      y,
-      width,
-      height,
-      type,
-      value,
-      scale,
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+      type: this.type,
+      value: this.value,
+      scale: this.scale,
     };
   }
 
@@ -505,14 +482,13 @@ export class Tile extends Entity {
   }
 
   getPojo() {
-    let { x, y, height, width, walk } = this;
     return {
       ...super.getPojo(),
-      x,
-      y,
-      height,
-      width,
-      walk,
+      x: this.x,
+      y: this.y,
+      height: this.height,
+      width: this.width,
+      walk: this.walk,
       tid: this.tid,
       colliders: this.getColliders().map((c) => c.pure()),
     };
