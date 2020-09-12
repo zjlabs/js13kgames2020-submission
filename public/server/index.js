@@ -1,4 +1,3 @@
-// import state from './state';
 import { Game, Grid, Player, Life, Sword, Armor, Helm, Point, Spawner } from './entities';
 import {
   all,
@@ -84,7 +83,6 @@ game.addComponent(
     p.x = rand(0, WORLD_WIDTH);
     p.y = rand(0, WORLD_HEIGHT);
     p.bot = true;
-    // state.player.set(p);
     return p;
   })
 );
@@ -100,7 +98,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     info('socket [disconnect]', socket.id);
     player.active = false;
-    // state.player.set(player);
   });
 
   socket.on('data', (obj) => {
@@ -109,7 +106,6 @@ io.on('connection', (socket) => {
     Object.keys(obj).forEach((key) => {
       player.set(key, obj[key]);
     });
-    // state.player.set(player);
   });
 
   socket.on('play', (obj) => {
@@ -119,12 +115,9 @@ io.on('connection', (socket) => {
       player.set(key, obj[key]);
     });
     io.to(socket.id).emit('sync', { currentPlayer: { id: player.id } });
-    // state.sync(socket.id, player);
-    // state.player.set(player);
   });
 
   game.addComponent(player);
-  // state.player.set(player);
 });
 
 // Start the game loop
@@ -185,10 +178,6 @@ module.exports = Object.assign(
         )}</pre>`
       );
     },
-    // // Debug endpoint for server delta
-    // delta: (req, res, next) => {
-    //   return res.send(`<pre>${JSON.stringify(state._delta(), null, 2)}</pre>`);
-    // },
   },
   TEST && {
     path: (req, res, next) => {

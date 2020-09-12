@@ -1,4 +1,3 @@
-// import state from './state';
 import {
   ang,
   BOOST_FACTOR,
@@ -110,7 +109,6 @@ export class Entity extends Component {
   set(key, val) {
     if (this.hasOwnProperty(key)) {
       this[key] = val;
-      // this.updateState();
     }
   }
 
@@ -133,8 +131,6 @@ export class Entity extends Component {
   getColliders() {
     return [];
   }
-
-  // updateState() {}
 
   onCollision(collider, other) {}
 }
@@ -171,7 +167,6 @@ export class Player extends Entity {
     this.reverse = false;
     this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
     this.locMem = [];
-    // state.player.set(this);
   }
 
   addLocMem(loc) {
@@ -378,10 +373,6 @@ export class Player extends Entity {
     }
   }
 
-  // updateState() {
-  //   state.player.set(this);
-  // }
-
   getPojo() {
     return Object.assign(
       super.getPojo(),
@@ -421,7 +412,6 @@ export class Item extends Entity {
     this.type = typeof type == 'string' ? ITEM_TYPES[type] : type;
     this.value = value;
     this.scale = scale;
-    // state.items.set(this);
   }
 
   getColliders() {
@@ -443,10 +433,6 @@ export class Item extends Entity {
       SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {}
     );
   }
-
-  // updateState() {
-  //   state.items.set(this);
-  // }
 }
 
 export class Life extends Item {
@@ -773,7 +759,6 @@ export class Game extends Component {
 
       if (component instanceof Entity) {
         component.getColliders().forEach((c) => this.quadTree.insert(c));
-        // component.updateState();
       }
     });
 
@@ -801,8 +786,6 @@ export class Game extends Component {
         items: _items,
       });
     });
-
-    // state.tick();
   }
 }
 
