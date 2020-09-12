@@ -65,10 +65,16 @@ document.addEventListener('touchend', (event) => {
   isBoosting = false;
 });
 
-window.addEventListener('resize', () => {
+export function forceResize() {
+  resizeHandler();
+}
+
+window.addEventListener('resize', () => resizeHandler);
+
+function resizeHandler() {
   centerX = rootEl.offsetWidth / 2;
   centerY = rootEl.offsetHeight / 2;
-});
+}
 
 export function getIsBoosting() {
   const isCurrentlyBoosting = isBoosting;
