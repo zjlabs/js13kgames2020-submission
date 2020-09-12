@@ -8,7 +8,11 @@ export function renderItem(ctx, x, y, radius) {
 
 export function renderBlood(ctx, x, y, width, height) {
   ctx.beginPath();
-  renderStrokedEllipse(ctx, x, y, width, height, '#E384DD', '#E384DD99');
+  renderStrokedEllipse(ctx, x, y, width / 2, height / 2, '#6C021699', '#6C021699');
+  ctx.closePath();
+
+  ctx.beginPath();
+  renderStrokedEllipse(ctx, x + width / 3, y + height / 3, width / 3, height / 3, '#6C021677', '#6C021677');
   ctx.closePath();
 }
 

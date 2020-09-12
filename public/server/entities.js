@@ -341,7 +341,6 @@ export class Player extends Entity {
             this.y + PLAYER_DEATH_BLOOD_SPAWN_OFFSET_MAX
           );
           const resolvedY = rand(0, 2) === 1 ? yLeft : yRight;
-
           gameRef.addComponent(new Blood(resolvedX, resolvedY));
         }
 
@@ -475,16 +474,6 @@ export class Blood extends Item {
   constructor(x, y) {
     super(x, y, ITEM_BLOOD_WIDTH, ITEM_BLOOD_HEIGHT, 'blood');
   }
-
-  hasColliders() {
-    return this.getColliders().length > 0;
-  }
-
-  getColliders() {
-    return [];
-  }
-
-  onCollision(collider, other, gameRef) {}
 }
 
 export class Life extends Item {
