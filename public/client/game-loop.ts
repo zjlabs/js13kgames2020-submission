@@ -1,4 +1,11 @@
-import { diff, FPS_SAMPLE_RATE, FPS_SAMPLES, SHOW_PERFORMANCE_METRICS, TICK_TIME } from '../shared/variables';
+import {
+  diff,
+  FPS_SAMPLE_RATE,
+  FPS_SAMPLES,
+  PLAYER_BOOST_MAX_VAL,
+  SHOW_PERFORMANCE_METRICS,
+  TICK_TIME,
+} from '../shared/variables';
 import { getIsBoosting, getMouseAngle } from './input';
 import { renderGame } from './render/render';
 import { getPlayerState } from './state';
@@ -29,7 +36,10 @@ export function tick() {
 
     const updatedPlayerState = {
       ...currentPlayerState,
-      isBoosting: getIsBoosting(),
+      isBoosting:
+        ((!currentPlayerState.isBoosting && currentPlayerState.boostValue / PLAYER_BOOST_MAX_VAL > 0.1) ||
+          currentPlayerState.isBoosting) &&
+        getIsBoosting(),
       mouseAngleDegrees: getMouseAngle(),
     };
 
