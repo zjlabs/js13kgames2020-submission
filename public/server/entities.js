@@ -45,6 +45,9 @@ import {
   WORLD_WIDTH,
   WORLD_QUERY_WIDTH,
   WORLD_QUERY_HEIGHT,
+  LEADERBOARD_UPDATE_TIME,
+  LEADERBOARD_PROPS,
+  LEADERBOARD_COUNT,
 } from '../shared/variables';
 import { getId } from '../shared/id';
 
@@ -690,6 +693,7 @@ export class Game extends Component {
     const w = WORLD_WIDTH / 2;
     const h = WORLD_HEIGHT / 2;
     this.world = new Rectangle(w, h, w, h);
+    this.leaderTick = LEADERBOARD_UPDATE_TIME;
   }
 
   checkCollisions() {
@@ -718,6 +722,8 @@ export class Game extends Component {
   }
 
   update(deltaTime, gameRef) {
+    this.leaderTick -= deltaTime;
+
     // Update every component before applying primary control logic
     this.quadTree = new Quadtree(this.world);
     let players = [];
@@ -756,6 +762,19 @@ export class Game extends Component {
         items: _items,
       });
     });
+
+    // sync leaderboard time
+    if (this.leaderTick <= 0) {
+      io.emit(
+        'leaderboard',
+        players
+          .map((p) => LEADERBOARD_PROPS.reduce((acc, prop) => Object.assign(acc, { [prop]: p[prop] }), {}))
+          .sort((a, b) => a.xp - b.xp)
+          .slice(-LEADERBOARD_COUNT)
+          .reverse()
+      );
+      this.leaderTick = LEADERBOARD_UPDATE_TIME;
+    }
   }
 }
 
