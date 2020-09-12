@@ -1,4 +1,5 @@
 import { Player } from '../models/player';
+import { LeaderboardPlayer } from '../models/leaderboard-player';
 import { clearCanvas } from './render-utilities';
 import { renderFilledRectangle } from './primitive-shapes';
 
@@ -20,51 +21,24 @@ let leaderboardCanvasWidth: number;
 let leaderboardCanvasHeight: number;
 let leaderboardCanvasCtx: CanvasRenderingContext2D;
 
-// Throttle variables.
-const throttleHits = 30;
-let currentThrottleHit = 0;
-
 export function renderLeaderboard(
   ctx: CanvasRenderingContext2D,
   displayWidth: number,
   displayHeight: number,
-  players: { [id: string]: Player },
+  players: LeaderboardPlayer[],
   currentPlayerId: string | number
 ) {
   if (leaderboardCanvas == null) {
     createOffscreenLeaderboardCanvas(displayWidth, displayHeight);
   }
-
-  currentThrottleHit += 1;
-
-  if (currentThrottleHit > throttleHits) {
-    updateOffscreenLeaderboardCanvas(players, currentPlayerId);
-    currentThrottleHit = 0;
-  }
-
+  updateOffscreenLeaderboardCanvas(players, currentPlayerId);
   ctx.drawImage(leaderboardCanvas, displayWidth - leaderboardCanvasWidth, 0);
 }
 
-function updateOffscreenLeaderboardCanvas(players: { [id: string]: Player }, currentPlayerId: string | number) {
+function updateOffscreenLeaderboardCanvas(players: LeaderboardPlayer[], currentPlayerId: string | number) {
   const ctx = leaderboardCanvasCtx;
 
   clearCanvas(ctx, leaderboardCanvasWidth, leaderboardCanvasHeight);
-
-  const playersArray = Object.values(players);
-  const filteredPlayers = playersArray.filter(
-    (player: Player) => player?.xp != null && player?.username != null && player?.username !== ''
-  );
-  const sortedPlayers = filteredPlayers.sort((a: Player, b: Player) => {
-    if (a.xp === b.xp) {
-      return 0;
-    }
-
-    if (a.xp < b.xp) {
-      return 1;
-    }
-
-    return -1;
-  });
 
   // Render solid background.
   ctx.beginPath();
@@ -73,7 +47,7 @@ function updateOffscreenLeaderboardCanvas(players: { [id: string]: Player }, cur
     0,
     0,
     leaderboardCanvasWidth,
-    sortedPlayers.length * textOffsetIncrement * 3 + textOffsetIncrement * 2,
+    players.length * textOffsetIncrement * 3 + textOffsetIncrement * 2,
     '#3F4656AA'
   );
   ctx.closePath();
@@ -91,7 +65,7 @@ function updateOffscreenLeaderboardCanvas(players: { [id: string]: Player }, cur
 
   // Render players.
   let textOffset = textOffsetIncrement * 3;
-  sortedPlayers.forEach((player: Player, index: number) => {
+  players.forEach((player: LeaderboardPlayer, index: number) => {
     ctx.beginPath();
     ctx.translate(textBaseOffset, textOffset);
     ctx.fillStyle = player.id === currentPlayerId ? textFillStylePlayer : textFillStyle;

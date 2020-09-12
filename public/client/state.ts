@@ -1,4 +1,5 @@
 import { Player } from './models/player';
+import { LeaderboardPlayer } from './models/leaderboard-player';
 import { Item } from './models/items';
 
 export interface State {
@@ -10,15 +11,21 @@ export interface State {
     [key: string]: Player;
   };
   rooms?: any;
+  leaderboard: LeaderboardPlayer[];
 }
 
 let state: State = {
   mouseAngleDegrees: 0,
+  leaderboard: [],
 };
 
 export function applyState(serverUpdatedState: any) {
   state.items = serverUpdatedState.items;
   state.players = serverUpdatedState.players;
+}
+
+export function applyLeaderboard(serverUpdate: any) {
+  state.leaderboard = serverUpdate.leaderboard;
 }
 
 export function getState() {

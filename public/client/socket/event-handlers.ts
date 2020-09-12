@@ -1,5 +1,5 @@
 import { SHOW_PERFORMANCE_METRICS } from '../../shared/variables';
-import { applyState, setPlayerId } from '../state';
+import { applyLeaderboard, applyState, setPlayerId } from '../state';
 import { ServerStats } from '../models/server-stats';
 import { renderServerStats } from '../render/stats';
 
@@ -16,7 +16,8 @@ export function registerEventHandlers(socket) {
   });
 
   // Sent on every server tick.
-  socket.on('delta', (obj: any) => {
-    applyState(obj);
-  });
+  socket.on('delta', applyState);
+
+  // leaderboard sent on every LEADERBOARD_UPDATE_TIME
+  socket.on('leaderboard', applyLeaderboard);
 }

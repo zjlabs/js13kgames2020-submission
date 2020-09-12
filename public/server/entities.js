@@ -16,6 +16,9 @@ import {
   ITEM_SWORD_HEIGHT,
   ITEM_SWORD_WIDTH,
   ITEM_TYPES,
+  LEADERBOARD_COUNT,
+  LEADERBOARD_PROPS,
+  LEADERBOARD_UPDATE_TIME,
   PATH_ACCURACY,
   PLAYER_BOOST_MAX_VAL,
   PLAYER_BOOST_REGEN_VAL,
@@ -769,6 +772,7 @@ export class Game extends Component {
     const w = WORLD_WIDTH / 2;
     const h = WORLD_HEIGHT / 2;
     this.world = new Rectangle(w, h, w, h);
+    this.leaderTick = LEADERBOARD_UPDATE_TIME;
   }
 
   checkCollisions(gameRef) {
@@ -797,6 +801,8 @@ export class Game extends Component {
   }
 
   update(deltaTime, gameRef) {
+    this.leaderTick -= deltaTime;
+
     // Update every component before applying primary control logic
     this.quadTree = new Quadtree(this.world);
     let players = [];
@@ -835,6 +841,18 @@ export class Game extends Component {
         items: _items,
       });
     });
+
+    // sync leaderboard time
+    if (this.leaderTick <= 0) {
+      io.emit('leaderboard', {
+        leaderboard: players
+          .map((p) => LEADERBOARD_PROPS.reduce((acc, prop) => Object.assign(acc, { [prop]: p[prop] }), {}))
+          .sort((a, b) => a.xp - b.xp)
+          .slice(-LEADERBOARD_COUNT)
+          .reverse(),
+      });
+      this.leaderTick = LEADERBOARD_UPDATE_TIME;
+    }
   }
 }
 
