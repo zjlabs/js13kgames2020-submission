@@ -18,6 +18,7 @@ import { renderColliders } from './colliders';
 import { renderArmor, renderHealth, renderHelm, renderItem, renderSword } from './item';
 import { Quadtree, Rectangle } from '../../server/entities';
 import { Player } from '../models/player';
+import { renderLeaderboard } from './leaderboard';
 
 export function renderGame() {
   const { ctx, width, height } = getCanvas();
@@ -147,6 +148,9 @@ export function renderGame() {
         return player.id !== id;
       })
   );
+
+  // Render leaderboard.
+  renderLeaderboard(ctx, width, height, state.players, playerState.id);
 
   // Render stats.
   if (SHOW_PERFORMANCE_METRICS) {

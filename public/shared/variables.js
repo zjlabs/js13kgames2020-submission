@@ -28,7 +28,7 @@ export const all = (...message) => LOG_LEVEL === 0 && console.log('all', ...mess
 /**
  * Client stats debug options.
  */
-export const SHOW_PERFORMANCE_METRICS = true;
+export const SHOW_PERFORMANCE_METRICS = false;
 export const SHOW_BOUNDING_BOXES = false;
 export const SHOW_GRID = false;
 
