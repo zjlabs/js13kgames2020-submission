@@ -36,6 +36,38 @@ document.addEventListener('mouseup', () => {
   isBoosting = false;
 });
 
+let tappedTwice = false;
+
+document.addEventListener('touchstart', (event) => {
+  // Don't respond to this event on desktop.
+  if (navigator.maxTouchPoints <= 1) {
+    return;
+  }
+
+  console.log('st');
+
+  if (!tappedTwice) {
+    tappedTwice = true;
+    setTimeout(function () {
+      tappedTwice = false;
+    }, 300);
+    return false;
+  }
+
+  console.log('dt');
+
+  isBoosting = true;
+});
+
+document.addEventListener('touchend', (event) => {
+  // Don't respond to this event on desktop.
+  if (navigator.maxTouchPoints <= 1) {
+    return;
+  }
+
+  isBoosting = false;
+});
+
 window.addEventListener('resize', () => {
   centerX = rootEl.offsetWidth / 2;
   centerY = rootEl.offsetHeight / 2;

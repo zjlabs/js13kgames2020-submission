@@ -7,7 +7,7 @@ const patternPaddingPx = 8;
 let movementOffsetPxX = 0;
 let movementOffsetPxY = 0;
 
-const movementSpeedPx = 4;
+const movementSpeedPx = 4 * (window.devicePixelRatio === 1 ? 1 : window.devicePixelRatio / 2);
 
 let backgroundCanvas;
 
@@ -61,8 +61,8 @@ export function renderBackground(ctx, width, height, angleRadians = 0, isSpeedBo
 
 export function getBackgroundImageCanvas(width, height) {
   const offscreenCanvas = document.createElement('canvas');
-  const offscreenCanvasWidth = width * 4;
-  const offscreenCanvasHeight = height * 4;
+  const offscreenCanvasWidth = width * 6;
+  const offscreenCanvasHeight = height * 6;
   offscreenCanvas.width = offscreenCanvasWidth;
   offscreenCanvas.height = offscreenCanvasHeight;
 
