@@ -779,7 +779,7 @@ export class Game extends Component {
           }
         });
 
-      io.emit('delta', {
+      io.to(player.socketId).emit('delta', {
         players: _players,
         items: _items,
       });
