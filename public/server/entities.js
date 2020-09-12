@@ -109,9 +109,8 @@ export class Entity extends Component {
   set(key, val) {
     if (this.hasOwnProperty(key)) {
       this[key] = val;
+      this.updateState();
     }
-
-    this.updateState();
   }
 
   get(key) {
@@ -483,6 +482,7 @@ export class Tile extends Entity {
   }
 
   getPojo() {
+    this._colliders = SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {};
     return {
       ...super.getPojo(),
       x: this.x,
@@ -491,7 +491,7 @@ export class Tile extends Entity {
       width: this.width,
       walk: this.walk,
       tid: this.tid,
-      colliders: this.getColliders().map((c) => c.pure()),
+      ...this._colliders,
     };
   }
 }
