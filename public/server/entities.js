@@ -1,4 +1,4 @@
-import state from './state';
+// import state from './state';
 import {
   debug,
   error,
@@ -87,8 +87,8 @@ export class Component {
     return [...this.components, ...this.components.map((c) => c.getComponents(deep).flat())];
   }
 
-  update(deltaTime, gameRef) {
-    this.component.forEach((component) => component.update(deltaTime, gameRef));
+  update(deltaTime, gameRef, players) {
+    this.component.forEach((component) => component.update(deltaTime, gameRef, players));
   }
 
   getPojo() {
@@ -106,7 +106,7 @@ export class Entity extends Component {
     this._prevState = {};
   }
 
-  update(delta, gameRef) {}
+  update(delta, gameRef, players) {}
 
   set(key, val) {
     if (this.hasOwnProperty(key)) {
@@ -180,7 +180,7 @@ export class Player extends Entity {
     }
   }
 
-  update(deltaTime, gameRef) {
+  update(deltaTime, gameRef, players) {
     // update direction before movement if we're a bot
     if (this.bot && !this.frozen) {
       // try to update the path
@@ -269,7 +269,7 @@ export class Player extends Entity {
     }
 
     // update all the children components
-    this.components.forEach((component) => component.update(deltaTime, gameRef));
+    this.components.forEach((component) => component.update(deltaTime, gameRef, players));
   }
 
   // Drawn center origin
@@ -518,8 +518,8 @@ export class Grid extends Component {
     }
   }
 
-  update(deltaTime, gameRef) {
-    this.tiles.forEach((tile) => tile.update(deltaTime, gameRef));
+  update(deltaTime, gameRef, players) {
+    this.tiles.forEach((tile) => tile.update(deltaTime, gameRef, players));
   }
 
   /**
@@ -752,7 +752,7 @@ export class Game extends Component {
       if (component instanceof Player) players.push(component);
 
       if (!component.active) return;
-      component.update(deltaTime, gameRef);
+      component.update(deltaTime, gameRef, players);
 
       if (component instanceof Entity) {
         component.getColliders().forEach((c) => this.quadTree.insert(c));
@@ -1042,19 +1042,20 @@ export class Spawner extends Component {
     this.trackedEntities = [];
   }
 
-  update(delta, gameRef) {
-    // this.lastTime -= delta;
-    // if (this.lastTime < 0) {
-    //   this.lastTime = this.respawn;
-    //   // search the player data to prune our dead bots
-    //   this.trackedEntities.filter((id) => state.player.data[id] && state.player.data[id].active);
-    //   if (this.trackedEntities.length < this.max) {
-    //     for (let i = 0; i < this.max - this.trackedEntities.length; i++) {
-    //       this.temp = this.entityFn();
-    //       this.trackedEntities.push(this.temp.id);
-    //       gameRef.addComponent(this.temp);
-    //     }
-    //   }
-    // }
+  update(delta, gameRef, players = []) {
+    this.lastTime -= delta;
+    if (this.lastTime < 0) {
+      this.lastTime = this.respawn;
+      // search the player data to prune our dead bots
+      let playerMap = players.reduce((acc, cur) => ({ ...acc, ...{ [cur.id]: cur } }), {});
+      this.trackedEntities.filter((id) => playerMap[id] && playerMap[id].active);
+      if (this.trackedEntities.length < this.max) {
+        for (let i = 0; i < this.max - this.trackedEntities.length; i++) {
+          this.temp = this.entityFn();
+          this.trackedEntities.push(this.temp.id);
+          gameRef.addComponent(this.temp);
+        }
+      }
+    }
   }
 }

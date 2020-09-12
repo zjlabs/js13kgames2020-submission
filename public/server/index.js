@@ -168,7 +168,7 @@ module.exports = Object.assign(
   {
     // Debug endpoint for server state
     state: (req, res, next) => {
-      const _components = game.getComponents(true);
+      const _components = game.getComponents();
       let types = {};
       _components.forEach((c) => {
         types[c.constructor.name] = types[c.constructor.name] || 0;
