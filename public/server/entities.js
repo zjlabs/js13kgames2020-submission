@@ -453,7 +453,7 @@ export class Player extends Entity {
 }
 
 export class Item extends Entity {
-  constructor(x, y, width, height, type = '', value, scale = 1) {
+  constructor(x, y, width, height, type = '', value) {
     super();
     this.x = x;
     this.y = y;
@@ -461,11 +461,19 @@ export class Item extends Entity {
     this.height = height;
     this.type = typeof type == 'string' ? ITEM_TYPES[type] : type;
     this.value = value;
-    this.scale = scale;
+    this._rend = { width, height, value };
   }
 
   getColliders() {
-    return [new Rectangle(this.x, this.y, this.scale * this.width, this.scale * this.height, this, this.type)];
+    return [new Rectangle(this.x, this.y, this.width, this.height, this, this.type)];
+  }
+
+  defaultDiffs() {
+    return Object.assign(
+      this._rend.width != this.width && { width: this.width },
+      this._rend.height != this.height && { height: this.height },
+      this._rend.value != this.value && { value: this.value }
+    );
   }
 
   getPojo() {
@@ -474,12 +482,9 @@ export class Item extends Entity {
       {
         x: this.x,
         y: this.y,
-        width: this.width,
-        height: this.height,
         type: this.type,
-        value: this.value,
-        scale: this.scale,
       },
+      this.defaultDiffs(),
       SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {}
     );
   }

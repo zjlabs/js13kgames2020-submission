@@ -1,4 +1,14 @@
 import {
+  ITEM_ARMOR_HEIGHT,
+  ITEM_ARMOR_WIDTH,
+  ITEM_BLOOD_HEIGHT,
+  ITEM_BLOOD_WIDTH,
+  ITEM_HELM_HEIGHT,
+  ITEM_HELM_WIDTH,
+  ITEM_LIFE_HEIGHT,
+  ITEM_LIFE_WIDTH,
+  ITEM_SWORD_HEIGHT,
+  ITEM_SWORD_WIDTH,
   ITEM_TYPES,
   PLAYER_BOOST_MAX_VAL,
   rad,
@@ -68,27 +78,57 @@ export function renderGame() {
       const relativeCoordinateY = point.data.y - screenCoordinate0Y;
 
       if (point.data.type === ITEM_TYPES['armor']) {
-        renderArmor(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
+        renderArmor(
+          ctx,
+          relativeCoordinateX,
+          relativeCoordinateY,
+          point.data.width || ITEM_ARMOR_WIDTH,
+          point.data.height || ITEM_ARMOR_HEIGHT
+        );
         return;
       }
 
       if (point.data.type === ITEM_TYPES['helm']) {
-        renderHelm(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
+        renderHelm(
+          ctx,
+          relativeCoordinateX,
+          relativeCoordinateY,
+          point.data.width || ITEM_HELM_WIDTH,
+          point.data.height || ITEM_HELM_HEIGHT
+        );
         return;
       }
 
       if (point.data.type === ITEM_TYPES['life']) {
-        renderHealth(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
+        renderHealth(
+          ctx,
+          relativeCoordinateX,
+          relativeCoordinateY,
+          point.data.width || ITEM_LIFE_WIDTH,
+          point.data.height || ITEM_LIFE_HEIGHT
+        );
         return;
       }
 
       if (point.data.type === ITEM_TYPES['sword']) {
-        renderSword(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
+        renderSword(
+          ctx,
+          relativeCoordinateX,
+          relativeCoordinateY,
+          point.data.width || ITEM_SWORD_WIDTH,
+          point.data.height || ITEM_SWORD_HEIGHT
+        );
         return;
       }
 
       if (point.data.type === ITEM_TYPES['blood']) {
-        renderBlood(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
+        renderBlood(
+          ctx,
+          relativeCoordinateX,
+          relativeCoordinateY,
+          point.data.width || ITEM_BLOOD_WIDTH,
+          point.data.height || ITEM_BLOOD_HEIGHT
+        );
         return;
       }
 
