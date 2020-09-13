@@ -79,7 +79,10 @@ export const WEAPON_WIDTH = 5;
 export const WEAPON_RESOLUTION = 5;
 export const WEAPON_Y_OFFSET = (3 / 4) * (PLAYER_WIDTH / 2);
 export const WEAPON_X_OFFSET = 0;
-export const WEAPON_DAMAGE = 1;
+export const WEAPON_DAMAGE = 2;
+export const WEAPON_DAMAGE_SWORD = 3;
+export const WEAPON_DAMAGE_REDUCTION_HELM = 0.5;
+export const WEAPON_DAMAGE_REDUCTION_ARMOR = 1;
 export const TILE_HEIGHT = 50;
 export const TILE_WIDTH = 50;
 

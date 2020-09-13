@@ -46,6 +46,9 @@ import {
   WANDER_MAX,
   WANDER_MIN,
   WEAPON_DAMAGE,
+  WEAPON_DAMAGE_REDUCTION_ARMOR,
+  WEAPON_DAMAGE_REDUCTION_HELM,
+  WEAPON_DAMAGE_SWORD,
   WEAPON_HEIGHT,
   WEAPON_RESOLUTION,
   WEAPON_WIDTH,
@@ -323,7 +326,28 @@ export class Player extends Entity {
     }
 
     if (collider.action == 'damage' && other.action == 'weapon') {
-      let newHealth = max(this.health - WEAPON_DAMAGE, 0);
+      // Determine effective damage.
+      const opponentHasSword = other?.data?.items?.sword === 1;
+      const playerHasHelm = this.items.helm === 1;
+      const playerHasArmor = this.items.armor === 1;
+
+      let damage = WEAPON_DAMAGE;
+
+      if (opponentHasSword) {
+        damage = WEAPON_DAMAGE_SWORD;
+      }
+
+      if (playerHasHelm) {
+        damage -= WEAPON_DAMAGE_REDUCTION_HELM;
+      }
+
+      if (playerHasArmor) {
+        damage -= WEAPON_DAMAGE_REDUCTION_ARMOR;
+      }
+
+      console.log('damage', damage);
+
+      let newHealth = max(this.health - damage, 0);
       collider.data.health = newHealth;
 
       // Drop blood (n% chance).
