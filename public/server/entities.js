@@ -97,7 +97,7 @@ export class Component {
       return this.components;
     }
 
-    return [...this.components, ...this.components.map((c) => c.getComponents(deep).flat())];
+    return this.components.map((c) => c.getComponents(deep).flat());
   }
 
   pruneComponents(deep = false) {
@@ -838,7 +838,7 @@ export class Game extends Component {
     });
   }
 
-  update(deltaTime, gameRef) {
+  update(deltaTime, gameRef, spawners) {
     this.leaderTick -= deltaTime;
     this.mapTick -= deltaTime;
 
@@ -908,6 +908,9 @@ export class Game extends Component {
       this.leaderTick = LEADERBOARD_UPDATE_TIME;
     }
 
+    spawners.forEach((spawner) => {
+      spawner.update(deltaTime, gameRef, players);
+    });
     this.pruneComponents();
   }
 }
@@ -1162,7 +1165,6 @@ export class Spawner extends Component {
     this.lastTime = 0;
     this.respawn = respawn;
     this.entityFn = entityFn;
-    this.trackedEntities = [];
   }
 
   update(delta, gameRef, players = []) {
@@ -1170,12 +1172,10 @@ export class Spawner extends Component {
     if (this.lastTime < 0) {
       this.lastTime = this.respawn;
       // search the player data to prune our dead bots
-      let playerMap = players.reduce((acc, cur) => ({ ...acc, ...{ [cur.id]: cur } }), {});
-      this.trackedEntities.filter((id) => playerMap[id] && playerMap[id].active);
-      if (this.trackedEntities.length < this.max) {
-        for (let i = 0; i < this.max - this.trackedEntities.length; i++) {
+      let count = players.filter((p) => p.bot).length;
+      if (count < this.max) {
+        for (let i = 0; i < this.max - count; i++) {
           this.temp = this.entityFn();
-          this.trackedEntities.push(this.temp.id);
           gameRef.addComponent(this.temp);
         }
       }

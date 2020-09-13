@@ -25,6 +25,16 @@ import {
 const game = new Game();
 info('game start');
 
+const botSpawner = new Spawner(BOT_COUNT_MAX, BOT_RESPAWN_RATE, () => {
+  let id = `bot${Date.now()}`;
+  let p = new Player({ id });
+  p.x = rand(0, WORLD_WIDTH);
+  p.y = rand(0, WORLD_HEIGHT);
+  p.username = id;
+  p.bot = true;
+  return p;
+});
+
 // start testing code
 let combatBot = new Player({ id: 'bot1' });
 combatBot.x = WORLD_WIDTH / 2 + 300;
@@ -269,16 +279,6 @@ wanderBot.bot = true;
 wanderBot.username = 'cartographer';
 wanderBot.health = 69;
 game.addComponent(wanderBot);
-
-game.addComponent(
-  new Spawner(BOT_COUNT_MAX, BOT_RESPAWN_RATE, () => {
-    let p = new Player({ id: `bot${Date.now()}` });
-    p.x = rand(0, WORLD_WIDTH);
-    p.y = rand(0, WORLD_HEIGHT);
-    p.bot = true;
-    return p;
-  })
-);
 // end testing code
 
 /**
@@ -331,7 +331,7 @@ const tick = () => {
   /**
    * GAME LOGIC
    */
-  game.update(delta, game);
+  game.update(delta, game, [botSpawner]);
 
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
