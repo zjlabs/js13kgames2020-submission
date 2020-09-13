@@ -53,21 +53,3 @@ export function setPlayerId(playerId: string) {
     playerId: playerId,
   };
 }
-
-export function setPlayerStateItem(key: string, value) {
-  state = {
-    ...state,
-    players: {
-      ...state.players,
-      [state.playerId]: {
-        ...state.players[state.playerId],
-        [key]: value,
-      },
-    },
-  };
-}
-
-// Debug functionality.
-(window as any).getState = () => {
-  return state;
-};

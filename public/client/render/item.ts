@@ -1,11 +1,5 @@
 import { renderFilledRectangle, renderStrokedEllipse } from './primitive-shapes';
 
-export function renderItem(ctx, x, y, radius) {
-  ctx.beginPath();
-  renderStrokedEllipse(ctx, x, y, radius, radius, '#E384DD', '#E384DD99');
-  ctx.closePath();
-}
-
 export function renderBlood(ctx, x, y, width, height) {
   ctx.beginPath();
   renderStrokedEllipse(ctx, x, y, width / 2, height / 2, '#6C021699', '#6C021699');

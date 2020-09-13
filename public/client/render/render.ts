@@ -12,20 +12,14 @@ import {
   ITEM_TYPES,
   PLAYER_BOOST_MAX_VAL,
   rad,
-  SHOW_BOUNDING_BOXES,
-  SHOW_GRID,
-  SHOW_PERFORMANCE_METRICS,
 } from '../../shared/variables';
 import { getPlayerState, getState } from '../state';
 import { renderPlayer } from './player';
 import { clearCanvas } from './render-utilities';
 import { getCanvas } from './canvas';
 import { renderBackground } from './background';
-import { renderPlayerCoordinatesStats, renderPlayerMouseAngleStats } from './stats';
 import { renderMap } from './map';
-import { renderGrid } from './grid';
-import { renderColliders } from './colliders';
-import { renderArmor, renderBlood, renderHealth, renderHelm, renderItem, renderSword } from './item';
+import { renderArmor, renderBlood, renderHealth, renderHelm, renderSword } from './item';
 import { Quadtree, Rectangle } from '../../server/entities';
 import { Player } from '../models/player';
 import { renderLeaderboard } from './leaderboard';
@@ -53,12 +47,6 @@ export function renderGame() {
 
   // Render background.
   renderBackground(ctx, width, height, rad(mouseAngleDegrees), playerState.isBoosting);
-
-  // TODO: This makes me feel like puking. Figure out how to get rid of motion sickness.
-  // Render debug grid.
-  if (SHOW_GRID) {
-    renderGrid(ctx, width, height);
-  }
 
   const screenCoordinate0X = x - width / 2;
   const screenCoordinate0Y = y - height / 2;
@@ -131,8 +119,6 @@ export function renderGame() {
         );
         return;
       }
-
-      renderItem(ctx, relativeCoordinateX, relativeCoordinateY, point.data.height);
     });
 
   // Render players.
@@ -171,20 +157,10 @@ export function renderGame() {
         point.data.xp,
         point.data.items
       );
-
-      if (SHOW_BOUNDING_BOXES) {
-        renderColliders(ctx, point.data.colliders, screenCoordinate0X, screenCoordinate0Y);
-      }
     });
 
   renderMap(ctx, width, height, { x, y }, state.minimap);
 
   // Render leaderboard.
   renderLeaderboard(ctx, width, height, state.leaderboard, playerState.id);
-
-  // Render stats.
-  if (SHOW_PERFORMANCE_METRICS) {
-    renderPlayerCoordinatesStats(x, y);
-    renderPlayerMouseAngleStats(mouseAngleDegrees);
-  }
 }

@@ -1,13 +1,3 @@
-export function renderLine(ctx, xPositionStart, yPositionStart, xPositionEnd, yPositionEnd, width, strokeStyle) {
-  ctx.save();
-  ctx.lineWidth = width;
-  ctx.strokeStyle = strokeStyle;
-  ctx.moveTo(xPositionStart, yPositionStart);
-  ctx.lineTo(xPositionEnd, yPositionEnd);
-  ctx.stroke();
-  ctx.restore();
-}
-
 export function renderFilledRectangle(ctx, xPosition, yPosition, width, height, fillStyle) {
   ctx.save();
   ctx.fillStyle = fillStyle;
@@ -23,15 +13,6 @@ export function renderFilledTriangle(ctx, x1, y1, x2, y2, x3, y3, fillStyle) {
   ctx.lineTo(x2, y2);
   ctx.lineTo(x3, y3);
   ctx.fill();
-  ctx.restore();
-}
-
-export function renderStrokedRectangle(ctx, xPosition, yPosition, width, height, strokeWidth, strokeStyle) {
-  ctx.save();
-  ctx.lineWidth = strokeWidth;
-  ctx.strokeStyle = strokeStyle;
-  ctx.rect(xPosition, yPosition, width, height);
-  ctx.stroke();
   ctx.restore();
 }
 
