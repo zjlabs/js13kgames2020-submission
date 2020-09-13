@@ -5,6 +5,7 @@ import {
   PLAYER_BOOST_MAX_VAL,
   SHOW_PERFORMANCE_METRICS,
   TICK_TIME,
+  STATS_TICK,
 } from '../shared/variables';
 import { getIsBoosting, getMouseAngle } from './input';
 import { renderGame } from './render/render';
@@ -16,6 +17,7 @@ import { renderClientStats } from './render/stats';
 // MS per game tick.
 const statsFpsEl = document.getElementById('stats--fps');
 
+let statTick = STATS_TICK;
 let delta = 0;
 let elapsed = 0;
 let current = Date.now();
@@ -25,6 +27,7 @@ export function tick() {
   last = current;
   current = Date.now();
   delta = current - last;
+  statTick -= delta;
 
   const currentPlayerState = getPlayerState();
   if (currentPlayerState != null) {
@@ -53,8 +56,9 @@ export function tick() {
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
   sleep = Math.max(TICK_TIME - elapsed, 0);
-  if (SHOW_PERFORMANCE_METRICS) {
+  if (SHOW_PERFORMANCE_METRICS && statTick <= 0) {
     renderClientStats({ current, delta, elapsed, last, sleep });
+    statTick = STATS_TICK;
   }
   setTimeout(tick, sleep);
 }

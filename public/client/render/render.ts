@@ -177,28 +177,7 @@ export function renderGame() {
       }
     });
 
-  // Render map.
-  renderMap(
-    ctx,
-    width,
-    height,
-    { x, y },
-    Object.keys(state.players)
-      // Map the id to the player object.
-      .map((key) => {
-        return state.players[key];
-      })
-      .filter((player) => {
-        return player.id !== id;
-      })
-      .map((player: Player) => {
-        return {
-          x: player.x,
-          y: player.y,
-          isEnhanced: Object.values(player.items).filter((value) => value === 1).length > 0,
-        };
-      })
-  );
+  renderMap(ctx, width, height, { x, y }, state.minimap);
 
   // Render leaderboard.
   renderLeaderboard(ctx, width, height, state.leaderboard, playerState.id);

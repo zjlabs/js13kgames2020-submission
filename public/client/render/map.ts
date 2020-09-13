@@ -1,5 +1,6 @@
 import { renderFilledRectangle } from './primitive-shapes';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '../../shared/variables';
+import { MinimapPlayer } from '../models/minimap-player';
 
 const PLAYER_BLOCK_SIDE = 1000;
 
@@ -8,7 +9,7 @@ export function renderMap(
   width: number,
   height: number,
   playerCoordinates: { x: number; y: number },
-  foeCoordinates: { x: number; y: number; isEnhanced: boolean }[]
+  foeCoordinates: MinimapPlayer[]
 ) {
   // Calculate a scale factor so the map takes up a small percentage of the screen;
   const xScaleFactor = (width / WORLD_WIDTH) * 0.2;
@@ -44,7 +45,7 @@ export function renderMap(
       foeCoordinates.y - PLAYER_BLOCK_SIDE / 2,
       PLAYER_BLOCK_SIDE,
       PLAYER_BLOCK_SIDE,
-      foeCoordinates.isEnhanced ? 'gold' : 'red'
+      foeCoordinates.item ? 'gold' : 'red'
     );
     ctx.closePath();
   });

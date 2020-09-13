@@ -1,6 +1,7 @@
 import { Player } from './models/player';
 import { LeaderboardPlayer } from './models/leaderboard-player';
 import { Item } from './models/items';
+import { MinimapPlayer } from './models/minimap-player';
 
 export interface State {
   colliders?: any;
@@ -12,11 +13,13 @@ export interface State {
   };
   rooms?: any;
   leaderboard: LeaderboardPlayer[];
+  minimap: MinimapPlayer[];
 }
 
 let state: State = {
   mouseAngleDegrees: 0,
   leaderboard: [],
+  minimap: [],
 };
 
 export function applyState(serverUpdatedState: any) {
@@ -26,6 +29,10 @@ export function applyState(serverUpdatedState: any) {
 
 export function applyLeaderboard(serverUpdate: any) {
   state.leaderboard = serverUpdate.leaderboard;
+}
+
+export function applyMinimap(serverUpdate: any) {
+  state.minimap = serverUpdate.minimap;
 }
 
 export function getState() {

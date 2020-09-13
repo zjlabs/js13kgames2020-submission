@@ -328,7 +328,7 @@ export class Player extends Entity {
 
     if (collider.action == 'damage' && other.action == 'weapon') {
       // Determine effective damage.
-      const opponentHasSword = other?.data?.items?.sword === 1;
+      const opponentHasSword = other.data.items && other.data.items.sword === 1;
       const playerHasHelm = this.items.helm === 1;
       const playerHasArmor = this.items.armor === 1;
 
@@ -808,6 +808,7 @@ export class Game extends Component {
     const h = WORLD_HEIGHT / 2;
     this.world = new Rectangle(w, h, w, h);
     this.leaderTick = LEADERBOARD_UPDATE_TIME;
+    this.mapTick = LEADERBOARD_UPDATE_TIME;
   }
 
   checkCollisions(gameRef) {
@@ -837,6 +838,7 @@ export class Game extends Component {
 
   update(deltaTime, gameRef) {
     this.leaderTick -= deltaTime;
+    this.mapTick -= deltaTime;
 
     // Update every component before applying primary control logic
     this.quadTree = new Quadtree(this.world);
@@ -857,24 +859,39 @@ export class Game extends Component {
 
     // sync data for all players
     players.forEach((player) => {
+      if (player.bot) return;
       let _players = {};
       let _items = {};
-      this.quadTree
-        .query(new Rectangle(player.x, player.y, WORLD_QUERY_WIDTH, WORLD_QUERY_HEIGHT))
-        .forEach((entity) => {
-          if (!entity.data) return;
-          if (entity.data instanceof Item) {
-            _items[entity.data.id] = entity.data.getPojo();
-          }
-          if (entity.data instanceof Player) {
-            _players[entity.data.id] = entity.data.getPojo();
-          }
-        });
+      let query = new Rectangle(player.x, player.y, WORLD_QUERY_WIDTH, WORLD_QUERY_HEIGHT);
+      this.quadTree.query(query).forEach((entity) => {
+        if (!entity.data) return;
+        if (!query.intersects(entity)) return;
+        if (entity.data instanceof Item) {
+          _items[entity.data.id] = entity.data.getPojo();
+        }
+        if (entity.data instanceof Player) {
+          _players[entity.data.id] = entity.data.getPojo();
+        }
+      });
 
       io.to(player.socketId).emit('delta', {
         players: _players,
         items: _items,
       });
+
+      // sync mini map
+      if (this.mapTick <= 0) {
+        io.to(player.socketId).emit('minimap', {
+          minimap: players
+            .filter((p) => p.socketId != player.socketId)
+            .map((p) => ({
+              x: p.x,
+              y: p.y,
+              item: p.items.sword || p.items.helm || p.items.armor,
+            })),
+        });
+        this.mapTick = LEADERBOARD_UPDATE_TIME;
+      }
     });
 
     // sync leaderboard time
