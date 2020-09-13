@@ -845,8 +845,10 @@ export class Game extends Component {
     // Update every component before applying primary control logic
     this.quadTree = new Quadtree(this.world);
     let players = [];
+    let lifeCount = 0;
     this.getComponents().forEach((component) => {
       if (component instanceof Player) players.push(component);
+      if (component instanceof Life) lifeCount++;
 
       if (!component.active) return;
       component.update(deltaTime, gameRef, players);
@@ -909,7 +911,7 @@ export class Game extends Component {
     }
 
     spawners.forEach((spawner) => {
-      spawner.update(deltaTime, gameRef, players);
+      spawner.update(deltaTime, gameRef, players, lifeCount);
     });
     this.pruneComponents();
   }
@@ -1159,20 +1161,20 @@ export class Quadtree {
 }
 
 export class Spawner extends Component {
-  constructor(max, respawn, entityFn) {
+  constructor(max, respawn, checkFn, entityFn) {
     super();
     this.max = max;
     this.lastTime = 0;
     this.respawn = respawn;
+    this.checkFn = checkFn;
     this.entityFn = entityFn;
   }
 
-  update(delta, gameRef, players = []) {
+  update(delta, gameRef, players = [], lifeCount = 0) {
     this.lastTime -= delta;
     if (this.lastTime < 0) {
       this.lastTime = this.respawn;
-      // search the player data to prune our dead bots
-      let count = players.filter((p) => p.bot).length;
+      let count = this.checkFn(players, lifeCount);
       if (count < this.max) {
         for (let i = 0; i < this.max - count; i++) {
           this.temp = this.entityFn();
