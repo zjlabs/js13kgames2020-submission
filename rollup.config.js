@@ -8,19 +8,18 @@ export default [
     output: {
       file: 'public/client.js',
       format: 'iife',
-      sourcemap: 'inline',
     },
     plugins: [
       typescript({
         tsconfigOverride: {
           compilerOptions: {
-            sourceMap: true,
+            sourceMap: false,
             inlineSourceMap: false,
             module: 'ES2015',
           },
         },
       }),
-      // terser(),
+      terser(),
     ],
   },
   {
@@ -30,8 +29,6 @@ export default [
       file: 'public/server.js',
       format: 'umd',
     },
-    plugins: [
-      // terser()
-    ],
+    plugins: [terser()],
   },
 ];
