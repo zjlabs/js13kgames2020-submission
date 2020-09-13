@@ -7,6 +7,7 @@ export const TEST = true;
  * Emit stats on tick
  */
 export const STATS = true;
+export const STATS_TICK = 2000;
 
 /**
  * The current log level

@@ -11,6 +11,7 @@ import {
   ITEM_INITIAL_SPAWN_COUNT_SWORD,
   rand,
   STATS,
+  STATS_TICK,
   TEST,
   TICK_TIME,
   VALID_PLAYER_PROPS,
@@ -315,6 +316,7 @@ io.on('connection', (socket) => {
 });
 
 // Start the game loop
+let statTick = STATS_TICK;
 let delta = 0;
 let elapsed = 0;
 let current = Date.now();
@@ -324,6 +326,7 @@ const tick = () => {
   last = current;
   current = Date.now();
   delta = current - last;
+  statTick -= delta;
 
   /**
    * GAME LOGIC
@@ -339,7 +342,10 @@ const tick = () => {
   all('last', last);
   all('elapsed', elapsed);
   all('sleep', sleep);
-  STATS && io.emit('stats', { delta, current, last, elapsed, sleep });
+  if (STATS && statTick <= 0) {
+    io.emit('stats', { delta, current, last, elapsed, sleep });
+    statTick = STATS_TICK;
+  }
   setTimeout(tick, sleep);
 };
 
