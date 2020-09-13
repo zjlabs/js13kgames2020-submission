@@ -43,28 +43,28 @@ const botSpawner = new Spawner(
 const helmSpawner = new Spawner(
   ITEM_INITIAL_SPAWN_COUNT_HELM,
   BOT_RESPAWN_RATE,
-  (players) => players.filter((p) => p.items.helm == 1).length,
+  (players, items) => players.filter((p) => p.items && p.items.helm == 1).length + items.Helm || 0,
   () => new Helm(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
 );
 
 const swordSpawner = new Spawner(
   ITEM_INITIAL_SPAWN_COUNT_SWORD,
   BOT_RESPAWN_RATE,
-  (players) => players.filter((p) => p.items.sword == 1).length,
+  (players, items) => players.filter((p) => p.items && p.items.sword == 1).length + items.Sword || 0,
   () => new Sword(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
 );
 
 const armorSpawner = new Spawner(
   ITEM_INITIAL_SPAWN_COUNT_ARMOR,
   BOT_RESPAWN_RATE,
-  (players) => players.filter((p) => p.items.armor == 1).length,
-  () => new Sword(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
+  (players, items) => players.filter((p) => p.items && p.items.armor == 1).length + items.Armor || 0,
+  () => new Armor(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
 );
 
 const lifeSpawner = new Spawner(
   ITEM_INITIAL_SPAWN_COUNT_HEALTH,
   BOT_RESPAWN_RATE,
-  (players, life) => life.length,
+  (players, items) => items.Life || 0,
   () => new Life(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
 );
 

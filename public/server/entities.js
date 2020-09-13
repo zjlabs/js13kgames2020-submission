@@ -845,10 +845,13 @@ export class Game extends Component {
     // Update every component before applying primary control logic
     this.quadTree = new Quadtree(this.world);
     let players = [];
-    let lifeCount = 0;
+    let items = {};
     this.getComponents().forEach((component) => {
       if (component instanceof Player) players.push(component);
-      if (component instanceof Life) lifeCount++;
+      if (component instanceof Item) {
+        items[component.constructor.name] = items[component.constructor.name] || 0;
+        items[component.constructor.name]++;
+      }
 
       if (!component.active) return;
       component.update(deltaTime, gameRef, players);
@@ -911,7 +914,7 @@ export class Game extends Component {
     }
 
     spawners.forEach((spawner) => {
-      spawner.update(deltaTime, gameRef, players, lifeCount);
+      spawner.update(deltaTime, gameRef, players, items);
     });
     this.pruneComponents();
   }
@@ -1170,11 +1173,11 @@ export class Spawner extends Component {
     this.entityFn = entityFn;
   }
 
-  update(delta, gameRef, players = [], lifeCount = 0) {
+  update(delta, gameRef, players = [], items = {}) {
     this.lastTime -= delta;
     if (this.lastTime < 0) {
       this.lastTime = this.respawn;
-      let count = this.checkFn(players, lifeCount);
+      let count = this.checkFn(players, items);
       if (count < this.max) {
         for (let i = 0; i < this.max - count; i++) {
           this.temp = this.entityFn();
