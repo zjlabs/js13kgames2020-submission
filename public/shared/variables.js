@@ -114,6 +114,12 @@ export const ITEM_ARMOR_WIDTH = 20;
 export const ITEM_BLOOD_WIDTH = 20;
 export const ITEM_BLOOD_HEIGHT = 20;
 
+// Items to spawn per quadrant.
+export const ITEM_INITIAL_SPAWN_COUNT_HEALTH = 30;
+export const ITEM_INITIAL_SPAWN_COUNT_HELM = 5;
+export const ITEM_INITIAL_SPAWN_COUNT_ARMOR = 5;
+export const ITEM_INITIAL_SPAWN_COUNT_SWORD = 5;
+
 export const BOOST_FACTOR = 1.5;
 
 // bot utils

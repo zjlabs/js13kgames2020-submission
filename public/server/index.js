@@ -5,8 +5,10 @@ import {
   BOT_RESPAWN_RATE,
   debug,
   info,
-  ITEM_LIFE_HEIGHT,
-  ITEM_LIFE_WIDTH,
+  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
+  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
+  ITEM_INITIAL_SPAWN_COUNT_HELM,
+  ITEM_INITIAL_SPAWN_COUNT_SWORD,
   rand,
   STATS,
   TEST,
@@ -33,24 +35,212 @@ combatBot.health = 69;
 game.addComponent(combatBot);
 game.addComponent(new Blood(WORLD_WIDTH / 2, WORLD_HEIGHT / 2));
 
-// add random life pick ups
-let lifeCount = 5;
-let lifeSpace = 100;
-for (let x = 0; x < lifeCount; x++) {
-  for (let y = 0; y < lifeCount; y++) {
-    game.addComponent(
-      new Life(
-        WORLD_WIDTH / 2 + x * (ITEM_LIFE_WIDTH + lifeSpace),
-        WORLD_HEIGHT / 2 + y * (ITEM_LIFE_HEIGHT + lifeSpace)
-      )
-    );
-  }
-}
+// Spawn items.
 
-// add random items
-game.addComponent(new Sword(WORLD_WIDTH / 2 - 100, WORLD_HEIGHT / 2));
-game.addComponent(new Helm(WORLD_WIDTH / 2 - 100, WORLD_HEIGHT / 2 + 100));
-game.addComponent(new Armor(WORLD_WIDTH / 2 - 100, WORLD_HEIGHT / 2 + 200));
+// Break the map into quadrants to assure a semi-even distribution.
+const quadrant1XMin = 0;
+const quadrant1XMax = WORLD_WIDTH / 2;
+const quadrant1YMin = 0;
+const quadrant1YMax = WORLD_HEIGHT / 2;
+
+const quadrant2XMin = WORLD_WIDTH / 2;
+const quadrant2XMax = WORLD_WIDTH;
+const quadrant2YMin = 0;
+const quadrant2YMax = WORLD_HEIGHT / 2;
+
+const quadrant3XMin = 0;
+const quadrant3XMax = WORLD_WIDTH / 2;
+const quadrant3YMin = WORLD_HEIGHT / 2;
+const quadrant3YMax = WORLD_HEIGHT;
+
+const quadrant4XMin = WORLD_WIDTH / 2;
+const quadrant4XMax = WORLD_WIDTH;
+const quadrant4YMin = WORLD_HEIGHT / 2;
+const quadrant4YMax = WORLD_HEIGHT;
+
+const renderItemsForQuadrant = (quadrantXMin, quadrantXMax, quadrantYMin, quadrantYMax, itemCount, renderCallback) => {
+  for (let i = 0; i < itemCount; i++) {
+    const x = rand(quadrantXMin, quadrantXMax);
+    const y = rand(quadrantYMin, quadrantYMax);
+    renderCallback(x, y);
+  }
+};
+
+renderItemsForQuadrant(
+  quadrant1XMin,
+  quadrant1XMax,
+  quadrant1YMin,
+  quadrant1YMax,
+  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
+  (x, y) => {
+    game.addComponent(new Life(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant1XMin,
+  quadrant1XMax,
+  quadrant1YMin,
+  quadrant1YMax,
+  ITEM_INITIAL_SPAWN_COUNT_HELM,
+  (x, y) => {
+    game.addComponent(new Helm(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant1XMin,
+  quadrant1XMax,
+  quadrant1YMin,
+  quadrant1YMax,
+  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
+  (x, y) => {
+    game.addComponent(new Armor(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant1XMin,
+  quadrant1XMax,
+  quadrant1YMin,
+  quadrant1YMax,
+  ITEM_INITIAL_SPAWN_COUNT_SWORD,
+  (x, y) => {
+    game.addComponent(new Sword(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant2XMin,
+  quadrant2XMax,
+  quadrant2YMin,
+  quadrant2YMax,
+  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
+  (x, y) => {
+    game.addComponent(new Life(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant2XMin,
+  quadrant2XMax,
+  quadrant2YMin,
+  quadrant2YMax,
+  ITEM_INITIAL_SPAWN_COUNT_HELM,
+  (x, y) => {
+    game.addComponent(new Helm(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant2XMin,
+  quadrant2XMax,
+  quadrant2YMin,
+  quadrant2YMax,
+  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
+  (x, y) => {
+    game.addComponent(new Armor(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant2XMin,
+  quadrant2XMax,
+  quadrant2YMin,
+  quadrant2YMax,
+  ITEM_INITIAL_SPAWN_COUNT_SWORD,
+  (x, y) => {
+    game.addComponent(new Sword(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant3XMin,
+  quadrant3XMax,
+  quadrant3YMin,
+  quadrant3YMax,
+  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
+  (x, y) => {
+    game.addComponent(new Life(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant3XMin,
+  quadrant3XMax,
+  quadrant3YMin,
+  quadrant3YMax,
+  ITEM_INITIAL_SPAWN_COUNT_HELM,
+  (x, y) => {
+    game.addComponent(new Helm(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant3XMin,
+  quadrant3XMax,
+  quadrant3YMin,
+  quadrant3YMax,
+  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
+  (x, y) => {
+    game.addComponent(new Armor(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant3XMin,
+  quadrant3XMax,
+  quadrant3YMin,
+  quadrant3YMax,
+  ITEM_INITIAL_SPAWN_COUNT_SWORD,
+  (x, y) => {
+    game.addComponent(new Sword(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant4XMin,
+  quadrant4XMax,
+  quadrant4YMin,
+  quadrant4YMax,
+  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
+  (x, y) => {
+    game.addComponent(new Life(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant4XMin,
+  quadrant4XMax,
+  quadrant4YMin,
+  quadrant4YMax,
+  ITEM_INITIAL_SPAWN_COUNT_HELM,
+  (x, y) => {
+    game.addComponent(new Helm(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant4XMin,
+  quadrant4XMax,
+  quadrant4YMin,
+  quadrant4YMax,
+  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
+  (x, y) => {
+    game.addComponent(new Armor(x, y));
+  }
+);
+
+renderItemsForQuadrant(
+  quadrant4XMin,
+  quadrant4XMax,
+  quadrant4YMin,
+  quadrant4YMax,
+  ITEM_INITIAL_SPAWN_COUNT_SWORD,
+  (x, y) => {
+    game.addComponent(new Sword(x, y));
+  }
+);
 
 // add patrol bot
 const halfW = WORLD_WIDTH / 2;

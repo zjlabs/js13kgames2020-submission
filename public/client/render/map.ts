@@ -8,7 +8,7 @@ export function renderMap(
   width: number,
   height: number,
   playerCoordinates: { x: number; y: number },
-  foeCoordinates: { x: number; y: number }[]
+  foeCoordinates: { x: number; y: number; isEnhanced: boolean }[]
 ) {
   // Calculate a scale factor so the map takes up a small percentage of the screen;
   const xScaleFactor = (width / WORLD_WIDTH) * 0.2;
@@ -44,7 +44,7 @@ export function renderMap(
       foeCoordinates.y - PLAYER_BLOCK_SIDE / 2,
       PLAYER_BLOCK_SIDE,
       PLAYER_BLOCK_SIDE,
-      'red'
+      foeCoordinates.isEnhanced ? 'gold' : 'red'
     );
     ctx.closePath();
   });
