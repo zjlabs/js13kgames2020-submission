@@ -833,17 +833,17 @@ export class Game extends Component {
     players.forEach((player) => {
       let _players = {};
       let _items = {};
-      this.quadTree
-        .query(new Rectangle(player.x, player.y, WORLD_QUERY_WIDTH, WORLD_QUERY_HEIGHT))
-        .forEach((entity) => {
-          if (!entity.data) return;
-          if (entity.data instanceof Item) {
-            _items[entity.data.id] = entity.data.getPojo();
-          }
-          if (entity.data instanceof Player) {
-            _players[entity.data.id] = entity.data.getPojo();
-          }
-        });
+      let query = new Rectangle(player.x, player.y, WORLD_QUERY_WIDTH, WORLD_QUERY_HEIGHT);
+      this.quadTree.query(query).forEach((entity) => {
+        if (!entity.data) return;
+        if (!query.intersects(entity)) return;
+        if (entity.data instanceof Item) {
+          _items[entity.data.id] = entity.data.getPojo();
+        }
+        if (entity.data instanceof Player) {
+          _players[entity.data.id] = entity.data.getPojo();
+        }
+      });
 
       io.to(player.socketId).emit('delta', {
         players: _players,

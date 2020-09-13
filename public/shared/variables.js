@@ -51,11 +51,11 @@ export const TICK_TIME = 1000 / TICK_RATE;
  * - width and height are 100% of the full rendered width
  * - everything has its origin x,y in the center (1/2 w and 1/2 h)
  */
-export const QUADTREE_CAP = 10;
+export const QUADTREE_CAP = 5;
 export const WORLD_HEIGHT = 30000;
 export const WORLD_WIDTH = 30000;
-export const WORLD_QUERY_HEIGHT = 400;
-export const WORLD_QUERY_WIDTH = 400;
+export const WORLD_QUERY_HEIGHT = 2000;
+export const WORLD_QUERY_WIDTH = 2000;
 
 export const PLAYER_HEIGHT = 60;
 export const PLAYER_WIDTH = 100;
@@ -124,8 +124,8 @@ export const BOOST_FACTOR = 1.5;
 
 // bot utils
 export const PATH_ACCURACY = 0.25;
-export const WANDER_MIN = 400;
-export const WANDER_MAX = 400;
+export const WANDER_MIN = 500;
+export const WANDER_MAX = 500;
 export const BOT_COUNT_MAX = 50;
 export const BOT_RESPAWN_RATE = 20000;
 
