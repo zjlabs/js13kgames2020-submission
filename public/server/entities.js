@@ -808,6 +808,7 @@ export class Game extends Component {
     const h = WORLD_HEIGHT / 2;
     this.world = new Rectangle(w, h, w, h);
     this.leaderTick = LEADERBOARD_UPDATE_TIME;
+    this.mapTick = LEADERBOARD_UPDATE_TIME;
   }
 
   checkCollisions(gameRef) {
@@ -837,6 +838,7 @@ export class Game extends Component {
 
   update(deltaTime, gameRef) {
     this.leaderTick -= deltaTime;
+    this.mapTick -= deltaTime;
 
     // Update every component before applying primary control logic
     this.quadTree = new Quadtree(this.world);
@@ -875,6 +877,20 @@ export class Game extends Component {
         players: _players,
         items: _items,
       });
+
+      // sync mini map
+      if (this.mapTick <= 0) {
+        io.to(player.socketId).emit('minimap', {
+          minimap: players
+            .filter((p) => p.socketId != player.socketId)
+            .map((p) => ({
+              x: p.x,
+              y: p.y,
+              items: p.items.sword || p.items.helm || p.items.armor,
+            })),
+        });
+        this.mapTick = LEADERBOARD_UPDATE_TIME;
+      }
     });
 
     // sync leaderboard time
