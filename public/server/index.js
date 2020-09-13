@@ -25,6 +25,49 @@ import {
 const game = new Game();
 info('game start');
 
+const botSpawner = new Spawner(
+  BOT_COUNT_MAX,
+  BOT_RESPAWN_RATE,
+  (players) => players.filter((p) => p.bot).length,
+  () => {
+    let id = `bot${Date.now()}`;
+    let p = new Player({ id });
+    p.x = rand(0, WORLD_WIDTH);
+    p.y = rand(0, WORLD_HEIGHT);
+    p.username = id;
+    p.bot = true;
+    return p;
+  }
+);
+
+const helmSpawner = new Spawner(
+  ITEM_INITIAL_SPAWN_COUNT_HELM,
+  BOT_RESPAWN_RATE,
+  (players, items) => players.filter((p) => p.items && p.items.helm == 1).length + items.Helm || 0,
+  () => new Helm(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
+);
+
+const swordSpawner = new Spawner(
+  ITEM_INITIAL_SPAWN_COUNT_SWORD,
+  BOT_RESPAWN_RATE,
+  (players, items) => players.filter((p) => p.items && p.items.sword == 1).length + items.Sword || 0,
+  () => new Sword(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
+);
+
+const armorSpawner = new Spawner(
+  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
+  BOT_RESPAWN_RATE,
+  (players, items) => players.filter((p) => p.items && p.items.armor == 1).length + items.Armor || 0,
+  () => new Armor(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
+);
+
+const lifeSpawner = new Spawner(
+  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
+  BOT_RESPAWN_RATE,
+  (players, items) => items.Life || 0,
+  () => new Life(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
+);
+
 // start testing code
 let combatBot = new Player({ id: 'bot1' });
 combatBot.x = WORLD_WIDTH / 2 + 300;
@@ -35,213 +78,6 @@ combatBot.username = 'smashmaster69x420';
 combatBot.health = 69;
 game.addComponent(combatBot);
 game.addComponent(new Blood(WORLD_WIDTH / 2, WORLD_HEIGHT / 2));
-
-// Spawn items.
-
-// Break the map into quadrants to assure a semi-even distribution.
-const quadrant1XMin = 0;
-const quadrant1XMax = WORLD_WIDTH / 2;
-const quadrant1YMin = 0;
-const quadrant1YMax = WORLD_HEIGHT / 2;
-
-const quadrant2XMin = WORLD_WIDTH / 2;
-const quadrant2XMax = WORLD_WIDTH;
-const quadrant2YMin = 0;
-const quadrant2YMax = WORLD_HEIGHT / 2;
-
-const quadrant3XMin = 0;
-const quadrant3XMax = WORLD_WIDTH / 2;
-const quadrant3YMin = WORLD_HEIGHT / 2;
-const quadrant3YMax = WORLD_HEIGHT;
-
-const quadrant4XMin = WORLD_WIDTH / 2;
-const quadrant4XMax = WORLD_WIDTH;
-const quadrant4YMin = WORLD_HEIGHT / 2;
-const quadrant4YMax = WORLD_HEIGHT;
-
-const renderItemsForQuadrant = (quadrantXMin, quadrantXMax, quadrantYMin, quadrantYMax, itemCount, renderCallback) => {
-  for (let i = 0; i < itemCount; i++) {
-    const x = rand(quadrantXMin, quadrantXMax);
-    const y = rand(quadrantYMin, quadrantYMax);
-    renderCallback(x, y);
-  }
-};
-
-renderItemsForQuadrant(
-  quadrant1XMin,
-  quadrant1XMax,
-  quadrant1YMin,
-  quadrant1YMax,
-  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
-  (x, y) => {
-    game.addComponent(new Life(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant1XMin,
-  quadrant1XMax,
-  quadrant1YMin,
-  quadrant1YMax,
-  ITEM_INITIAL_SPAWN_COUNT_HELM,
-  (x, y) => {
-    game.addComponent(new Helm(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant1XMin,
-  quadrant1XMax,
-  quadrant1YMin,
-  quadrant1YMax,
-  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
-  (x, y) => {
-    game.addComponent(new Armor(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant1XMin,
-  quadrant1XMax,
-  quadrant1YMin,
-  quadrant1YMax,
-  ITEM_INITIAL_SPAWN_COUNT_SWORD,
-  (x, y) => {
-    game.addComponent(new Sword(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant2XMin,
-  quadrant2XMax,
-  quadrant2YMin,
-  quadrant2YMax,
-  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
-  (x, y) => {
-    game.addComponent(new Life(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant2XMin,
-  quadrant2XMax,
-  quadrant2YMin,
-  quadrant2YMax,
-  ITEM_INITIAL_SPAWN_COUNT_HELM,
-  (x, y) => {
-    game.addComponent(new Helm(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant2XMin,
-  quadrant2XMax,
-  quadrant2YMin,
-  quadrant2YMax,
-  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
-  (x, y) => {
-    game.addComponent(new Armor(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant2XMin,
-  quadrant2XMax,
-  quadrant2YMin,
-  quadrant2YMax,
-  ITEM_INITIAL_SPAWN_COUNT_SWORD,
-  (x, y) => {
-    game.addComponent(new Sword(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant3XMin,
-  quadrant3XMax,
-  quadrant3YMin,
-  quadrant3YMax,
-  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
-  (x, y) => {
-    game.addComponent(new Life(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant3XMin,
-  quadrant3XMax,
-  quadrant3YMin,
-  quadrant3YMax,
-  ITEM_INITIAL_SPAWN_COUNT_HELM,
-  (x, y) => {
-    game.addComponent(new Helm(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant3XMin,
-  quadrant3XMax,
-  quadrant3YMin,
-  quadrant3YMax,
-  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
-  (x, y) => {
-    game.addComponent(new Armor(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant3XMin,
-  quadrant3XMax,
-  quadrant3YMin,
-  quadrant3YMax,
-  ITEM_INITIAL_SPAWN_COUNT_SWORD,
-  (x, y) => {
-    game.addComponent(new Sword(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant4XMin,
-  quadrant4XMax,
-  quadrant4YMin,
-  quadrant4YMax,
-  ITEM_INITIAL_SPAWN_COUNT_HEALTH,
-  (x, y) => {
-    game.addComponent(new Life(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant4XMin,
-  quadrant4XMax,
-  quadrant4YMin,
-  quadrant4YMax,
-  ITEM_INITIAL_SPAWN_COUNT_HELM,
-  (x, y) => {
-    game.addComponent(new Helm(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant4XMin,
-  quadrant4XMax,
-  quadrant4YMin,
-  quadrant4YMax,
-  ITEM_INITIAL_SPAWN_COUNT_ARMOR,
-  (x, y) => {
-    game.addComponent(new Armor(x, y));
-  }
-);
-
-renderItemsForQuadrant(
-  quadrant4XMin,
-  quadrant4XMax,
-  quadrant4YMin,
-  quadrant4YMax,
-  ITEM_INITIAL_SPAWN_COUNT_SWORD,
-  (x, y) => {
-    game.addComponent(new Sword(x, y));
-  }
-);
 
 // add patrol bot
 const halfW = WORLD_WIDTH / 2;
@@ -269,16 +105,6 @@ wanderBot.bot = true;
 wanderBot.username = 'cartographer';
 wanderBot.health = 69;
 game.addComponent(wanderBot);
-
-game.addComponent(
-  new Spawner(BOT_COUNT_MAX, BOT_RESPAWN_RATE, () => {
-    let p = new Player({ id: `bot${Date.now()}` });
-    p.x = rand(0, WORLD_WIDTH);
-    p.y = rand(0, WORLD_HEIGHT);
-    p.bot = true;
-    return p;
-  })
-);
 // end testing code
 
 /**
@@ -331,7 +157,7 @@ const tick = () => {
   /**
    * GAME LOGIC
    */
-  game.update(delta, game);
+  game.update(delta, game, [botSpawner, helmSpawner, swordSpawner, armorSpawner, lifeSpawner]);
 
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;

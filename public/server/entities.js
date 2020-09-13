@@ -97,7 +97,7 @@ export class Component {
       return this.components;
     }
 
-    return [...this.components, ...this.components.map((c) => c.getComponents(deep).flat())];
+    return this.components.map((c) => c.getComponents(deep).flat());
   }
 
   pruneComponents(deep = false) {
@@ -273,7 +273,7 @@ export class Player extends Entity {
       }
 
       // spawn orbs in the last loc if its time
-      if (this.lastLifeSpawn <= 0 && this.locMem.length == PLAYER_LOC_MEM) {
+      if (this.isBoosting && this.lastLifeSpawn <= 0 && this.locMem.length == PLAYER_LOC_MEM) {
         this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
         gameRef.addComponent(new Life(this.locMem[0].x, this.locMem[0].y));
       }
@@ -308,7 +308,9 @@ export class Player extends Entity {
   }
 
   getColliders() {
-    return [new Rectangle(this.x, this.y, this.height, this.height, this, 'damage'), ...this.getWeaponColliderCoords()];
+    return [new Rectangle(this.x, this.y, this.height, this.height, this, 'damage')].concat(
+      this.getWeaponColliderCoords()
+    );
   }
 
   onCollision(collider, other, gameRef) {
@@ -836,15 +838,20 @@ export class Game extends Component {
     });
   }
 
-  update(deltaTime, gameRef) {
+  update(deltaTime, gameRef, spawners) {
     this.leaderTick -= deltaTime;
     this.mapTick -= deltaTime;
 
     // Update every component before applying primary control logic
     this.quadTree = new Quadtree(this.world);
     let players = [];
+    let items = {};
     this.getComponents().forEach((component) => {
       if (component instanceof Player) players.push(component);
+      if (component instanceof Item) {
+        items[component.constructor.name] = items[component.constructor.name] || 0;
+        items[component.constructor.name]++;
+      }
 
       if (!component.active) return;
       component.update(deltaTime, gameRef, players);
@@ -906,6 +913,9 @@ export class Game extends Component {
       this.leaderTick = LEADERBOARD_UPDATE_TIME;
     }
 
+    spawners.forEach((spawner) => {
+      spawner.update(deltaTime, gameRef, players, items);
+    });
     this.pruneComponents();
   }
 }
@@ -1154,26 +1164,23 @@ export class Quadtree {
 }
 
 export class Spawner extends Component {
-  constructor(max, respawn, entityFn) {
+  constructor(max, respawn, checkFn, entityFn) {
     super();
     this.max = max;
     this.lastTime = 0;
     this.respawn = respawn;
+    this.checkFn = checkFn;
     this.entityFn = entityFn;
-    this.trackedEntities = [];
   }
 
-  update(delta, gameRef, players = []) {
+  update(delta, gameRef, players = [], items = {}) {
     this.lastTime -= delta;
     if (this.lastTime < 0) {
       this.lastTime = this.respawn;
-      // search the player data to prune our dead bots
-      let playerMap = players.reduce((acc, cur) => ({ ...acc, ...{ [cur.id]: cur } }), {});
-      this.trackedEntities.filter((id) => playerMap[id] && playerMap[id].active);
-      if (this.trackedEntities.length < this.max) {
-        for (let i = 0; i < this.max - this.trackedEntities.length; i++) {
+      let count = this.checkFn(players, items);
+      if (count < this.max) {
+        for (let i = 0; i < this.max - count; i++) {
           this.temp = this.entityFn();
-          this.trackedEntities.push(this.temp.id);
           gameRef.addComponent(this.temp);
         }
       }
