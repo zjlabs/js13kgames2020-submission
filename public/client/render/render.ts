@@ -1,4 +1,6 @@
 import {
+  ITEM_LIFE_HEIGHT,
+  ITEM_LIFE_WIDTH,
   ITEM_TYPES,
   PLAYER_BOOST_MAX_VAL,
   rad,
@@ -78,7 +80,13 @@ export function renderGame() {
       }
 
       if (point.data.type === ITEM_TYPES['life']) {
-        renderHealth(ctx, relativeCoordinateX, relativeCoordinateY, point.data.width, point.data.height);
+        renderHealth(
+          ctx,
+          relativeCoordinateX,
+          relativeCoordinateY,
+          point.data.width || ITEM_LIFE_WIDTH,
+          point.data.height || ITEM_LIFE_HEIGHT
+        );
         return;
       }
 
