@@ -37,6 +37,7 @@ import {
   PLAYER_REVERSE_VELOCITY,
   PLAYER_WIDTH,
   PLAYER_XP_LEVEL,
+  PLAYER_XP_ON_KILL,
   QUADTREE_CAP,
   rand,
   rot,
@@ -345,8 +346,6 @@ export class Player extends Entity {
         damage -= WEAPON_DAMAGE_REDUCTION_ARMOR;
       }
 
-      console.log('damage', damage);
-
       let newHealth = max(this.health - damage, 0);
       collider.data.health = newHealth;
 
@@ -357,6 +356,9 @@ export class Player extends Entity {
 
       // On death.
       if (!newHealth) {
+        // Give the other player an XP boost!
+        other.data.xp += PLAYER_XP_ON_KILL;
+
         collider.data.active = false;
 
         // Drop blood.

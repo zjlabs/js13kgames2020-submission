@@ -64,6 +64,7 @@ export const PLAYER_REVERSE_DIST = 100;
 export const PLAYER_REVERSE_SPREAD = 20;
 export const PLAYER_MAX_HEALTH = 100;
 export const PLAYER_XP_LEVEL = 1000;
+export const PLAYER_XP_ON_KILL = 1000;
 export const PLAYER_LIFE_SPAWN_RATE = 1000;
 export const PLAYER_BOOST_MAX_VAL = 3000;
 export const PLAYER_BOOST_REGEN_VAL = 4;

@@ -99,7 +99,7 @@ export function renderPlayer(
   ctx.fillStyle = '#FFFFFFDD';
   ctx.font = '16px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(`Lv.${level} - ${xp}xp`, 0, height + xpTopOffset);
+  ctx.fillText(`Lv.${level} - ${Math.round(xp)}xp`, 0, height + xpTopOffset);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalAlpha = 1;
   ctx.closePath();
@@ -151,7 +151,7 @@ export function renderPlayer(
   ctx.font = `${barTextSize}px sans-serif`;
   ctx.textAlign = 'right';
   ctx.fillText(
-    `${healthPercent}%`,
+    `${Math.round(healthPercent)}%`,
     barWidth - (barTextSize * 3 + 4),
     height + healthBarTopOffset + barTextSize - (barHeight - barTextSize)
   );
