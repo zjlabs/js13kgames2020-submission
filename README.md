@@ -1,3 +1,39 @@
+# Knights Quest
+
+Knights Quest is a 2020 [JS13kGames](https://js13kgames.com/)!
+
+[Play now!](https://knights-quest-submission.herokuapp.com/)
+
+![](img.png)
+
+## About
+
+You are the knight <Name>.
+
+You wake up at a your camp site and something is amiss. The legendary helm "Skullsavington" gifted to you by the elves of Galandrathrill; missing! The mythril armor "Gutscontainathryl" forged for you by the dwarves of Mount Rawrthrak; absent! The blessed sword "Barbsmasher" conjured and blessed by the goddess Arathnia herself; gone! Without your legendary gear, you are naught but a plump lubberwort; about as imposing as housecat that clearly spent a few too many hours napping by the fireplace rather than catching mice.
+
+Clearly your legendary gear didn't sprout legs and run off on its own. The local tales of bandits and barbarians, that you so flippantly dismissed, appear to be more truth than legend. "Look upon my legendary vestaments!" you proclaimed to the kind villager, warning you of the very fate you are now facing. "I am the very vision of power, beauty, and majesty! At the mere sight of me any foe will tremble in their boots and scurry off from whenst they came." Strong words for dew-beater who's true appearance strongly resembles a lumpy sack of potatoes propped up on two tree trunks when not clad with your mythic, figure-enhancing gear.
+
+Clearly you must find your missing gear, for the sake of the safety of the world!.. And your fragile ego. You survey your campsite, finding naught but a rusty old sword, probably abandoned by it's previous owner after claiming the blessed sword "Barbsmasher". Seeing as it's your only option, you pick up the rusty old sword and take off in search of the grubby skelpie-limmer who stole your hard-earned legendary gear!
+
+## How to Play
+
+Your objective is to level up, reclaim your legendary gear, and to lay waste to the thieves who stole it!
+
+You will move automatically.
+
+You can change direction by pointing your mouse cursor, or dragging on your touch screen in the direction you would like to face.
+
+You can "boost" your speed for a short amount of time by clicking and holding the left mouse button, or by double-tapping and holding on your touch screen.
+
+## Team
+
+**Zack Urben:** [GitHub](github.com/zackurben), [Twitter](twitter.com/zackurben)
+
+**Jonathan Darling:** [GitHub](github.com/jmdarling)
+
+---
+
 # js13kgames.com Game Server
 
 Game server for the [js13kGames Competition](http://js13kgames.com/).
@@ -61,51 +97,62 @@ You can find more information about the platform on the [Heroku Dev Center](http
 
 ## Server category rules
 
-* Sandbox server
+- Sandbox server
+
   - You can find the official sandbox server at [https://github.com/js13kGames/js13kserver](https://github.com/js13kGames/js13kserver).
 
-* Package size still below 13 kB
+- Package size still below 13 kB
+
   - Game package will contain all the game code and assets, for the client and the server.
 
-* Sandboxed environment
+- Sandboxed environment
+
   - Your game will run in a node.js based sandbox environment. That means you will not really use node. You cannot require modules and your own modules shipped by your 13k pack.
 
-* Do not leak the sandbox
+- Do not leak the sandbox
+
   - This is not a hacking competition. This is a way to help the competition admins, the site persistence, and you. Do not touch the `procfile` and the skeleton code.
 
-* Socket.io client lib
+- Socket.io client lib
+
   - You can use it. Simply add `<script src="/socket.io/socket.io.js"></script>` to your HTML and that will be loaded. No server configuration will be needed. The sandbox already did it.
 
-* Google's free STUN servers are the only allowed external services:
-  * stun.l.google.com:19302
-  * stun1.l.google.com:19302
-  * stun2.l.google.com:19302
-  * stun3.l.google.com:19302
-  * stun4.l.google.com:19302
+- Google's free STUN servers are the only allowed external services:
 
+  - stun.l.google.com:19302
+  - stun1.l.google.com:19302
+  - stun2.l.google.com:19302
+  - stun3.l.google.com:19302
+  - stun4.l.google.com:19302
 
-* Can I test the sandbox before submitting?
+- Can I test the sandbox before submitting?
+
   - Yes, you can and you must! Installing and getting it running is simple. Visit the project page at [https://github.com/js13kGames/js13kserver](https://github.com/js13kGames/js13kserver).
 
-* Is there any example? How do I develop my game using the sandbox server?
+- Is there any example? How do I develop my game using the sandbox server?
+
   - There's a simple "Rock, Paper, Scissors" example in the public folder.
 
-* I have more questions!
+- I have more questions!
   - Feel free to send them to [server@js13kgames.com](mailto:server@js13kgames.com).
 
 ## FAQ
 
-* Can I minify the server side code?
+- Can I minify the server side code?
+
   - Yes, but you have to keep the readable code also.
 
-* Can I add more npm packages?
+- Can I add more npm packages?
+
   - Yes, but you cannot use them in your game code.
 
-* What files count in the 13kb limit?
+- What files count in the 13kb limit?
+
   - All files in the `public` folder.
 
-* Can I deploy new code after I submited the entry?
+- Can I deploy new code after I submited the entry?
+
   - Yes, but you have to resubmit your entry on the site also.
 
-* Can I modify the `procfile` or the skeleton code?
+- Can I modify the `procfile` or the skeleton code?
   - No
