@@ -37,6 +37,7 @@ import {
   PLAYER_REVERSE_VELOCITY,
   PLAYER_WIDTH,
   PLAYER_XP_LEVEL,
+  PLAYER_XP_ON_KILL,
   QUADTREE_CAP,
   rand,
   rot,
@@ -46,6 +47,9 @@ import {
   WANDER_MAX,
   WANDER_MIN,
   WEAPON_DAMAGE,
+  WEAPON_DAMAGE_REDUCTION_ARMOR,
+  WEAPON_DAMAGE_REDUCTION_HELM,
+  WEAPON_DAMAGE_SWORD,
   WEAPON_HEIGHT,
   WEAPON_RESOLUTION,
   WEAPON_WIDTH,
@@ -323,7 +327,26 @@ export class Player extends Entity {
     }
 
     if (collider.action == 'damage' && other.action == 'weapon') {
-      let newHealth = max(this.health - WEAPON_DAMAGE, 0);
+      // Determine effective damage.
+      const opponentHasSword = other?.data?.items?.sword === 1;
+      const playerHasHelm = this.items.helm === 1;
+      const playerHasArmor = this.items.armor === 1;
+
+      let damage = WEAPON_DAMAGE;
+
+      if (opponentHasSword) {
+        damage = WEAPON_DAMAGE_SWORD;
+      }
+
+      if (playerHasHelm) {
+        damage -= WEAPON_DAMAGE_REDUCTION_HELM;
+      }
+
+      if (playerHasArmor) {
+        damage -= WEAPON_DAMAGE_REDUCTION_ARMOR;
+      }
+
+      let newHealth = max(this.health - damage, 0);
       collider.data.health = newHealth;
 
       // Drop blood (n% chance).
@@ -333,6 +356,9 @@ export class Player extends Entity {
 
       // On death.
       if (!newHealth) {
+        // Give the other player an XP boost!
+        other.data.xp += PLAYER_XP_ON_KILL;
+
         collider.data.active = false;
 
         // Drop blood.
