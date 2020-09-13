@@ -2,6 +2,7 @@ import { renderFilledRectangle, renderFilledTriangle, renderStrokedEllipse } fro
 import { WEAPON_HEIGHT, WEAPON_WIDTH } from '../../shared/variables';
 import { Player } from '../models/player';
 import { renderArmor, renderHelm, renderSword } from './item';
+import { renderText } from './advanced-items';
 
 export function renderPlayer(
   ctx,
@@ -79,30 +80,22 @@ export function renderPlayer(
   const usernameTopOffset = 40;
 
   // Render username.
-  ctx.beginPath();
-  ctx.translate(xPosition, yPosition);
-  ctx.globalAlpha = dataAlpha;
-  ctx.fillStyle = '#FFFFFFDD';
-  ctx.font = '24px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(username, 0, height + usernameTopOffset);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalAlpha = 1;
-  ctx.closePath();
+  renderText(ctx, xPosition, yPosition + height + usernameTopOffset, username, {
+    globalAlpha: dataAlpha,
+    fillStyle: '#FFFFDD',
+    font: '24px sans-serif',
+    textAlign: 'center',
+  });
 
   const xpTopOffset = usernameTopOffset + 20;
 
   // Render XP.
-  ctx.beginPath();
-  ctx.translate(xPosition, yPosition);
-  ctx.globalAlpha = dataAlpha;
-  ctx.fillStyle = '#FFFFFFDD';
-  ctx.font = '16px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(`Lv.${level} - ${Math.round(xp)}xp`, 0, height + xpTopOffset);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalAlpha = 1;
-  ctx.closePath();
+  renderText(ctx, xPosition, yPosition + height + xpTopOffset, `Lv.${level} - ${Math.round(xp)}xp`, {
+    globalAlpha: dataAlpha,
+    fillStyle: '#FFFFDD',
+    font: '16px sans-serif',
+    textAlign: 'center',
+  });
 
   const healthBarTopOffset = xpTopOffset + 10;
 
@@ -132,32 +125,32 @@ export function renderPlayer(
   ctx.closePath();
 
   // Render health bar descriptor.
-  ctx.beginPath();
-  ctx.translate(xPosition, yPosition);
-  ctx.globalAlpha = dataAlpha;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = `${barTextSize}px sans-serif`;
-  ctx.textAlign = 'left';
-  ctx.fillText('Health', barWidth / -2 + 2, height + healthBarTopOffset + barTextSize - (barHeight - barTextSize));
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalAlpha = 1;
-  ctx.closePath();
+  renderText(
+    ctx,
+    xPosition + barWidth / -2 + 2,
+    yPosition + height + healthBarTopOffset + barTextSize - (barHeight - barTextSize),
+    'Health',
+    {
+      globalAlpha: dataAlpha,
+      fillStyle: '#FFFFFF',
+      font: `${barTextSize}px sans-serif`,
+      textAlign: 'left',
+    }
+  );
 
   // Render health par percentage descriptor.
-  ctx.beginPath();
-  ctx.translate(xPosition, yPosition);
-  ctx.globalAlpha = dataAlpha;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = `${barTextSize}px sans-serif`;
-  ctx.textAlign = 'right';
-  ctx.fillText(
+  renderText(
+    ctx,
+    xPosition + barWidth - (barTextSize * 3 + 4),
+    yPosition + height + healthBarTopOffset + barTextSize - (barHeight - barTextSize),
     `${Math.round(healthPercent)}%`,
-    barWidth - (barTextSize * 3 + 4),
-    height + healthBarTopOffset + barTextSize - (barHeight - barTextSize)
+    {
+      globalAlpha: dataAlpha,
+      fillStyle: '#FFFFFF',
+      font: `${barTextSize}px sans-serif`,
+      textAlign: 'right',
+    }
   );
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalAlpha = 1;
-  ctx.closePath();
 
   const boostBarTopOffset = healthBarTopOffset + 25;
 
@@ -187,32 +180,32 @@ export function renderPlayer(
   ctx.closePath();
 
   // Render boost bar descriptor.
-  ctx.beginPath();
-  ctx.translate(xPosition, yPosition);
-  ctx.globalAlpha = dataAlpha;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = `${barTextSize}px sans-serif`;
-  ctx.textAlign = 'left';
-  ctx.fillText('Boost', barWidth / -2 + 2, height + boostBarTopOffset + barTextSize - (barHeight - barTextSize));
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalAlpha = 1;
-  ctx.closePath();
+  renderText(
+    ctx,
+    xPosition + barWidth / -2 + 2,
+    yPosition + height + boostBarTopOffset + barTextSize - (barHeight - barTextSize),
+    'Boost',
+    {
+      globalAlpha: dataAlpha,
+      fillStyle: '#FFFFFF',
+      font: `${barTextSize}px sans-serif`,
+      textAlign: 'left',
+    }
+  );
 
   // Render boost par percentage descriptor.
-  ctx.beginPath();
-  ctx.translate(xPosition, yPosition);
-  ctx.globalAlpha = dataAlpha;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = `${barTextSize}px sans-serif`;
-  ctx.textAlign = 'right';
-  ctx.fillText(
+  renderText(
+    ctx,
+    xPosition + barWidth - (barTextSize * 3 + 4),
+    yPosition + height + boostBarTopOffset + barTextSize - (barHeight - barTextSize),
     `${boostPercent}%`,
-    barWidth - (barTextSize * 3 + 4),
-    height + boostBarTopOffset + barTextSize - (barHeight - barTextSize)
+    {
+      globalAlpha: dataAlpha,
+      fillStyle: '#FFFFFF',
+      font: `${barTextSize}px sans-serif`,
+      textAlign: 'right',
+    }
   );
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalAlpha = 1;
-  ctx.closePath();
 
   const itemTopOffset = boostBarTopOffset + 35;
 
