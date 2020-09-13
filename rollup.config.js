@@ -1,5 +1,8 @@
 import typescript from 'rollup-plugin-typescript2';
 import { terser } from 'rollup-plugin-terser';
+const tops = {
+  keep_classnames: true,
+};
 
 export default [
   {
@@ -19,7 +22,7 @@ export default [
           },
         },
       }),
-      terser(),
+      terser(tops),
     ],
   },
   {
@@ -29,6 +32,6 @@ export default [
       file: 'public/server.js',
       format: 'umd',
     },
-    plugins: [terser()],
+    plugins: [terser(tops)],
   },
 ];

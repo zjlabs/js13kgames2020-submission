@@ -1,4 +1,3 @@
-import { info } from '../../shared/variables';
 import { initializeBackground } from './background';
 
 const rootEl = document.getElementById('root');
@@ -28,9 +27,6 @@ function createCanvas(): GameCanvas {
   initializeBackground(rootWidth, rootHeight);
 
   rootEl.append(canvasEl);
-
-  info('canvas created with width of', rootWidth, 'px and height of', rootHeight, 'px');
-
   return {
     ctx: canvasEl.getContext('2d'),
     el: canvasEl,
@@ -45,7 +41,6 @@ export function getCanvas(): GameCanvas {
 
     window.addEventListener('resize', () => {
       memoizedCanvas.el.remove();
-      info('window resized - creating new canvas');
       memoizedCanvas = createCanvas();
     });
   }

@@ -1,30 +1,8 @@
 /**
- * Whether or not to include test code
- */
-export const TEST = true;
-
-/**
  * Emit stats on tick
  */
 export const STATS = true;
 export const STATS_TICK = 2000;
-
-/**
- * The current log level
- *
- *
- * 4 = fatal = exit()
- * 3 = error = error()
- * 2 = info  = info()
- * 1 = debug = debug()
- * 0 = all   = all()
- */
-export const LOG_LEVEL = 2;
-export const exit = (...message) => LOG_LEVEL <= 4 && console.log('fatal', ...message);
-export const error = (...message) => LOG_LEVEL <= 3 && console.log('error', ...message);
-export const info = (...message) => LOG_LEVEL <= 2 && console.log('info', ...message);
-export const debug = (...message) => LOG_LEVEL <= 1 && console.log('debug', ...message);
-export const all = (...message) => LOG_LEVEL === 0 && console.log('all', ...message);
 
 /**
  * Client stats debug options.
@@ -85,8 +63,6 @@ export const WEAPON_DAMAGE = 2;
 export const WEAPON_DAMAGE_SWORD = 3;
 export const WEAPON_DAMAGE_REDUCTION_HELM = 0.5;
 export const WEAPON_DAMAGE_REDUCTION_ARMOR = 1;
-export const TILE_HEIGHT = 50;
-export const TILE_WIDTH = 50;
 
 // Leaderboard vars
 export const LEADERBOARD_UPDATE_TIME = 5000;

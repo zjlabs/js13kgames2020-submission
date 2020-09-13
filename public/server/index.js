@@ -1,18 +1,13 @@
-import { Armor, Blood, Game, Grid, Helm, Life, Player, Point, Spawner, Sword } from './entities';
+import { Armor, Blood, Game, Helm, Life, Player, Point, Spawner, Sword } from './entities';
 import {
-  all,
   BOT_COUNT_MAX,
   BOT_RESPAWN_RATE,
-  debug,
-  info,
   ITEM_INITIAL_SPAWN_COUNT_ARMOR,
   ITEM_INITIAL_SPAWN_COUNT_HEALTH,
   ITEM_INITIAL_SPAWN_COUNT_HELM,
   ITEM_INITIAL_SPAWN_COUNT_SWORD,
   rand,
-  STATS,
   STATS_TICK,
-  TEST,
   TICK_TIME,
   VALID_PLAYER_PROPS,
   WORLD_HEIGHT,
@@ -23,8 +18,6 @@ import {
  * Init game
  */
 const game = new Game();
-info('game start');
-
 const botSpawner = new Spawner(
   BOT_COUNT_MAX,
   BOT_RESPAWN_RATE,
@@ -111,16 +104,13 @@ game.addComponent(wanderBot);
  * Handle incoming connections.
  */
 io.on('connection', (socket) => {
-  info('socket [connection]', socket.id);
   const player = new Player(socket);
 
   socket.on('disconnect', () => {
-    info('socket [disconnect]', socket.id);
     player.active = false;
   });
 
   socket.on('data', (obj) => {
-    debug('socket [data]', socket.id, obj);
     Object.keys(obj).forEach((key) => {
       if (VALID_PLAYER_PROPS.includes(key)) {
         player[key] = obj[key];
@@ -129,7 +119,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('play', (obj) => {
-    info('socket [play]', socket.id);
     Object.keys(obj).forEach((key) => {
       if (VALID_PLAYER_PROPS.includes(key)) {
         player[key] = obj[key];
@@ -162,16 +151,6 @@ const tick = () => {
   // Update the stats and wait for the next tick.
   elapsed = Date.now() - current;
   sleep = Math.max(TICK_TIME - elapsed, 0);
-  all('TICK');
-  all('delta', delta);
-  all('current', current);
-  all('last', last);
-  all('elapsed', elapsed);
-  all('sleep', sleep);
-  if (STATS && statTick <= 0) {
-    io.emit('stats', { delta, current, last, elapsed, sleep });
-    statTick = STATS_TICK;
-  }
   setTimeout(tick, sleep);
 };
 
@@ -183,45 +162,29 @@ setTimeout(tick, TICK_TIME);
  *
  * NOTE: DO NOT make an endpoint named 'io', this is non-standard behavior.
  */
-module.exports = Object.assign(
-  {
-    // Debug endpoint for server state
-    // TODO: Search for inactive components
-    state: (req, res, next) => {
-      const _components = game.getComponents();
-      let types = {};
-      let inactive = {};
-      _components.forEach((c) => {
-        types[c.constructor.name] = types[c.constructor.name] || 0;
-        inactive[c.constructor.name] = inactive[c.constructor.name] || 0;
+module.exports = Object.assign({
+  // Debug endpoint for server state
+  state: (req, res, next) => {
+    const _components = game.getComponents();
+    let types = {};
+    let inactive = {};
+    _components.forEach((c) => {
+      types[c.constructor.name] = types[c.constructor.name] || 0;
+      inactive[c.constructor.name] = inactive[c.constructor.name] || 0;
 
-        if (c.active) types[c.constructor.name] += 1;
-        else inactive[c.constructor.name] += 1;
-      });
-      return res.send(
-        `<pre>${JSON.stringify(
-          {
-            components: _components.length,
-            types,
-            inactive,
-          },
-          null,
-          2
-        )}</pre>`
-      );
-    },
+      if (c.active) types[c.constructor.name] += 1;
+      else inactive[c.constructor.name] += 1;
+    });
+    return res.send(
+      `<pre>${JSON.stringify(
+        {
+          components: _components.length,
+          types,
+          inactive,
+        },
+        null,
+        2
+      )}</pre>`
+    );
   },
-  TEST && {
-    path: (req, res, next) => {
-      let grid = new Grid(5, 5);
-
-      for (let a = 0; a < grid.tiles.length; a++) {
-        if (a < grid.tiles[1].length - 1) {
-          grid.tiles[1][a].walk = false;
-        }
-      }
-      let path = grid.findPath(0, 0, 2, 2);
-      return res.json(path);
-    },
-  }
-);
+});

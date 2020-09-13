@@ -2,8 +2,6 @@ import {
   ang,
   BOOST_FACTOR,
   cang,
-  debug,
-  error,
   ITEM_ARMOR_HEIGHT,
   ITEM_ARMOR_WIDTH,
   ITEM_BLOOD_HEIGHT,
@@ -42,8 +40,6 @@ import {
   rand,
   rot,
   SHOW_BOUNDING_BOXES,
-  TILE_HEIGHT,
-  TILE_WIDTH,
   WANDER_MAX,
   WANDER_MIN,
   WEAPON_DAMAGE,
@@ -62,7 +58,7 @@ import {
 } from '../shared/variables';
 import { getId } from '../shared/id';
 
-const { min, max, abs, sqrt } = Math;
+const { min, max, sqrt } = Math;
 
 export class Component {
   constructor() {
@@ -73,7 +69,6 @@ export class Component {
 
   addComponent(component) {
     if (!component instanceof Component) {
-      error('Only components can be added as child components!');
       return;
     }
 
@@ -548,261 +543,6 @@ export class Armor extends Item {
   }
 }
 
-export class Tile extends Entity {
-  constructor(x, y, walk = true, height = TILE_HEIGHT, width = TILE_WIDTH) {
-    super();
-    this.x = x;
-    this.y = y;
-    this.height = height;
-    this.width = width;
-    this.walk = walk;
-  }
-
-  // Getter for unique tile id
-  get tid() {
-    return `${this.x},${this.y}`;
-  }
-
-  getColliders() {
-    return !this.walk
-      ? [
-          new Rectangle(
-            this.x + this.width / 2,
-            this.y + this.height / 2,
-            this.width / 2,
-            this.height / 2,
-            this,
-            'tile'
-          ),
-        ]
-      : [];
-  }
-
-  getPojo() {
-    return Object.assign(
-      super.getPojo(),
-      {
-        x: this.x,
-        y: this.y,
-        height: this.height,
-        width: this.width,
-        walk: this.walk,
-        tid: this.tid,
-      },
-      SHOW_BOUNDING_BOXES ? { colliders: this.getColliders().map((c) => c.pure()) } : {}
-    );
-  }
-}
-
-export class Grid extends Component {
-  constructor(height = 50, width = 50) {
-    super();
-    this.height = height;
-    this.width = width;
-    this.tiles = [];
-
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        this.tiles[x] = this.tiles[x] || [];
-        this.tiles[x][y] = this.tiles[x][y] || [];
-        this.tiles[x][y] = new Tile(x, y);
-      }
-    }
-  }
-
-  update(deltaTime, gameRef, players) {
-    this.tiles.forEach((tile) => tile.update(deltaTime, gameRef, players));
-  }
-
-  /**
-   * Octile distance formula, from:
-   * http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html#diagonal-distance
-   *
-   * @param {Object} node
-   *   The starting node for the calculation
-   * @param {Object} goal
-   *   The end node for the calculation
-   *
-   * @returns {Number}
-   *   The distance between the two nodes.
-   */
-  heuristic(node, goal) {
-    const D = 1;
-    const D2 = Math.SQRT2;
-    let dx = Math.abs(node.x - goal.x);
-    let dy = Math.abs(node.y - goal.y);
-    return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
-  }
-
-  distance(a, b) {
-    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
-  }
-
-  /**
-   * Util function to reconstruct the final path from findPath, on success.
-   *
-   * @param {Object} nodeList
-   *   The visited nodeList map from findPath
-   * @param {Object} node
-   *   The final node in the path.
-   *
-   * @returns {Array}
-   *   The shortest path from the node to the origin of nodeList.
-   */
-  buildPath(nodeList, node) {
-    debug('buildPath', nodeList, node);
-    let out = [node];
-    while (nodeList[node.tid]) {
-      node = nodeList[node.tid];
-      out.push(node);
-    }
-    return out.reverse();
-  }
-
-  /**
-   * Get a path from start tile x/y to end tile x/y, using a*, from:
-   * https://en.wikipedia.org/wiki/A*_search_algorithm
-   *
-   * @param {Number} startX
-   *   The start tile x coordinate.
-   * @param {Number} startY
-   *   The start tile y coordinate.
-   * @param {Number} endX
-   *   The end tile x coordinate.
-   * @param {Number} endY
-   *   The end tile y coordinate.
-   *
-   * @returns {Array}
-   *   The array of game tiles in the path
-   */
-  findPath(startX, startY, endX, endY) {
-    let open = new BinaryHeap();
-
-    // convert tile coords to actual tile nodes
-    let start = this.getNode(startX, startY);
-    let end = this.getNode(endX, endY);
-    if (!start || !end) {
-      return [];
-    }
-
-    // For node n, path[n] is the node immediately preceding it on the cheapest path from start
-    // to n currently known.
-    let cameFrom = {};
-
-    // For node n, gScore[n] is the cost of the cheapest path from start to n currently known.
-    let gScore = { [start.tid]: 0 };
-
-    // For node n, fScore[n] := gScore[n] + h(n). fScore[n] represents our current best guess as to
-    // how short a path from start to finish can be if it goes through n.
-    let fScore = { [start.tid]: this.heuristic(start, end) };
-
-    // start the openset with the start node
-    open.insert(fScore[start.tid], start);
-
-    let iter = 0;
-    let node;
-    let temp;
-    let tempG;
-    while ((node = open.extractMin()) && node && iter < 50) {
-      iter++;
-      node = node.value;
-      if (!node) break;
-      if (node.tid == end.tid) return this.buildPath(cameFrom, node);
-
-      this.getNeighbors(node.x, node.y).forEach((neighbor) => {
-        // this path to neighbor is better than any previous one, record it
-        tempG = gScore[node.tid] + this.distance(node, neighbor);
-        if (tempG < (gScore[neighbor.tid] != undefined ? gScore[neighbor.tid] : Number.MAX_SAFE_INTEGER)) {
-          cameFrom[neighbor.tid] = node;
-          gScore[neighbor.tid] = tempG;
-          fScore[neighbor.tid] = gScore[neighbor.tid] + this.heuristic(neighbor, end);
-
-          // Only add the neighbor to the openset if it doesnt exist in there
-          temp = open
-            .getNodesByKey(fScore[neighbor.tid])
-            .map((node) => node.value.tid == neighbor.tid)
-            .reduce((acc, cur) => cur || acc, false);
-          if (!temp) {
-            open.insert(fScore[neighbor.tid], neighbor);
-          }
-        }
-      });
-    }
-
-    // no path available
-    return [];
-  }
-
-  /**
-   * Util helper to get the tilemap tile or undefined for the given coordinates.
-   *
-   * @param {Number} x
-   *   The grid x coordinate
-   * @param {Number} y
-   *   The grid y coordinate
-   *
-   * @returns {Object|undefined}
-   *   The grid node or undefined
-   */
-  getNode(x, y) {
-    if (x > this.width - 1 || x < 0 || y > this.height - 1 || y < 0) {
-      return undefined;
-    }
-
-    return this.tiles[x][y];
-  }
-
-  /**
-   * Get all the neighbor nodes for the input grid x/y tile location
-   *
-   * @param {Number} x
-   *   The grid x coordinate
-   * @param {Number} y
-   *   The grid y coordinate
-   *
-   * @returns {Array}
-   *   The nodes immediate neighbors list, for all 8 directions.
-   */
-  getNeighbors(x, y) {
-    let out = [];
-    let temp;
-
-    // diag left top
-    temp = this.getNode(x - 1, y + 1);
-    if (temp && temp.walk) out.push(temp);
-
-    // top
-    temp = this.getNode(x, y + 1);
-    if (temp && temp.walk) out.push(temp);
-
-    // diag right top
-    temp = this.getNode(x + 1, y + 1);
-    if (temp && temp.walk) out.push(temp);
-
-    // left
-    temp = this.getNode(x - 1, y);
-    if (temp && temp.walk) out.push(temp);
-
-    // right
-    temp = this.getNode(x + 1, y);
-    if (temp && temp.walk) out.push(temp);
-
-    // diag left bot
-    temp = this.getNode(x - 1, y - 1);
-    if (temp && temp.walk) out.push(temp);
-
-    // bot
-    temp = this.getNode(x, y - 1);
-    if (temp && temp.walk) out.push(temp);
-
-    // diag right bot
-    temp = this.getNode(x + 1, y - 1);
-    if (temp && temp.walk) out.push(temp);
-
-    return out;
-  }
-}
-
 export class Game extends Component {
   constructor() {
     super();
@@ -826,7 +566,6 @@ export class Game extends Component {
           if (cmap[collider.data.id] && cmap[collider.data.id][collision.data.id]) return;
 
           if (collider.intersects(collision)) {
-            debug('collision!', collider, collision);
             // if this was a collision, make sure the parent cant collide with this again
             if (component.onCollision(collider, collision, gameRef)) {
               cmap[collider.data.id] = cmap[collider.data.id] || {};
