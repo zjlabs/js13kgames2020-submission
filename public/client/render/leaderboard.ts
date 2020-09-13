@@ -1,4 +1,3 @@
-import { Player } from '../models/player';
 import { LeaderboardPlayer } from '../models/leaderboard-player';
 import { clearCanvas } from './render-utilities';
 import { renderFilledRectangle } from './primitive-shapes';
@@ -72,7 +71,7 @@ function updateOffscreenLeaderboardCanvas(players: LeaderboardPlayer[], currentP
     ctx.font = textFont;
     ctx.globalAlpha = textGlobalAlpha;
     ctx.fillText(`${index + 1}) ${player.username}`, 0, 0);
-    ctx.fillText(`Lv.${player.level} - ${player.xp}xp`, 20, textOffsetIncrement);
+    ctx.fillText(`Lv.${player.level} - ${Math.round(player.xp)}xp`, 20, textOffsetIncrement);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
     ctx.closePath();
