@@ -308,7 +308,9 @@ export class Player extends Entity {
   }
 
   getColliders() {
-    return [new Rectangle(this.x, this.y, this.height, this.height, this, 'damage'), ...this.getWeaponColliderCoords()];
+    return [new Rectangle(this.x, this.y, this.height, this.height, this, 'damage')].concat(
+      this.getWeaponColliderCoords()
+    );
   }
 
   onCollision(collider, other, gameRef) {
