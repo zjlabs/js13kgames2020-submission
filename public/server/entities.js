@@ -273,7 +273,7 @@ export class Player extends Entity {
       }
 
       // spawn orbs in the last loc if its time
-      if (this.lastLifeSpawn <= 0 && this.locMem.length == PLAYER_LOC_MEM) {
+      if (this.isBoosting && this.lastLifeSpawn <= 0 && this.locMem.length == PLAYER_LOC_MEM) {
         this.lastLifeSpawn = PLAYER_LIFE_SPAWN_RATE;
         gameRef.addComponent(new Life(this.locMem[0].x, this.locMem[0].y));
       }
