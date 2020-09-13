@@ -328,7 +328,7 @@ export class Player extends Entity {
 
     if (collider.action == 'damage' && other.action == 'weapon') {
       // Determine effective damage.
-      const opponentHasSword = other?.data?.items?.sword === 1;
+      const opponentHasSword = other.data.items && other.data.items.sword === 1;
       const playerHasHelm = this.items.helm === 1;
       const playerHasArmor = this.items.armor === 1;
 
