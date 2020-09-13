@@ -61,45 +61,6 @@ const lifeSpawner = new Spawner(
   () => new Life(rand(0, WORLD_WIDTH), rand(0, WORLD_HEIGHT))
 );
 
-// start testing code
-let combatBot = new Player({ id: 'bot1' });
-combatBot.x = WORLD_WIDTH / 2 + 300;
-combatBot.y = WORLD_HEIGHT / 2;
-combatBot.frozen = true;
-combatBot.bot = true;
-combatBot.username = 'smashmaster69x420';
-combatBot.health = 69;
-game.addComponent(combatBot);
-game.addComponent(new Blood(WORLD_WIDTH / 2, WORLD_HEIGHT / 2));
-
-// add patrol bot
-const halfW = WORLD_WIDTH / 2;
-const halfH = WORLD_HEIGHT / 2;
-let patrolBot = new Player({ id: 'bot2' });
-patrolBot.x = halfW;
-patrolBot.y = halfH;
-patrolBot.bot = true;
-patrolBot.username = 'x patrolbot x';
-patrolBot.health = 69;
-patrolBot.path = [
-  new Point(halfW + 400, halfH - 400),
-  new Point(halfW + 400, halfH + 400),
-  new Point(halfW - 400, halfH + 400),
-  new Point(halfW - 400, halfH - 400),
-];
-patrolBot.target = 0;
-game.addComponent(patrolBot);
-
-// wander bot
-let wanderBot = new Player({ id: 'bot3' });
-wanderBot.x = halfW;
-wanderBot.y = halfH;
-wanderBot.bot = true;
-wanderBot.username = 'cartographer';
-wanderBot.health = 69;
-game.addComponent(wanderBot);
-// end testing code
-
 /**
  * Handle incoming connections.
  */
