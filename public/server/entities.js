@@ -143,8 +143,8 @@ export class Player extends Entity {
     this.socket = socket;
     this.socketId = socket.id;
     this.username = '';
-    this.x = WORLD_WIDTH / 2;
-    this.y = WORLD_HEIGHT / 2;
+    this.x = rand(0, WORLD_WIDTH);
+    this.y = rand(0, WORLD_HEIGHT);
     this.height = PLAYER_HEIGHT / 2;
     this.width = PLAYER_WIDTH / 2;
     this.xp = 0;
