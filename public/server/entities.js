@@ -859,6 +859,7 @@ export class Game extends Component {
 
     // sync data for all players
     players.forEach((player) => {
+      if (player.bot) return;
       let _players = {};
       let _items = {};
       let query = new Rectangle(player.x, player.y, WORLD_QUERY_WIDTH, WORLD_QUERY_HEIGHT);
@@ -886,7 +887,7 @@ export class Game extends Component {
             .map((p) => ({
               x: p.x,
               y: p.y,
-              items: p.items.sword || p.items.helm || p.items.armor,
+              item: p.items.sword || p.items.helm || p.items.armor,
             })),
         });
         this.mapTick = LEADERBOARD_UPDATE_TIME;
