@@ -191,6 +191,13 @@ export function renderGame() {
       .filter((player) => {
         return player.id !== id;
       })
+      .map((player: Player) => {
+        return {
+          x: player.x,
+          y: player.y,
+          isEnhanced: Object.values(player.items).filter((value) => value === 1).length > 0,
+        };
+      })
   );
 
   // Render leaderboard.
